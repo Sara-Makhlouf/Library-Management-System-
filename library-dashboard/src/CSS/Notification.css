@@ -1,0 +1,168 @@
+.notifications-page {
+  display: flex;          /* مهم عشان Sidebar جنب المحتوى */
+  min-height: 100vh;
+  padding: 2rem;
+  font-family: 'Inter', sans-serif;
+  color: #233D4D;
+  background: #FBEF76;
+}
+tbody tr {
+  transition: all 0.3s ease;
+}
+
+tbody tr:hover {
+  transform: translateY(-2px);
+}
+
+button:hover {
+  opacity: 0.92;
+}
+
+@media (max-width: 768px) {
+  table,
+  thead,
+  tbody,
+  th,
+  td,
+  tr {
+    display: block;
+    width: 100%;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody tr {
+    margin-bottom: 16px;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px !important;
+  }
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.header p {
+  font-size: 1.2rem;
+  color: #233D4D;
+  opacity: 0.8;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 800px;
+  margin: auto;
+}
+
+.notification-card {
+  display: flex;
+  align-items: flex-start;
+  background: white;
+  border-left: 6px solid #ccc;
+  border-radius: 2rem;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.notification-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.notification-card .icon {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: 1rem;
+}
+
+.notification-card .text {
+  flex: 1;
+}
+
+.notification-card .title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.notification-card .title-row h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.notification-card .badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.notification-card .badge.new {
+  background: #FD8A6B;
+  color: white;
+}
+
+.notification-card .actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.notification-card .actions .time {
+  font-size: 0.85rem;
+  color: #233D4D;
+  opacity: 0.6;
+}
+
+.notification-card .actions .view-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  border: none;
+  background: #FA5C5C;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.notification-card .actions .view-btn:hover {
+  transform: scale(1.05);
+  background: #FD8A6B;
+}
+@media (min-width: 769px) {
+  .sidebar {
+    width: 250px;
+    flex-shrink: 0;
+  }
+  .main-content {
+    flex: 1;
+  }
+}
