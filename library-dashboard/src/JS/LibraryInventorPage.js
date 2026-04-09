@@ -2,9 +2,10 @@
 import "../CSS/LibraryInventorPage.css";
 import Sidebar from "../Components/SideBar";
 import { COLORS } from "../Constants/ColorsUse";
-
+import { useState } from "react";
+import AddNewBook from "./AddNewBook";
 export default function LibraryInventoryPage() {
-  const books = [
+  const [books, setBooks] = useState([
     {
       title: "The Architect's Silence",
       author: "Julian Thorne",
@@ -13,6 +14,7 @@ export default function LibraryInventoryPage() {
       shelf: "A-12",
       status: "Available",
       cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80",
+      price: "$19.99",
     },
     {
       title: "Beyond the Horizon",
@@ -22,6 +24,7 @@ export default function LibraryInventoryPage() {
       shelf: "B-04",
       status: "Borrowed",
       cover: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=300&q=80",
+      price: "$29.99",
     },
     {
       title: "Modern Systems Design",
@@ -31,6 +34,7 @@ export default function LibraryInventoryPage() {
       shelf: "T-11",
       status: "Available",
       cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80",
+      price: "$39.99",
     },
     {
       title: "Empire of Sand",
@@ -40,6 +44,7 @@ export default function LibraryInventoryPage() {
       shelf: "H-03",
       status: "Reserved",
       cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80",
+      price: "$24.99",
     },
     {
       title: "The Silent Planet",
@@ -49,6 +54,7 @@ export default function LibraryInventoryPage() {
       shelf: "S-08",
       status: "Available",
       cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80",
+      price: "$14.99",
     },
     {
       title: "Ancient Civilizations",
@@ -58,9 +64,30 @@ export default function LibraryInventoryPage() {
       shelf: "C-01",
       status: "Borrowed",
       cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&q=80",
+      price: "$34.99",
     },
-    
-  ];
+   
+  ]);
+    const [currentPage, setCurrentPage] = useState(1);
+const booksPerPage = 7;
+const indexOfLastBook = currentPage * booksPerPage;
+const indexOfFirstBook = indexOfLastBook - booksPerPage;
+const currentBooks = books.slice(indexOfFirstBook, indexOfLastBook);
+
+const totalPages = Math.ceil(books.length / booksPerPage); 
+  const [showAddPage, setShowAddPage] = useState(false);
+  const handleAddBook = (newBook) => {
+    setBooks([...books, newBook]);
+    setShowAddPage(false); 
+  };
+  if (showAddPage) {
+    return (
+      <AddNewBook 
+        onAdd={handleAddBook} 
+        onCancel={() => setShowAddPage(false)} 
+      />
+    );
+  }
 
   return (
     <div
@@ -111,6 +138,7 @@ export default function LibraryInventoryPage() {
             </div>
 
             <div className="filter-field">
+
               <label>Status</label>
               <select>
                 <option>Any Status</option>
@@ -135,7 +163,10 @@ export default function LibraryInventoryPage() {
           <div className="toolbar-actions">
             <button className="clear-btn">Clear Filters</button>
 
-            <button className="add-floating-btn">
+           <button 
+              className="add-floating-btn" 
+              onClick={() => setShowAddPage(true)}
+            >
               <span className="material-symbols-outlined">add</span>
               Add New Book
             </button>
@@ -152,6 +183,7 @@ export default function LibraryInventoryPage() {
                 <th>Genre</th>
                 <th>Shelf</th>
                 <th>Status</th>
+                <th>Price</th>
                 <th></th>
               </tr>
             </thead>
@@ -188,6 +220,7 @@ export default function LibraryInventoryPage() {
                       {book.status}
                     </span>
                   </td>
+                  <td>${book.price}</td>
                   <td>
                   <div className="book-actions">
   <button className="more-btn">
@@ -199,6 +232,12 @@ export default function LibraryInventoryPage() {
       <span className="material-symbols-outlined">delete</span>
       Delete Book
     </button>
+   <button className="edit-option">
+      <span className="material-symbols-outlined">edit</span>
+      Edit Book
+   </button>
+
+
   </div>
 </div>
                   </td>
@@ -208,18 +247,37 @@ export default function LibraryInventoryPage() {
           </table>
         </section>
 
-        <div className="pagination-bar">
-          <button className="page-btn">‹ Prev</button>
+       <div className="pagination-bar">
+          <button 
+            className="page-btn" 
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            ‹ Prev
+          </button>
 
           <div className="page-numbers">
-            <button className="page-btn active">1</button>
-            <button className="page-btn">2</button>
-            <button className="page-btn">3</button>
-            <button className="page-btn">4</button>
+            {[...Array(totalPages)].map((_, i) => (
+              <button 
+                key={i} 
+                className={`page-btn ${currentPage === i + 1 ? 'active' : ''}`}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
           </div>
 
-          <button className="page-btn">Next ›</button>
+          <button 
+            className="page-btn" 
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            Next ›
+          </button>
         </div>
+     
+    
       </main>
     </div>
   );

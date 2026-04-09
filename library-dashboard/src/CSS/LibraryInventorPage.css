@@ -257,6 +257,23 @@
   background: rgba(250, 92, 92, 0.12);
 }
 
+.edit-option {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: green;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.edit-option:hover {
+  background: rgba(250, 92, 92, 0.12);
+}
+
 .pagination-bar {
   margin: 24px 40px 0;
   display: flex;
