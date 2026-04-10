@@ -1,0 +1,486 @@
+.library-layout {
+  --primary: #fa5c5c;
+  --secondary: #fd8a6b;
+  --accent: #fec288;
+  --background: #fbef76;
+  --text: #233d4d;
+
+  display: flex;
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--text);
+  font-family: "Inter", sans-serif;
+}
+
+
+.brand-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-book-btn {
+  width: 100%;
+  border: none;
+  border-radius: 16px;
+  padding: 14px;
+  background: linear-gradient(
+    135deg,
+    var(--primary),
+    var(--secondary)
+  );
+  color: white;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.main-content {
+  flex: 1;
+  padding:  30px;
+  margin-left: 260px;
+  padding: 30px;
+}
+
+.topbar.compact {
+  padding: 26px 40px;
+}
+
+.topbar-left p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.advanced-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  gap: 16px;
+  flex: 1;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-field label {
+  font-size: 13px;
+  font-weight: 700;
+}
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.filter-field input {
+  border: 1px solid var(--accent);
+  border-radius: 14px;
+  background: #fffaf0;
+  padding: 12px 14px;
+  color: var(--text);
+  outline: none;
+}
+
+.filter-field select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+
+  border: 1px solid var(--accent);
+  border-radius: 14px;
+  background: #fffaf0;
+  padding: 12px 42px 12px 14px;
+  color: var(--text);
+  outline: none;
+  cursor: pointer;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease,
+    background 0.25s ease;
+}
+
+.filter-field select:hover {
+  border-color: var(--secondary);
+  background: #fff5e7;
+  transform: translateY(-1px);
+}
+
+.filter-field select:focus {
+  border-color: var(--primary);
+  background: white;
+  transform: scale(1.02);
+  box-shadow: 0 0 0 4px rgba(250, 92, 92, 0.18);
+}
+
+.filter-field select option {
+  background: #fffaf0;
+  color: var(--text);
+}
+
+
+.filter-field:has(select)::after {
+  content: "expand_more";
+  font-family: "Material Symbols Outlined";
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  color: var(--secondary);
+  pointer-events: none;
+  transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.filter-field:has(select:focus)::after {
+  transform: rotate(180deg);
+  color: var(--primary);
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}.clear-btn {
+    transition: all 0.25s ease;
+    transition: all 0.28s ease;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 13px;
+    border: solid 5px wheat;}
+
+.clear-btn:hover {
+  background: var(--accent);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 10px 24px rgba(254, 194, 136, 0.45);
+}
+
+.add-floating-btn {
+    transition: all 0.28s ease;
+    border: solid 5px #fd8a6b;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 13px;}
+
+.add-floating-btn:hover {
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 18px 36px rgba(250, 92, 92, 0.45);
+}
+
+.add-floating-btn .material-symbols-outlined {
+  transition: transform 0.3s ease;
+}
+
+.add-floating-btn:hover .material-symbols-outlined {
+  transform: rotate(90deg);
+}
+.book-actions {
+  position: relative;
+  display: inline-flex;
+}
+
+.more-btn {
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.more-btn:hover {
+  background: rgba(254, 194, 136, 0.3);
+}
+
+.actions-menu {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  min-width: 150px;
+  background: #fffaf0;
+  border: 1px solid var(--accent);
+  border-radius: 14px;
+  padding: 8px;
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.12);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: 0.22s ease;
+}
+
+.book-actions:hover .actions-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.delete-option {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.delete-option:hover {
+  background: rgba(250, 92, 92, 0.12);
+}
+
+.edit-option {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: green;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.edit-option:hover {
+  background: rgba(250, 92, 92, 0.12);
+}
+
+.pagination-bar {
+  margin: 24px 40px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 10px;
+}
+
+.page-btn {
+  min-width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--accent);
+  background: #fffaf0;
+  color: var(--text);
+  cursor: pointer;
+  padding: 0 14px;
+}
+
+.page-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+@media (max-width: 1000px) {
+  .filters-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.main-content {
+  flex: 1;
+  padding: 0;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28px 40px;
+  background: #fffaf0;
+  border-bottom: 1px solid var(--accent);
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.topbar-left h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.topbar-left span {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.search-box {
+  position: relative;
+}
+
+.search-box span {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  color: var(--secondary);
+}
+
+.search-box input {
+  width: 340px;
+  padding: 14px 16px 14px 44px;
+  border-radius: 14px;
+  border: 1px solid var(--accent);
+  background: white;
+  outline: none;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 40px 20px;
+}
+
+.filters,
+.bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filters button,
+.bulk-actions button {
+  border: 1px solid var(--accent);
+  background: #fffaf0;
+  padding: 10px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.bulk-actions .danger {
+  color: var(--primary);
+}
+
+.inventory-card {
+  margin: 0 40px 40px;
+  background: #fffaf0;
+  border: 1px solid var(--accent);
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.inventory-card table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.inventory-card thead {
+  background: var(--accent);
+}
+
+.inventory-card th {
+  padding: 18px 20px;
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.inventory-card td {
+  padding: 20px;
+  border-top: 1px solid rgba(35, 61, 77, 0.08);
+}
+
+.inventory-card tbody tr:hover {
+  background: rgba(254, 194, 136, 0.2);
+}
+
+.book-cell {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.book-cell img {
+  width: 48px;
+  height: 68px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.book-cell h4 {
+  margin: 0 0 6px;
+}
+
+.book-cell p {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.shelf-tag {
+  display: inline-block;
+  background: var(--background);
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-badge.available {
+  background: var(--accent);
+  color: var(--text);
+}
+
+.status-badge.borrowed {
+  background: #ffe4d6;
+  color: var(--primary);
+}
+
+.more-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
+}

@@ -1,0 +1,194 @@
+
+:root {
+--primary: #FA5C5C;
+  --secondary: #FD8A6B;
+  --accent: #FEC288;
+  --background: #FBEF76;
+  --text: #233D4D;
+
+  --white: #ffffff;
+  --sidebar-width: 260px;
+  --topbar-height: 70px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+}
+
+.dashboard-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+.stat-card.active-stat {
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+}
+
+@media (max-width: 768px) {
+  .metrics-grid + div {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+.topbar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: calc(100% - var(--sidebar-width));
+  height: var(--topbar-height);
+  background: #FFF9E5;
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2.5rem;
+  z-index: 90;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.search-bar {
+  background: #f1f5f9;
+  padding: 0.6rem 1.2rem;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  width: 400px;
+}
+
+.search-bar input {
+  background: transparent;
+  border: none;
+  outline: none;
+  padding-left: 10px;
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+.main-content {
+  margin-left: var(--sidebar-width);
+  margin-top: var(--topbar-height);
+  padding: 2.5rem;
+  width: calc(100% - var(--sidebar-width));
+  background-color: #FFF9E5;
+}
+
+.hero-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 2.5rem;
+}
+
+.hero-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -1px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-card {
+  background: var(--white);
+  padding: 1.5rem;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 150px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.02);
+}
+
+.stat-card.alert {
+  background-color: #fff1f2;
+  border: 1px solid #fecdd3;
+}
+stat-card :hover {
+transform: translateY(-5px);}
+.stat-val {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-top: 5px;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 0.8rem 1.8rem;
+  border-radius: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--secondary);
+  border: 2px solid var(--secondary); 
+  padding: 0.7rem 1.7rem;
+}
+
+.btn-secondary:hover , .btn-primary:hover {
+  background-color: var(--secondary);
+  color: white;
+  transform: translateY(-2px);
+}
+.table-container { background: white; padding: 20px; border-radius: 12px; margin-bottom: 30px;    margin-top: 30px;
+ }
+.table-container table { width: 100%; border-collapse: collapse; }
+.table-container th, .table-container td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+.table-container th { font-weight: 700; color: #374151; }
+
+.top-books-card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 30px; }
+.top-books-card ul { list-style: none; padding: 0; margin: 0; }
+.top-books-card li { padding: 5px 0; }
+
+.content-layout {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr;
+  gap: 2rem;
+}
+
+.chart-container, .activity-card {
+  background: var(--white);
+  padding: 2rem;
+  border-radius: 24px;
+box-shadow: 0 10px 25px rgba(165, 95, 0, 0.05); }
+
+.fab {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  width: 60px;
+  height: 60px;
+  background-color: var(--accent);
+  border-radius: 20px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 15px 30px rgba(199, 139, 184, 0.4);
+  cursor: pointer;
+  border: none;
+  z-index: 1000;
+}
