@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:library_mobile_app/feature/presentation/tabs_screen.dart';
+import 'package:library_mobile_app/feature/presentation/tab_screen.dart';
 
 class Splashscreen extends StatefulWidget {
   const Splashscreen({super.key});
@@ -21,7 +21,7 @@ class _SplashscreenState extends State<Splashscreen> {
               onComplete: (v) {
                 Navigator.push(
                   context,
-                  CupertinoPageRoute(builder: (context) => TabsScreen()),
+                  CupertinoPageRoute(builder: (context) => TabScreen()),
                 );
               },
             )
