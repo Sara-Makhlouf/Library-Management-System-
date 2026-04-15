@@ -1,8 +1,8 @@
 import React from 'react';
-import LibraryInventoryPage from './JS/LibraryInventorPage';
+import AnalyistPage from './JS/AnalyistPage';
 function App() {
   return (
-  <LibraryInventoryPage/>
+  <AnalyistPage/>
   );
 }
 

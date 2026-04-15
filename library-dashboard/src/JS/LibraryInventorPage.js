@@ -70,9 +70,9 @@ export default function LibraryInventoryPage() {
   ]);
     const [currentPage, setCurrentPage] = useState(1);
 const booksPerPage = 7;
-const indexOfLastBook = currentPage * booksPerPage;
-const indexOfFirstBook = indexOfLastBook - booksPerPage;
-const currentBooks = books.slice(indexOfFirstBook, indexOfLastBook);
+//const indexOfLastBook = currentPage * booksPerPage;
+//const indexOfFirstBook = indexOfLastBook - booksPerPage;
+//const currentBooks = books.slice(indexOfFirstBook, indexOfLastBook);
 
 const totalPages = Math.ceil(books.length / booksPerPage); 
   const [showAddPage, setShowAddPage] = useState(false);

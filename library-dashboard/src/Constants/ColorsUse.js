@@ -3,7 +3,7 @@ export const COLORS = {
   Secondary:  '#FD8A6B',
   Accent:   '  #FEC288',
   Background:" #FBEF76",
-  Text:       '#233D4D'   // ← text
+  Text:       '#233D4D'   
 }; 
 /*  export const COLORS = {
   Primary:'   #3F9AAE ',
