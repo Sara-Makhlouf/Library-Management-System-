@@ -1,8 +1,8 @@
 import React from 'react';
-import AnalyistPage from './JS/AnalyistPage';
+import Settings from './JS/Setting';
 function App() {
   return (
-  <AnalyistPage/>
+  <Settings/>
   );
 }
 
