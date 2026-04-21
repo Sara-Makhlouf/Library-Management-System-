@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:library_mobile_app/feature/presentation/profile.dart';
 import 'package:library_mobile_app/feature/presentation/splash_screen.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +19,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: Splashscreen(),
+      home: Profile(),
     );
   }
 }
