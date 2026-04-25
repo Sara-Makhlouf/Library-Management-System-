@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { COLORS } from "../Constants/ColorsUse";
+import '../CSS/Variables.css';
+
 import {
   CheckCircle,
   AlertTriangle,

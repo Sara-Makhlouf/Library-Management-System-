@@ -1,9 +1,16 @@
 import React from 'react';
-import Settings from './JS/Setting';
+import { Toaster } from "react-hot-toast";
+import AppRouter from './Constants/AppRouter.jsx';
 function App() {
-  return (
-  <Settings/>
-  );
+
+return (
+<>
+  <AppRouter />
+<Toaster position="top-right" />
+
+</>
+
+);
 }
 
 export default App;

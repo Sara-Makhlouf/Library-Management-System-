@@ -3,9 +3,11 @@ import {
   XAxis, YAxis, Tooltip,
   CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area
 } from "recharts";
+import Sidebar from '../Components/SideBar';
+
 import { Users, BookOpen, Clock, TrendingUp, Download, Filter } from "lucide-react";
 import "../CSS/AnalyistPage.css";
-
+import '../CSS/Variables.css';
 const data = [
   { month: "Jan", borrows: 120, returns: 100 },
   { month: "Feb", borrows: 210, returns: 150 },
@@ -22,14 +24,19 @@ const categories = [
   { name: "Tech", value: 278 },
 ];
 
-const COLORS = ["#FA5C5C", "#FD8A6B", "#FEC288", "#233D4D"];
+const COLORS = [  "#B8A068",
+  "rgb(189, 170, 127)",
+  "#D8C8A8",
+  "rgb(234, 226, 218)"];
 
 export default function AnalyistPage() {
   const [timeFrame, setTimeFrame] = useState("Last 6 Months");
 
   return (
     <div className="analytics-container">
-      <header className="analytics-header">
+      <Sidebar/>
+      <div className="analytics-content">
+ <header className="analytics-header">
         <div className="title-area">
           <h1>Library Intelligence</h1>
           <p>Real-time data insights & book circulation metrics</p>
@@ -62,7 +69,7 @@ export default function AnalyistPage() {
       </div>
 
       <div className="main-grid">
-        <div className="chart-card main-chart">
+           <div className="chart-card main-chart">
           <div className="card-info">
             <h3>Borrowing vs Returns</h3>
             <span>Comparison of activity flow</span>
@@ -71,15 +78,15 @@ export default function AnalyistPage() {
             <AreaChart data={data}>
               <defs>
                 <linearGradient id="colorBorrows" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#FA5C5C" stopOpacity={0.1}/>
-                  <stop offset="95%" stopColor="#FA5C5C" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#B8A068" stopOpacity={0.1}/>
+                  <stop offset="95%" stopColor="#B8A068" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
               <XAxis dataKey="month" axisLine={false} tickLine={false} />
               <YAxis axisLine={false} tickLine={false} />
               <Tooltip />
-              <Area type="monotone" dataKey="borrows" stroke="#FA5C5C" fillOpacity={1} fill="url(#colorBorrows)" strokeWidth={3} />
+              <Area type="monotone" dataKey="borrows" stroke="#B8A068" fillOpacity={1} fill="url(#colorBorrows)" strokeWidth={3} />
               <Area type="monotone" dataKey="returns" stroke="#233D4D" fill="transparent" strokeWidth={2} strokeDasharray="5 5" />
             </AreaChart>
           </ResponsiveContainer>
@@ -122,6 +129,9 @@ export default function AnalyistPage() {
             ))}
           </div>
         </div>
+      </div>
+     
+     
       </div>
     </div>
   );

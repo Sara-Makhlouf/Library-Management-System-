@@ -1,6 +1,7 @@
 import React from 'react';
 import { COLORS } from '../Constants/ColorsUse';
 import '../CSS/DashBoard.css';
+import '../CSS/Variables.css';
 import { useState,useEffect } from 'react';
 import { ResponsiveContainer,AreaChart,
   Area,
@@ -12,7 +13,6 @@ import { ResponsiveContainer,AreaChart,
 import Sidebar from '../Components/SideBar';
 const DashBoard = () => {
    const [, setActivities] = useState([]);
-  const [loading, setLoading] = useState(true);
   const topBooks = [
     { title: 'The Alchemist', borrows: 128 },
     { title: 'Atomic Habits', borrows: 96 },
@@ -35,14 +35,12 @@ const DashBoard = () => {
 ];
  
   useEffect(() => {
-    setTimeout(() => {
       setActivities([
         { title: 'The Great Gatsby', action: 'Returned by Marcus Vane', type: 'return' },
         { title: '1984', action: 'Borrowed by Lina Ahmed', type: 'borrow' },
         { title: 'Clean Code', action: 'Overdue for 3 days', type: 'overdue' },
       ]);
-      setLoading(false);
-    }, 1000);
+    
   }, []);
 const metricData = [
   {
@@ -97,7 +95,6 @@ const pieColors = [
   selectedMetric.color,
   '#e5e7eb',
 ];
-  if (loading) return <div className="loader">Loading dashboard...</div>;
   return (
     <div className="dashboard-wrapper"
    

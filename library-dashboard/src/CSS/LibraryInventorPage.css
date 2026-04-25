@@ -1,13 +1,7 @@
 .library-layout {
-  --primary: #fa5c5c;
-  --secondary: #fd8a6b;
-  --accent: #fec288;
-  --background: #fbef76;
-  --text: #233d4d;
-
+ 
   display: flex;
   min-height: 100vh;
-  background: var(--background);
   color: var(--text);
   font-family: "Inter", sans-serif;
 }
@@ -179,7 +173,7 @@
 
 .add-floating-btn {
     transition: all 0.28s ease;
-    border: solid 5px #fd8a6b;
+    border: solid 5px #e5bd58;
     border-radius: 15px;
     display: flex;
     align-items: center;

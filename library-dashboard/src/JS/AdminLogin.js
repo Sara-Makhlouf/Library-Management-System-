@@ -2,15 +2,20 @@ import React, { useState, } from "react";
 import "../CSS/AdminLogin.css";
 import { COLORS } from "../Constants/ColorsUse";
 import LanguageIcon from '@mui/icons-material/Language';
-import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import PhoneIphoneIcon  from "@mui/icons-material/PhoneIphone";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-
+import '../CSS/Variables.css';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 export default function AdminLoginPage() {
   const [isRTL, setIsRTL] = useState(false);
   const [step, setStep] = useState("login");
-
+  const [showPassword, setShowPassword] = useState(false);
   const toggleLanguage = () => setIsRTL(!isRTL);
-
+  const togglePassword = () => setShowPassword(!showPassword);
+const navigate=useNavigate();
   return (
     
     <div className="login-wrapper" dir={isRTL ? "rtl" : "ltr"}>
@@ -19,13 +24,8 @@ export default function AdminLoginPage() {
       <div className="glass-orb orb-accent" style={{ backgroundColor: COLORS.Accent }}></div>
 
       <div className="main-card">
-        <div className="side-info" style={{ backgroundColor: COLORS.Primary }}>
-          <div className="brand-section">
-            <div  className="logo-box" style={{ background: 'white', padding: '2px', borderRadius: '12px' }}>
-              <img src="/3.png" className="app-logo" alt="logo" />
-            </div>
-            <h2 className="brand-name">{isRTL ? "لوحة التحكم" : "Library Panel"}<span style={{ color: COLORS.Secondary }}></span></h2>
-          </div>
+        <div className="side-info"style={{ backgroundImage: "url('/ClassicalLibrary.png')" }}>
+         
 <div className="welcome-content">
   <h1 className="hero-title">
     {isRTL ? "محراب" : "Sanctuary"}<br />
@@ -69,38 +69,69 @@ export default function AdminLoginPage() {
                 </p>
                 
                 <form onSubmit={(e) => { e.preventDefault(); setStep("2fa"); }}>
+                 {/* PHONE */}
                   <div className="input-group">
-<label className="input-label" style={{ color: COLORS.Primary }}>
-  {isRTL ? (
-    <>
-      <EmailOutlinedIcon className="label-icon" />
-      البريد المهني
-    </>
-  ) : (
-    <>
-      <EmailOutlinedIcon className="label-icon" />
-      Work Email
-    </>
-  )}
-</label>                    <input type="email" placeholder="name@company.com" className="custom-input" required />
+                    <label className="input-label" style={{ color: COLORS.Primary }}>
+                      <PhoneIphoneIcon className="label-icon" />
+                      {isRTL ? "رقم الهاتف" : "Phone Number"}
+                    </label>
+
+                    <input
+                      type="tel"
+                      placeholder="+31 6 12345678"
+                      className="custom-input"
+                      required
+                    />
                   </div>
+
+                  {/* PASSWORD */}
                   <div className="input-group">
-<label className="input-label" style={{ color: COLORS.Primary }}>
-  {isRTL ? (
-    <>
-      <LockOutlinedIcon className="label-icon" />
-      كلمة المرور
-    </>
-  ) : (
-    <>
-      <LockOutlinedIcon className="label-icon" />
-      Password
-    </>
-  )}
-</label>                    <input type="password" placeholder="••••••••" className="custom-input" required />
+                    <label className="input-label" style={{ color: COLORS.Primary }}>
+                      <LockOutlinedIcon className="label-icon" />
+                      {isRTL ? "كلمة المرور" : "Password"}
+                    </label>
+
+                    <div style={{ position: "relative" }}>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        className="custom-input"
+                        required
+                      />
+
+                      <span className="eye-icon "
+                        onClick={togglePassword}
+                        style={{
+                          position: "absolute",
+                          right: "12px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          cursor: "pointer",
+                          color: "#64748b"
+                        }}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </span>
+                    </div>
+
+                    {/* FORGOT PASSWORD */}
+                    <div style={{ textAlign: "right", marginTop: "8px" }}>
+                      <span
+                        style={{
+                          fontSize: "0.85rem",
+                          color: COLORS.Secondary,
+                          cursor: "pointer",
+                          fontWeight: 600
+                        }}
+                        onClick={() =>  toast.success("Login successful")}
+                      >
+                        {isRTL ? "نسيت كلمة المرور؟" : "Forgot password?"}
+                      </span>
+                    </div>
                   </div>
-                  
-                  <button type="submit" className="btn-main" style={{ backgroundColor: COLORS.Primary }}>
+
+                
+                  <button onClick={(e) => { e.preventDefault(); navigate("/dashboard"); }} className="btn-main" style={{ backgroundColor: COLORS.Primary }}>
                     {isRTL ? "دخول النظام" : "Access System"}
                   </button>
                 </form>

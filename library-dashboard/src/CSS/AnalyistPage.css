@@ -1,16 +1,11 @@
-:root {
-  --primary: #FA5C5C;
-  --secondary: #FD8A6B;
-  --accent: #FEC288;
-  --bg: #f8fafc;
-  --text: #233D4D;
-  --white: #ffffff;
-}
 
 .analytics-container {
-  padding: 30px;
-  background-color: var(--bg);
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--background);
   color: var(--text);
+      padding-left: 272px;
+
 }
 
 .analytics-header {
@@ -34,12 +29,15 @@
   gap: 8px;
   border: 1px solid #e2e8f0;
 }
-
+.analytics-content {
+  flex: 1;
+  padding: 30px;
+}
 .filter-dropdown select { border: none; outline: none; background: transparent; font-weight: 600; }
 
 .export-btn {
   background: var(--text);
-  color: white;
+  color: #B8A068;
   border: none;
   padding: 10px 18px;
   border-radius: 8px;

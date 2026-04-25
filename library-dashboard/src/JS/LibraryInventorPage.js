@@ -1,8 +1,9 @@
 
 import "../CSS/LibraryInventorPage.css";
 import Sidebar from "../Components/SideBar";
-import { COLORS } from "../Constants/ColorsUse";
 import { useState } from "react";
+import '../CSS/Variables.css';
+
 import AddNewBook from "./AddNewBook";
 export default function LibraryInventoryPage() {
   const [books, setBooks] = useState([
@@ -93,11 +94,7 @@ const totalPages = Math.ceil(books.length / booksPerPage);
     <div
       className="library-layout"
       style={{
-        "--primary": COLORS.Primary,
-        "--secondary": COLORS.Secondary,
-        "--accent": COLORS.Accent,
-        "--background": COLORS.Background,
-        "--text": COLORS.Text,
+      
        display: "flex", 
     minHeight: "100vh"
           

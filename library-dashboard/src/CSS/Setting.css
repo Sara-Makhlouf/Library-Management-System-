@@ -1,10 +1,5 @@
 :root {
-  --primary: #FA5C5C;
-  --secondary: #FD8A6B;
-  --accent: #FEC288;
-  --background: #FBEF76;
-  --text: #233D4D;
-  --white: #ffffff;
+
   --glass: rgba(255, 255, 255, 0.8);
   --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
   --shadow-md: 0 10px 25px rgba(0,0,0,0.08);

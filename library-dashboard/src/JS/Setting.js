@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../Components/SideBar';
+import '../CSS/Variables.css';
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { 

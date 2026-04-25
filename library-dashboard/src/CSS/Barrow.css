@@ -1,0 +1,197 @@
+:root {
+ 
+  --shadow-subtle: 0 8px 30px rgba(0, 0, 0, 0.04);
+  --shadow-hover: 0 15px 45px rgba(250, 92, 92, 0.15);
+  --radius-lg: 32px;
+  --radius-md: 18px;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-container {
+  padding: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: slideUp 0.6s ease-out;
+
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid rgba(0,0,0,0.03);
+}
+
+.page-header h1 {
+  font-size: 2.4rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  color:rgb(96, 82, 50);
+  margin: 0;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #B8A068,rgb(189, 170, 127));
+  color: white;
+  padding: 14px 28px;
+  border-radius: var(--radius-md);
+  border: none;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 10px 20px rgba(250, 92, 92, 0.2);
+}
+
+.primary-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+  filter: brightness(1.05);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+.mini-stat {
+  background: var(--white);
+  padding: 25px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-subtle);
+  border: 1px solid rgba(0,0,0,0.02);
+  transition: var(--transition);
+}
+
+.mini-stat:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent);
+}
+
+.mini-stat h4 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  color: rgb(96, 82, 50);
+  opacity: 0.5;
+  margin-bottom: 10px;
+}
+
+.mini-stat span {
+  font-size: 2rem;
+  font-weight: 800;
+  color:#B8A068;
+}
+
+.table-container {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 30px;
+  box-shadow: var(--shadow-subtle);
+  border: 1px solid rgba(0,0,0,0.01);
+}
+
+.custom-table {
+  width: 100%;
+  border-spacing: 0 10px;
+  border-collapse: separate;
+}
+
+.custom-table th {
+  padding: 15px 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+}
+
+.custom-table tbody tr {
+  background: var(--white);
+  transition: var(--transition);
+}
+
+.custom-table tbody tr td {
+  padding: 20px;
+  border-top: 1px solid #f8f9fa;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.custom-table tbody tr td:first-child { border-left: 1px solid #f8f9fa; border-radius: 18px 0 0 18px; }
+.custom-table tbody tr td:last-child { border-right: 1px solid #f8f9fa; border-radius: 0 18px 18px 0; }
+
+.custom-table tbody tr:hover {
+  background: #fffcf0;
+  transform: scale(1.01);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+}
+
+.circulation-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.circulation-card {
+  background: var(--white);
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-subtle);
+  position: relative;
+  overflow: hidden;
+}
+
+.circulation-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 6px; height: 100%;
+  background: #B8A068;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 16px 20px;
+  background: #fdfdfd;
+  border: 2px solid #f1f1f1;
+  border-radius: 14px;
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+.input-group input:focus {
+  border-color: rgb(189, 170, 127);
+  background: var(--white);
+  box-shadow: 0 0 0 5px rgba(253, 138, 107, 0.1);
+  outline: none;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 18px;
+  margin-bottom: 15px;
+  background: #fff;
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background:#B8A068 }
+::-webkit-scrollbar-thumb {
+  background:#B8A068;
+  border-radius: 10px;
+  border: 2px solid rgb(234, 226, 218);
+}

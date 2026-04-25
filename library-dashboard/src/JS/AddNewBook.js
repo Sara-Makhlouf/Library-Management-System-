@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../CSS/AddNewBook.css";
+import '../CSS/Variables.css';
 
 export default function AddBookPage({ onClose, onAdd }) {
   const [book, setBook] = useState({

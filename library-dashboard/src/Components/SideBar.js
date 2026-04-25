@@ -1,6 +1,8 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { COLORS } from "../Constants/ColorsUse";
-import '../CSS/SideBar.css';
+import "../CSS/SideBar.css";
+import "../CSS/Variables.css";
+
 export default function Sidebar() {
   return (
     <aside className="sidebar">
@@ -19,52 +21,63 @@ export default function Sidebar() {
       </div>
 
       <nav className="nav-links">
-        <Link to="/dashboard" className="nav-item active">
+
+        <NavLink to="/dashboard" className="nav-item" end>
           <span className="material-symbols-outlined">dashboard</span>
           Dashboard
-        </Link>
+        </NavLink>
 
-        <Link to="/inventor" className="nav-item">
+        <NavLink to="/inventory" className="nav-item" end>
           <span className="material-symbols-outlined">menu_book</span>
           Book Inventory
-        </Link>
-       
-         <Link to="/users" className="nav-item">
+        </NavLink>
+
+        <NavLink to="/users" className="nav-item" end>
           <span className="material-symbols-outlined">person</span>
           Users
-        </Link>
-         <Link to="/reports" className="nav-item">
-          <span className="material-symbols-outlined">report</span>
-         Reports
-        </Link>
+        </NavLink>
 
-         <Link to="/notification" className="nav-item">
-  <span className="material-symbols-outlined">notifications</span>
-  Notification
-</Link>
-<Link to="/circulation" className="nav-item">
-  <span className="material-symbols-outlined">sync_alt</span>
-  Circulations
-</Link>
-        <Link to="/finances" className="nav-item">
-            <span className="material-symbols-outlined">payments</span>
-            Finances</Link>
-              <Link to="/archives" className="nav-item">
-            <span className="material-symbols-outlined">archives</span>
-            Archives</Link>
-             <Link to="/actions" className="nav-item">
-            <span className="material-symbols-outlined">manage_search</span>
-            Actions</Link>
-<Link to="/settings" className="nav-item">
-  <span className="material-symbols-outlined">settings</span>
-  Settings
-</Link>
+        <NavLink to="/analytics" className="nav-item" end>
+          <span className="material-symbols-outlined">analytics</span>
+          Analytics
+        </NavLink>
+
+        <NavLink to="/actions" className="nav-item" end>
+          <span className="material-symbols-outlined">manage_search</span>
+          Actions
+        </NavLink>
+
+
+        <NavLink to="/circulation" className="nav-item" end>
+          <span className="material-symbols-outlined">sync_alt</span>
+          Circulation
+        </NavLink>
+
+        <NavLink to="/finance" className="nav-item" end>
+          <span className="material-symbols-outlined">payments</span>
+          Finances
+        </NavLink>
+
+        <NavLink to="/archives" className="nav-item" end>
+          <span className="material-symbols-outlined">archive</span>
+          Archives
+        </NavLink>
+
+        <NavLink to="/notifications" className="nav-item" end>
+          <span className="material-symbols-outlined">notifications</span>
+          Notifications
+        </NavLink>
+
+        <NavLink to="/settings" className="nav-item" end>
+          <span className="material-symbols-outlined">settings</span>
+          Settings
+        </NavLink>
 
       </nav>
 
       <div className="sidebar-profile">
         <div className="avatar">
-          <img src="/avatar.jpg" alt="Female Avatar" />
+          <img src="/avatar.jpg" alt="Admin Avatar" />
         </div>
 
         <div className="profile-info">
