@@ -24,7 +24,10 @@ const navigate=useNavigate();
       <div className="glass-orb orb-accent" style={{ backgroundColor: COLORS.Accent }}></div>
 
       <div className="main-card">
-        <div className="side-info"style={{ backgroundImage: "url('/ClassicalLibrary.png')" }}>
+        <div className="side-info"style={{ backgroundImage: "url('/ClassicalLibrary.png')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat" }}>
          
 <div className="welcome-content">
   <h1 className="hero-title">
@@ -50,7 +53,7 @@ const navigate=useNavigate();
           </div>
         </div>
 
-        <div className="form-section">
+        <div className="form-section" style={{backgroundImage: "url('/ClassicalLibrary.png')"}}>
           <button onClick={toggleLanguage} className="lang-switcher" style={{ color: COLORS.Primary }}>
            <>
   <LanguageIcon style={{ fontSize: "1.1rem" }} />
@@ -58,7 +61,7 @@ const navigate=useNavigate();
 </>
           </button>
 
-          <div className="form-container">
+          <div className="form-container glass-form">
             {step === "login" ? (
               <div className="fade-in">
                 <h2 className="form-title" style={{ color: COLORS.Primary }}>
@@ -68,8 +71,7 @@ const navigate=useNavigate();
                   {isRTL ? "الرجاء إدخال بيانات الاعتماد للوصول" : "Please enter your credentials to proceed"}
                 </p>
                 
-                <form onSubmit={(e) => { e.preventDefault(); setStep("2fa"); }}>
-                 {/* PHONE */}
+                <form >
                   <div className="input-group">
                     <label className="input-label" style={{ color: COLORS.Primary }}>
                       <PhoneIphoneIcon className="label-icon" />
@@ -84,7 +86,6 @@ const navigate=useNavigate();
                     />
                   </div>
 
-                  {/* PASSWORD */}
                   <div className="input-group">
                     <label className="input-label" style={{ color: COLORS.Primary }}>
                       <LockOutlinedIcon className="label-icon" />
@@ -114,7 +115,6 @@ const navigate=useNavigate();
                       </span>
                     </div>
 
-                    {/* FORGOT PASSWORD */}
                     <div style={{ textAlign: "right", marginTop: "8px" }}>
                       <span
                         style={{

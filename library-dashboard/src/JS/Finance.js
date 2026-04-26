@@ -1,13 +1,11 @@
 import React from 'react';
 import {  TrendingUp, AlertCircle, Download } from 'lucide-react';
 import '../CSS/Finance.css';
-import Sidebar from '../Components/SideBar';
 import '../CSS/Variables.css';
 
 export default function FinancePage() {
   return (
     <div className="page-container">
-        <Sidebar/>
         <div  className='page-content'>
            <header className="page-header">
         <div>

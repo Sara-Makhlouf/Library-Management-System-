@@ -13,7 +13,6 @@ import {
   Bell,
 } from "lucide-react";
 import "../CSS/Notification.css";
-import Sidebar from "../Components/SideBar";
 import '../CSS/SideBar.css';
 export default function NotificationsPage() {
   const [filter, setFilter] = useState("all");
@@ -105,7 +104,6 @@ export default function NotificationsPage() {
          marginLeft:"260px"
       }}
     >
-      <Sidebar />
 
       <div style={{ flex: 1, padding: "30px" }}>
         <div

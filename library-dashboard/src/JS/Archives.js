@@ -3,11 +3,9 @@ import { Archive,  History, Search } from 'lucide-react';
 import '../CSS/Finance.css';
 import '../CSS/Variables.css';
 
-import Sidebar from '../Components/SideBar';
 export default function ArchivesPage() {
   return (
    <div className="page-container">
-  <Sidebar/>
 
   <div className="page-content">
     <header className="page-header">

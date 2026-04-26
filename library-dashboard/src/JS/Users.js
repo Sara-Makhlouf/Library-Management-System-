@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, UserPlus, MoreVertical,} from 'lucide-react';
 import '../CSS/Barrow.css';
-import Sidebar from '../Components/SideBar';
 import '../CSS/Variables.css';
 export default function UsersPage() {
   const [users] = useState([
@@ -23,7 +22,6 @@ export default function UsersPage() {
   return (
     <div className="page-container">
       
-        <Sidebar/>
       <header className="page-header">
         <div>
           <h1>User Directory</h1>

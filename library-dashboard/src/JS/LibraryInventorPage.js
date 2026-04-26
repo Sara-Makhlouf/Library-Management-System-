@@ -1,6 +1,5 @@
 
 import "../CSS/LibraryInventorPage.css";
-import Sidebar from "../Components/SideBar";
 import { useState } from "react";
 import '../CSS/Variables.css';
 
@@ -101,7 +100,6 @@ const totalPages = Math.ceil(books.length / booksPerPage);
       }}
     >
       
-<Sidebar/>
       <main className="main-content" >
        
         <header className="topbar compact">

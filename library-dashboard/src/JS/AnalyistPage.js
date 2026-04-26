@@ -3,7 +3,6 @@ import {
   XAxis, YAxis, Tooltip,
   CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area
 } from "recharts";
-import Sidebar from '../Components/SideBar';
 
 import { Users, BookOpen, Clock, TrendingUp, Download, Filter } from "lucide-react";
 import "../CSS/AnalyistPage.css";
@@ -34,7 +33,6 @@ export default function AnalyistPage() {
 
   return (
     <div className="analytics-container">
-      <Sidebar/>
       <div className="analytics-content">
  <header className="analytics-header">
         <div className="title-area">
@@ -59,7 +57,7 @@ export default function AnalyistPage() {
       </header>
 {/**بهي الصفحة بقدر دخل الai 
  * فيني توصيات + لازم لاقيلا مكان تاني
- * 
+ * تسعين بالمية نلغيه❤️❤️❤️❤️❤️
  */}
       <div className="stats-grid">
         <StatCard title="Total Borrows" value="1,340" trend="+12.5%" icon={<BookOpen color="#FA5C5C"/>} />

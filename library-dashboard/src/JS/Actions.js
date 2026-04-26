@@ -1,13 +1,11 @@
 import React from 'react';
 import { UploadCloud, RefreshCw} from 'lucide-react';
 import '../CSS/Finance.css';
-import Sidebar from '../Components/SideBar';
 import '../CSS/Variables.css';
 
 export default function ActionsPage() {
   return (
     <div className="page-container">
-        <Sidebar/>
       <header className="page-header"
       
       >

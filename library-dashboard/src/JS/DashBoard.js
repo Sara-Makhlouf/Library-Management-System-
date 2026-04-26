@@ -10,7 +10,6 @@ import { ResponsiveContainer,AreaChart,
   CartesianGrid,
   Tooltip,
   } from 'recharts';
-import Sidebar from '../Components/SideBar';
 const DashBoard = () => {
    const [, setActivities] = useState([]);
   const topBooks = [
@@ -99,7 +98,6 @@ const pieColors = [
     <div className="dashboard-wrapper"
    
     >
-  <Sidebar/>
 
       <header className="topbar">
         <div className="search-bar">
@@ -315,6 +313,7 @@ const pieColors = [
                 <th>Book</th>
                 <th>Member</th>
                 <th>Days Late</th>
+                
               </tr>
             </thead>
             <tbody>

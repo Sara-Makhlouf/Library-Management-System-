@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../Components/SideBar';
 import '../CSS/Variables.css';
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -50,7 +49,6 @@ export default function LibrarySettings() {
 
   return (
     <div className={`settings-wrapper ${language === 'ar' ? 'rtl' : 'ltr'}`}>
-                <Sidebar/>
 
       <div className="settings-container">
         <aside className="settings-sidebar">

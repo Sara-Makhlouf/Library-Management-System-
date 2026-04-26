@@ -1,5 +1,5 @@
 .notifications-page {
-  display: flex;          /* مهم عشان Sidebar جنب المحتوى */
+  display: flex;         
   min-height: 100vh;
   padding: 2rem;
   font-family: 'Inter', sans-serif;

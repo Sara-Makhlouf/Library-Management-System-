@@ -1,13 +1,11 @@
 import React from 'react';
 import { BookOpen, UserCheck, Calendar as CalendarIcon, ArrowRightLeft } from 'lucide-react';
 import '../CSS/Barrow.css';
-import Sidebar from '../Components/SideBar';
 import '../CSS/Variables.css';
 
 export default function CirculationPage() {
   return (
     <div className="page-container">
-        <Sidebar/>
       <header className="page-header">
         <h1>Book Circulation</h1>
         <p>Issue or Return books instantly</p>
@@ -36,7 +34,6 @@ export default function CirculationPage() {
           </div>
         </section>
 
-        {/* Quick Stats / Recent Activity */}
         <section className="recent-activity">
           <h3>Recent Transactions</h3>
           <div className="activity-list">
