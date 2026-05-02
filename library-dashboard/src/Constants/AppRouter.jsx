@@ -1,5 +1,5 @@
 import {  Routes, Route } from "react-router-dom";
-import AdminLoginPage from "../JS/AdminLogin";
+import AdminLoginPage from "../pages/AdminLogin";
 import Dashboard from "../JS/DashBoard";
 import UsersPage from "../JS/Users";
 import ActionsPage from "../JS/Actions";
