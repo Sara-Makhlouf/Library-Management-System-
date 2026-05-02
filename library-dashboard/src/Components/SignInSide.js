@@ -1,62 +1,85 @@
-import CssBaseline from '@mui/material/CssBaseline';
-import Stack from '@mui/material/Stack';
-import AppTheme from '../shared-theme/AppTheme';
-import ColorModeSelect from '../shared-theme/ColorModeSelect';
-import SignInCard from '../Components/SignInCard';
-import Content from '../Components/Content';
+import CssBaseline from "@mui/material/CssBaseline";
+import Stack from "@mui/material/Stack";
+import AppTheme from "../shared-theme/AppTheme";
+import ColorModeSelect from "../shared-theme/ColorModeSelect";
+import SignInCard from "../Components/SignInCard";
+import Content from "../Components/Content";
 
 export default function SignInSide(props) {
   return (
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
-      <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
+
+      <ColorModeSelect
+        sx={{
+          position: "fixed",
+          top: "1rem",
+          right: "1rem",
+          zIndex: 10,
+        }}
+      />
+
       <Stack
-        direction="column"
         component="main"
-        sx={[
-          {
-            justifyContent: 'center',
-            height: 'calc((1 - var(--template-frame-height, 0)) * 100%)',
-            marginTop: 'max(40px - var(--template-frame-height, 0px), 0px)',
-            minHeight: '100%',
+        sx={{
+          minHeight: "100vh",
+          position: "relative",
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(circle at 20% 20%, #4facfe33, transparent 40%)," +
+              "radial-gradient(circle at 80% 80%, #00f2fe33, transparent 40%)," +
+              "linear-gradient(135deg, #0f172a, #1e293b)",
+            zIndex: -1,
           },
-          (theme) => ({
-            '&::before': {
-              content: '""',
-              display: 'block',
-              position: 'absolute',
-              zIndex: -1,
-              inset: 0,
-              backgroundImage:
-                'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
-              backgroundRepeat: 'no-repeat',
-              ...theme.applyStyles('dark', {
-                backgroundImage:
-                  'radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))',
-              }),
-            },
-          }),
-        ]}
+        }}
       >
+        {/* Container */}
         <Stack
-          direction={{ xs: 'column-reverse', md: 'row' }}
+          direction={{ xs: "column", md: "row" }}
           sx={{
-            justifyContent: 'center',
-            gap: { xs: 6, sm: 12 },
-            p: 2,
-            mx: 'auto',
+            width: "100%",
+            maxWidth: "1100px",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: { xs: 25, md: 30 },
+            px: 3,
+            py: 6,
           }}
         >
+          {/* Left side - Content */}
           <Stack
-            direction={{ xs: 'column-reverse', md: 'row' }}
             sx={{
-              justifyContent: 'center',
-              gap: { xs: 6, sm: 12 },
-              p: { xs: 2, sm: 4 },
-              m: 'auto',
+              flex: 1,
+              color: "#fff",
+              textAlign: { xs: "center", md: "left" },
+              animation: "fadeIn 0.8s ease",
+              "@keyframes fadeIn": {
+                from: { opacity: 0, transform: "translateY(20px)" },
+                to: { opacity: 1, transform: "translateY(0)" },
+              },
             }}
           >
             <Content />
+          </Stack>
+
+          {/* Right side - Login */}
+          <Stack
+            sx={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              animation: "fadeIn 1s ease",
+            }}
+          >
             <SignInCard />
           </Stack>
         </Stack>

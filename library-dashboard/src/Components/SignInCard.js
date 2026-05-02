@@ -1,254 +1,198 @@
 import * as React from "react";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import MuiCard from "@mui/material/Card";
-import Checkbox from "@mui/material/Checkbox";
-import Divider from "@mui/material/Divider";
-import FormLabel from "@mui/material/FormLabel";
-import FormControl from "@mui/material/FormControl";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Link from "@mui/material/Link";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-import { styled } from "@mui/material/styles";
+import {
+  Box,
+  Button,
+  Card,
+  Checkbox,
+  Divider,
+  FormLabel,
+  FormControl,
+  FormControlLabel,
+  Link,
+  TextField,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
+
 import ForgotPassword from "../Components/ForgetPassword";
 import { useAuth } from "../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import {
   GoogleIcon,
   FacebookIcon,
-  SitemarkIcon,
 } from "../Components/Cunstom";
 
-const Card = styled(MuiCard)(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  width: "100%",
-  padding: theme.spacing(4),
-  gap: theme.spacing(2),
-  borderRadius: 16,
-
-  background: "rgba(255,255,255,0.85)",
-  backdropFilter: "blur(12px)",
-
-  boxShadow: "0 20px 50px rgba(0,0,0,0.2)",
-
-  [theme.breakpoints.up("sm")]: {
-    width: "450px",
-  },
-}));
-
 export default function SignInCard() {
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState("");
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] =
-    React.useState("");
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const [form, setForm] = React.useState({
+    email: "",
+    password: "",
+  });
+
+  const [errors, setErrors] = React.useState({});
+  const [loading, setLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
 
-  const handleClickOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-const { login } = useAuth();
-const navigate = useNavigate();
-// handl with login api form //
-const handleSubmit = async (event) => {
-  event.preventDefault();
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-  if (!validateInputs()) return;
+  const validate = () => {
+    let temp = {};
 
-  const data = new FormData(event.currentTarget);
-
-  try {
-    await login(data.get("email"), data.get("password"));
-
-    navigate("/dashboard"); // بعد النجاح
-
-  } catch (err) {
-    setEmailError(true);
-    setPasswordError(true);
-    setPasswordErrorMessage(
-      err.response?.data?.message || "Login failed"
-    );
-  }
-};
-
-  const validateInputs = () => {
-    const email = document.getElementById("email");
-    const password = document.getElementById("password");
-
-    let isValid = true;
-
-    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
-      setEmailError(true);
-      setEmailErrorMessage("Please enter a valid email address.");
-      isValid = false;
-    } else {
-      setEmailError(false);
-      setEmailErrorMessage("");
+    if (!/\S+@\S+\.\S+/.test(form.email)) {
+      temp.email = "Invalid email";
     }
 
-    if (!password.value || password.value.length < 6) {
-      setPasswordError(true);
-      setPasswordErrorMessage(
-        "Password must be at least 6 characters long."
-      );
-      isValid = false;
-    } else {
-      setPasswordError(false);
-      setPasswordErrorMessage("");
+    if (form.password.length < 6) {
+      temp.password = "Min 6 characters";
     }
 
-    return isValid;
+    setErrors(temp);
+    return Object.keys(temp).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validate()) return;
+
+    try {
+      setLoading(true);
+
+      await login(form.email, form.password);
+
+      navigate("/dashboard");
+    } catch (err) {
+      setErrors({
+        password:
+          err.response?.data?.message || "Login failed",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Box
       sx={{
-        height: "340px",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-
-        position: "relative",
       }}
     >
-      {/* overlay */}
-      <Box
+      <Card
         sx={{
-          position: "absolute",
-          inset: 0,
-          background: "rgba(168, 146, 101, 0.6)",
+          width: 420,
+          p: 4,
+          borderRadius: 4,
+         background: "rgba(255, 255, 255, 0.08)",
+    backdropFilter: "blur(18px)",
+    border: "1px solid rgba(255, 255, 255, 0.15)",
+
+    boxShadow: "0 25px 60px rgba(0,0,0,0.35)",
+        
         }}
-      />
+      >
+      
 
-      {/* card wrapper */}
-      <Box sx={{ zIndex: 2,                  marginTop: "140px",
+        {/* Title */}
+        <Typography
+          variant="h5"
+          sx={{ textAlign: "center", fontWeight: 700, mb: 2 }}
+        >
+          Welcome Back
+        </Typography>
 
-}}>
-        <Card variant="outlined">
-          {/* logo */}
-          <Box sx={{ display: { xs: "flex", md: "none" } }}>
-            <SitemarkIcon />
-          </Box>
+        {/* Form */}
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+        >
+          {/* Email */}
+          <FormControl>
+            <FormLabel>Email</FormLabel>
+            <TextField
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              error={!!errors.email}
+              helperText={errors.email}
+              fullWidth
+            />
+          </FormControl>
 
-          {/* title */}
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ textAlign: "center", fontWeight: 700 }}
-          >
-            Sign in
-          </Typography>
+          {/* Password */}
+          <FormControl>
+            <FormLabel>Password</FormLabel>
 
-          {/* form */}
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-
-            }}
-          >
-            {/* email */}
-            <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
-              <TextField
-                error={emailError}
-                helperText={emailErrorMessage}
-                id="email"
-                type="email"
-                name="email"
-                placeholder="your@email.com"
-                autoComplete="email"
-                required
-                fullWidth
-              />
-            </FormControl>
-
-            {/* password */}
-            <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
-
-              <TextField
-                error={passwordError}
-                helperText={passwordErrorMessage}
-                name="password"
-                placeholder="••••••"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-                required
-                fullWidth
-              />
-
-              {/* forgot تحت الحقل */}
-              <Link
-                component="button"
-                type="button"
-                onClick={handleClickOpen}
-                variant="body2"
-                sx={{
-                  mt: 1,
-                  textAlign: "right",
-                }}
-              >
-                Forgot your password?
-              </Link>
-            </FormControl>
-
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
+            <TextField
+              name="password"
+              type="password"
+              value={form.password}
+              onChange={handleChange}
+              error={!!errors.password}
+              helperText={errors.password}
+              fullWidth
             />
 
-            <ForgotPassword open={open} handleClose={handleClose} />
-
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{
-                py: 1.3,
-                borderRadius: 3,
-                fontWeight: 600,
-              }}
+            <Link
+              component="button"
+              onClick={() => setOpen(true)}
+              sx={{ mt: 1, textAlign: "right" }}
             >
-              Sign in
-            </Button>
+              Forgot password?
+            </Link>
+          </FormControl>
 
-            <Typography sx={{ textAlign: "center" }}>
-              Don&apos;t have an account?{" "}
-              <Link href="#" variant="body2">
-                Sign up
-              </Link>
-            </Typography>
-          </Box>
+          <FormControlLabel
+            control={<Checkbox />}
+            label="Remember me"
+          />
 
-          <Divider>or</Divider>
+          <ForgotPassword open={open} handleClose={() => setOpen(false)} />
 
-          {/* social */}
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<GoogleIcon />}
-            >
-              Sign in with Google
-            </Button>
+          {/* Submit */}
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            disabled={loading}
+            sx={{
+              py: 1.3,
+              borderRadius: 3,
+              fontWeight: 600,
+            }}
+          >
+            {loading ? (
+              <CircularProgress size={22} color="inherit" />
+            ) : (
+              "Sign in"
+            )}
+          </Button>
 
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<FacebookIcon />}
-            >
-              Sign in with Facebook
-            </Button>
-          </Box>
-        </Card>
-      </Box>
+          
+        </Box>
+
+        <Divider sx={{ my: 2 }}>or</Divider>
+
+        {/* Social */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Button fullWidth variant="outlined" startIcon={<GoogleIcon />}>
+            Continue with Google
+          </Button>
+
+          <Button fullWidth variant="outlined" startIcon={<FacebookIcon />}>
+            Continue with Facebook
+          </Button>
+        </Box>
+      </Card>
     </Box>
   );
 }
