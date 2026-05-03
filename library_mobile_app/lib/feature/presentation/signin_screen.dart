@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:library_mobile_app/core/constant.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/presentation/register.dart';
 
@@ -99,7 +100,11 @@ class _TabsScreenState extends State<SigninScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.of(
+                            context,
+                          ).pushReplacementNamed(Routes.homePage);
+                        },
                         child: Text(
                           "login",
                           style: TextStyle(color: AppColors.textGrey),
