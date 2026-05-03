@@ -3,17 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:library_mobile_app/core/constant.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/screens/home_page.dart';
+import 'package:library_mobile_app/feature/presentation/splash_screen.dart'; // تأكد من الاستيراد الصحيح
 
 class AppRouter {
   static Route? generateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case Routes.initialRoute:
-        return MaterialPageRoute(
-          builder: (_) => BlocProvider(
-            create: (context) => HomeBloc()..add(GetPopularBooksEvent()),
-            child: const HomeScreen(),
-          ),
-        );
+      case Routes.initialRoute: // التطبيق يبدأ من هنا
+        return MaterialPageRoute(builder: (_) => const Splashscreen());
+
       case Routes.homePage:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
@@ -21,6 +18,7 @@ class AppRouter {
             child: const HomeScreen(),
           ),
         );
+
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
