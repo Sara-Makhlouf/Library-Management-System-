@@ -16,20 +16,24 @@ class _SplashscreenState extends State<Splashscreen> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       body: Center(
-        child: Image.asset("assets/logo.png", width: size.width * 0.7)
-            .animate(
-              onComplete: (v) {
-                Navigator.push(
-                  context,
-                  CupertinoPageRoute(builder: (context) => SigninScreen()),
-                );
-              },
-            )
-            .fadeIn(duration: Duration(milliseconds: 500))
-            .fadeOut(
-              delay: Duration(seconds: 2),
-              duration: Duration(milliseconds: 500),
-            ),
+        child:
+            Image.asset(
+                  "lib/assets/images/logo.png.png",
+                  width: size.width * 0.7,
+                )
+                .animate(
+                  onComplete: (v) {
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(builder: (context) => SigninScreen()),
+                    );
+                  },
+                )
+                .fadeIn(duration: Duration(milliseconds: 500))
+                .fadeOut(
+                  delay: Duration(seconds: 2),
+                  duration: Duration(milliseconds: 500),
+                ),
       ),
     );
   }

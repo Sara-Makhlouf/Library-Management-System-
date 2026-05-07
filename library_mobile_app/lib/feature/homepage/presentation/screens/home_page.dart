@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:library_mobile_app/core/theme.dart';
+import 'package:library_mobile_app/feature/cart/presentation/cart_screen.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/BottomNav.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/seaction.dart';
@@ -171,7 +172,7 @@ class HomeScreen extends StatelessWidget {
           ],
         );
       case 2:
-        return const Center(child: Text("Shopping Cart Page"));
+        return CartScreen();
       default:
         return const Center(child: Text("Home"));
     }

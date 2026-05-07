@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:library_mobile_app/core/constant.dart';
+import 'package:library_mobile_app/feature/cart/bloc/cart_bloc.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/screens/home_page.dart';
 import 'package:library_mobile_app/feature/presentation/splash_screen.dart'; // تأكد من الاستيراد الصحيح
@@ -13,8 +14,13 @@ class AppRouter {
 
       case Routes.homePage:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider(
-            create: (context) => HomeBloc()..add(GetPopularBooksEvent()),
+          builder: (_) => MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (context) => HomeBloc()..add(GetPopularBooksEvent()),
+              ),
+              BlocProvider(create: (context) => CartBloc()),
+            ],
             child: const HomeScreen(),
           ),
         );
