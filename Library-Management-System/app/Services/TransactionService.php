@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Transaction;
-use App\Models\Complaint; 
+use App\Models\Complaint;
 use Carbon\Carbon;
 
 class TransactionService
@@ -14,62 +14,92 @@ class TransactionService
     {
         $returnedAt = now();
         $fine = 0;
-
         $bookPrice = $transaction->book->price;
 
         if ($isdamaged) {
-            $fine = $transaction->mortgage;
+            $fine = $bookPrice;
+            $transaction->book->update(['status' => 'damaged', 'is_available' => false]);
         } else {
             if ($transaction->due_date && $returnedAt->gt($transaction->due_date)) {
                 $daysLate = $returnedAt->diffInDays($transaction->due_date);
-                $finePerDay = $bookPrice * $this->dailyFineRate;
-                $fine = $daysLate * $finePerDay;
+                $fine = $daysLate * ($bookPrice * $this->dailyFineRate);
             }
+            $transaction->book->update(['status' => 'available', 'is_available' => true]);
         }
 
-        $customerReturnAmount = max(0, $transaction->mortgage - $fine);
-
         $transaction->update([
-            'returned_at'             => $returnedAt,
-            'extra_price'             => $fine,
-            'customer_return_amount'  => $customerReturnAmount,
-            'status'                  => 'returned'
+            'returned_at' => $returnedAt,
+            'extra_price' => $fine,
+            'status'      => 'returned'
         ]);
+
+        if ($transaction->user) {
+            $transaction->user->update(['is_active' => true]);
+        }
 
         return $transaction;
     }
 
-    /**
-     * فحص العمليات المتأخرة جداً (أكثر من 15 يوم) وفتح شكاوى تلقائية
-     */
     public function checkAndEscalateLateReturns()
     {
-        // تحسين الاستعلام: جلب فقط العمليات التي مضى على تاريخ استحقاقها 15 يوم أو أكثر
-        $criticalDate = now()->subDays(15);
-
         $lateTransactions = Transaction::where('status', 'received')
-                            ->where('due_date', '<=', $criticalDate)
-                            ->get();
+            ->where('due_date', '<', now())
+            ->get();
 
         foreach ($lateTransactions as $transaction) {
-            
-            // التأكد من عدم وجود شكوى سابقة لنفس العملية
-            $alreadyComplained = Complaint::where('transaction_id', $transaction->id)->exists();
+            $daysLate = now()->diffInDays($transaction->due_date);
 
-            if (!$alreadyComplained) {
-                // حساب الأيام بدقة للشكوى
-                $daysLate = now()->diffInDays($transaction->due_date);
-                $totalFine = $daysLate * ($transaction->book->price * $this->dailyFineRate);
+            // المرحلة 1: تذكير (من يوم إلى 7 أيام)
+            if ($daysLate >= 1 && $daysLate < 7) {
+                // منطق الإشعارات يوضع هنا لاحقاً
+            }
 
-                Complaint::create([
-                    'transaction_id' => $transaction->id,
-                    'user_id'        => $transaction->user->id, 
-                    'reason'         => "تأخير حرج: الكتاب لم يعد منذ $daysLate يوماً",
-                    'total_fine'     => $totalFine,
-                ]);
-                
-                $transaction->update(['status' => 'expired']);
+            // المرحلة 2 و 3: إيقاف الحساب (بعد 7 أيام تأخير)
+            if ($daysLate >= 7) {
+                if ($transaction->user) {
+                    $transaction->user->update(['is_active' => false]);
+                }
+            }
+
+            // المرحلة 4: اعتبار الكتاب مفقود وفتح شكوى (بعد 15 يوم)
+            if ($daysLate >= 15) {
+                $alreadyComplained = Complaint::where('transaction_id', $transaction->id)->exists();
+
+                if (!$alreadyComplained) {
+                    Complaint::create([
+                        'transaction_id' => $transaction->id,
+                        'user_id'        => $transaction->user->id,
+                        'reason'         => "تأخير حرج: الكتاب مفقود لتجاوزه 15 يوماً",
+                        'total_fine'     => $transaction->book->price,
+                    ]);
+
+                    $transaction->update(['status' => 'expired']);
+                }
             }
         }
+    }
+    public function processBorrow($data)
+    {
+        $user = \App\Models\User::find($data['user_id']);
+        if (!$user->is_active) {
+            return [
+                'error' => 'حسابك معلق بسبب تأخير سابق. يرجى إعادة الكتب المتأخرة أولاً'
+            ];
+        }
+        $book = \App\Models\Book::find($data['book_id']);
+        if (!$book->is_available) {
+            return [
+                'error' => 'هذا الكتاب مستعار حاليا لشخص اخر'
+            ];
+        }
+        $transaction = Transaction::created([
+
+            'bill_id'      => $data['bill_id'],
+            'book_id'      => $data['book_id'],
+            'price'        => $book->price, // سعر الاستعارة
+            'delivered_at' => now(),
+            'due_date'     => now()->addDays($data['days']),
+            'status'       => 'received'
+        ]);
     }
 }

@@ -10,16 +10,11 @@ class Transaction extends Model
         'bill_id',
         'book_id',
         'price',
-        'mortgage',
-
         'extra_price',
         'delivered_at',
         'due_date',
-
         'returned_at',
-        'customer_return_amount',
         'status'
-
     ];
 
     protected $casts = [
@@ -27,12 +22,7 @@ class Transaction extends Model
         'due_date' => 'datetime',
         'returned_at' => 'datetime',
         'price' => 'decimal:2',
-        'mortgage' => 'decimal:2',
-
-        'extra_price' => 'decimal:2',
-        'customer_return_amount' => 'decimal:2'
-
-
+        'extra_price' => 'decimal:2'
     ];
 
     public function book()
@@ -47,6 +37,13 @@ class Transaction extends Model
 
     public function user()
     {
-        return $this->hasOneThrough(User::class, 'id', 'id', 'bill_id', 'user_id');
+        return $this->hasOneThrough(
+            User::class,
+            Bill::class,
+            'id',
+            'id',
+            'bill_id',
+            'user_id'
+        );
     }
 }
