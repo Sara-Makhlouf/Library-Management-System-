@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('password');
             $table->enum('type' , ['admin', 'customer'])->default('customer');
             $table->boolean('is_active')->default(true);
+            $table->integer('max_borrowing_limit')->default(3);
             $table->rememberToken();
             $table->timestamps();
         });

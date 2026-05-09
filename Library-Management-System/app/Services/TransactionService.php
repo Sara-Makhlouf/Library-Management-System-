@@ -81,18 +81,25 @@ class TransactionService
     public function processBorrow($data)
     {
         $user = \App\Models\User::find($data['user_id']);
-        if (!$user->is_active) {
-            return [
-                'error' => 'حسابك معلق بسبب تأخير سابق. يرجى إعادة الكتب المتأخرة أولاً'
-            ];
-        }
+       $currentlyBorrowed = Transaction::whereHas('bill', function($query) use ($user) {
+            $query->where('user_id', $user->id);
+        })
+        ->where('status', 'received') 
+        ->count();
+
+    
+    if ($currentlyBorrowed >= $user->max_borrowing_limit) {
+        return [
+            'error' => "عذراً، لقد تجاوزت الحد المسموح لك وهو ({$user->max_borrowing_limit})يرجى ارجاع الكتب المستعارة اولا"
+        ];
+    }
         $book = \App\Models\Book::find($data['book_id']);
         if (!$book->is_available) {
             return [
                 'error' => 'هذا الكتاب مستعار حاليا لشخص اخر'
             ];
         }
-        $transaction = Transaction::created([
+        $transaction = Transaction::create([
 
             'bill_id'      => $data['bill_id'],
             'book_id'      => $data['book_id'],
@@ -101,5 +108,9 @@ class TransactionService
             'due_date'     => now()->addDays($data['days']),
             'status'       => 'received'
         ]);
+
+        $book->update(['is_available' => false]);
+
+        return $transaction;
     }
 }
