@@ -4,16 +4,20 @@ use App\Http\Controllers\TransactionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// 1. رابط بدء الاستعارة (الإضافة)
-// هذا الرابط الذي ينشئ العملية لأول مرة عند خروج الكتاب من المكتبة
-Route::post('/transactions/borrow', [TransactionController::class, 'borrowBook']);
 
-// 2. رابط إرجاع الكتاب (الذي تملكه أنت حالياً)
-Route::post('/transactions/{id}/return', [TransactionController::class, 'returnBook']);
 
-// 3. رابط عرض العمليات المتأخرة (للمراقبة)
-// لمتابعة من هم في "المراحل الأربعة" ومن تم تجميد حسابهم
-Route::get('/transactions/late', [TransactionController::class, 'getLateTransactions']);
 
-// 4. رابط عرض تاريخ استعارات مستخدم (Profile)
-Route::get('/users/{id}/transactions', [TransactionController::class, 'userHistory']);
+// الراوتات المحمية (تتطلب تسجيل دخول)
+Route::middleware('auth:sanctum')->group(function () {
+
+    // عمليات الاستعارة والشراء (POST)
+    Route::prefix('transactions')->group(function () {
+        Route::post('/borrow', [TransactionController::class, 'borrowBook']); // استعارة كتاب منفرد
+        Route::post('/checkout', [TransactionController::class, 'store']); // إتمام السلة (شراء واستعارة)
+        Route::post('/{id}/return', [TransactionController::class, 'returnBook']); // إرجاع كتاب
+    });
+
+    // الاستعلامات والتقارير (GET)
+    Route::get('/transactions/late', [TransactionController::class, 'getLateTransactions']); // المتأخرين
+    Route::get('/users/{id}/transactions', [TransactionController::class, 'userHistory']); // سجل المستخدم
+});

@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+
 use App\Models\Transaction;
+
 use App\Services\TransactionService;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
@@ -69,5 +73,46 @@ class TransactionController extends Controller
         })->with('book')->get();
 
         return response()->json($history);
+    }
+
+    public function store(Request $request)
+    {
+        // 1. التحقق من البيانات القادمة (مصفوفة كتب من السلة)
+        $request->validate([
+            'bill_id' => 'required|exists:bills,id',
+            'items'   => 'required|array',
+            'items.*.book_id'     => 'required|exists:books,id',
+            'items.*.action_type' => 'required|in:borrow,buy', // شراء أم استعارة
+        ]);
+
+        $results = [];
+
+        // 2. الدوران على كل كتاب في السلة ومعالجته حسب نوعه
+        foreach ($request->items as $item) {
+            // نجهز البيانات المطلوبة للسيرفس
+            $data = [
+                'bill_id' => $request->bill_id,
+                'user_id' => Auth::user()->id,
+                'book_id' => $item['book_id'],
+                'days'    => $item['days'] ?? 7, // مدة الاستعارة الافتراضية
+            ];
+
+            if ($item['action_type'] === 'buy') {
+                // نرسله لدالة الشراء
+                $results[] = $this->transactionService->processPurchase($data);
+            } else {
+                // نرسله لدالة الاستعارة
+                $results[] = $this->transactionService->processBorrow($data);
+            }
+        }
+
+        // 3. التحقق من وجود أخطاء (مثل تجاوز الحد أو نفاد الكمية)
+        foreach ($results as $result) {
+            if (isset($result['error'])) {
+                return response()->json(['message' => $result['error']], 400);
+            }
+        }
+
+        return response()->json(['message' => 'تمت العملية بنجاح', 'data' => $results]);
     }
 }

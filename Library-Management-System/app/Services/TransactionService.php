@@ -81,18 +81,19 @@ class TransactionService
     public function processBorrow($data)
     {
         $user = \App\Models\User::find($data['user_id']);
-       $currentlyBorrowed = Transaction::whereHas('bill', function($query) use ($user) {
+        $currentlyBorrowed = Transaction::whereHas('bill', function ($query) use ($user) {
             $query->where('user_id', $user->id);
         })
-        ->where('status', 'received') 
-        ->count();
+            ->where('status', 'received')
+            ->where('type', 'borrow')
+            ->count();
 
-    
-    if ($currentlyBorrowed >= $user->max_borrowing_limit) {
-        return [
-            'error' => "عذراً، لقد تجاوزت الحد المسموح لك وهو ({$user->max_borrowing_limit})يرجى ارجاع الكتب المستعارة اولا"
-        ];
-    }
+
+        if ($currentlyBorrowed >= $user->max_borrowing_limit) {
+            return [
+                'error' => "عذراً، لقد تجاوزت الحد المسموح لك وهو ({$user->max_borrowing_limit})يرجى ارجاع الكتب المستعارة اولا"
+            ];
+        }
         $book = \App\Models\Book::find($data['book_id']);
         if (!$book->is_available) {
             return [
@@ -106,10 +107,32 @@ class TransactionService
             'price'        => $book->price, // سعر الاستعارة
             'delivered_at' => now(),
             'due_date'     => now()->addDays($data['days']),
-            'status'       => 'received'
+            'status'       => 'received',
+            'type'         => 'borrow'
         ]);
 
         $book->update(['is_available' => false]);
+
+        return $transaction;
+    }
+    public function processPurchase($data)
+    {
+        $book = \App\Models\Book::find($data['book_id']);
+        if ($book->stock <= 0) {
+            return ['error' => 'هذا الكتاب نفذت كميته من المخزن.'];
+        }
+        $transaction = Transaction::create([
+
+            'bill_id'      => $data['bill_id'],
+            'book_id'      => $data['book_id'],
+            'price'        => $book->sale_price,
+            'delivered_at' => now(),
+            'due_date'     => null,
+            'status'       => 'sold',
+            'type'         => 'buy'
+        ]);
+
+        $book->decrement('stock');
 
         return $transaction;
     }
