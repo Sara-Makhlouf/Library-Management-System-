@@ -82,7 +82,8 @@ class TransactionController extends Controller
             'bill_id' => 'required|exists:bills,id',
             'items'   => 'required|array',
             'items.*.book_id'     => 'required|exists:books,id',
-            'items.*.action_type' => 'required|in:borrow,buy', // شراء أم استعارة
+            'items.*.action_type' => 'required|in:borrow,buy',
+            
         ]);
 
         $results = [];
@@ -94,7 +95,8 @@ class TransactionController extends Controller
                 'bill_id' => $request->bill_id,
                 'user_id' => Auth::user()->id,
                 'book_id' => $item['book_id'],
-                'days'    => $item['days'] ?? 7, // مدة الاستعارة الافتراضية
+                'days'    => $item['days'] ?? 7, 
+                'payment_method' => $item['payment_method'] ?? 'cash',
             ];
 
             if ($item['action_type'] === 'buy') {

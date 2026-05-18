@@ -81,6 +81,11 @@ class TransactionService
     public function processBorrow($data)
     {
         $user = \App\Models\User::find($data['user_id']);
+        if (!$user->is_active) {
+        return [
+            'error' => 'عذراً، حسابك مغلق حالياً بسبب تأخرك في إرجاع الكتب المستعارة.'
+        ];
+    }
         $currentlyBorrowed = Transaction::whereHas('bill', function ($query) use ($user) {
             $query->where('user_id', $user->id);
         })
@@ -100,7 +105,8 @@ class TransactionService
                 'error' => 'هذا الكتاب مستعار حاليا لشخص اخر'
             ];
         }
-        $transaction = Transaction::create([
+     return \Illuminate\Support\Facades\DB::transaction(function () use ($data, $book) {
+            $transaction = Transaction::create([
 
             'bill_id'      => $data['bill_id'],
             'book_id'      => $data['book_id'],
@@ -114,26 +120,46 @@ class TransactionService
         $book->update(['is_available' => false]);
 
         return $transaction;
+    });
     }
-    public function processPurchase($data)
+   public function processPurchase($data)
     {
         $book = \App\Models\Book::find($data['book_id']);
         if ($book->stock <= 0) {
             return ['error' => 'هذا الكتاب نفذت كميته من المخزن.'];
         }
-        $transaction = Transaction::create([
 
-            'bill_id'      => $data['bill_id'],
-            'book_id'      => $data['book_id'],
-            'price'        => $book->sale_price,
-            'delivered_at' => now(),
-            'due_date'     => null,
-            'status'       => 'sold',
-            'type'         => 'buy'
-        ]);
+        $paymentMethod = $data['payment_method'] ?? 'cash';
 
-        $book->decrement('stock');
 
-        return $transaction;
+        if ($paymentMethod === 'points') {
+           
+            $pointsRequired = $book->sale_price * 100; 
+
+            try {
+        
+                app(PointsService::class)->deductPoints($data['user_id'], $pointsRequired, "شراء كتاب: " . $book->title);
+            } catch (\Exception $e) {
+    
+                return ['error' => $e->getMessage()];
+            }
+        }
+
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($data, $book, $paymentMethod) {
+            $transaction = Transaction::create([
+                'bill_id'      => $data['bill_id'],
+                'book_id'      => $data['book_id'],
+                'price'        => $book->sale_price,
+                'delivered_at' => now(),
+                'due_date'     => null,
+                'status'       => 'sold',
+                'type'         => 'buy',
+    
+            ]);
+
+            $book->decrement('stock');
+
+            return $transaction;
+        });
     }
 }

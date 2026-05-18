@@ -14,7 +14,8 @@ class Transaction extends Model
         'delivered_at',
         'due_date',
         'returned_at',
-        'status'
+        'status',
+        'type'
     ];
 
     protected $casts = [
