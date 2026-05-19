@@ -15,19 +15,14 @@ return new class extends Migration
                   ->constrained('customers')
                   ->cascadeOnDelete();
 
-            $table->enum('type', [
-                'book_available',
-                'overdue_return',
-            ]);
+            $table->string('type');
 
             $table->string('title');
             $table->text('body');
+            $table->json('data')->nullable();
 
             $table->unsignedBigInteger('related_id')->nullable();
-            $table->enum('related_type', [
-                'waiting_list',
-                'transaction',
-            ])->nullable();
+            $table->string('related_type')->nullable();
 
             $table->boolean('is_read')->default(false);
             $table->timestamp('sent_at')->nullable();
