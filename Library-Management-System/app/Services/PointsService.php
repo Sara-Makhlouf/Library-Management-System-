@@ -4,39 +4,41 @@ namespace App\Services;
 
 use App\Models\PointsTransaction;
 use App\Models\Customer;
+use App\Models\Book;
+use App\Models\UserReadingProgress;
 use Illuminate\Support\Facades\DB;
 
 class PointsService
 {
-
     public function addPoints($customerId, $amount, $type = 'earn', $reason = null)
     {
-
         return DB::transaction(function () use ($customerId, $amount, $type, $reason) {
-
-
-            \App\Models\PointsTransaction::create([
+            PointsTransaction::create([
                 'customer_id' => $customerId,
                 'points_amount' => $amount,
                 'transaction_type' => $type,
                 'reason'         => $reason,
             ]);
 
-
-            $customer = \App\Models\Customer::findOrFail($customerId);
+            $customer = Customer::findOrFail($customerId);
             $customer->increment('points_balance', $amount);
 
             return $customer->points_balance;
         });
     }
+
     public function updateProgressAndEarnPoints($customerId, $bookId, $currentPage)
     {
-        $book = \App\Models\Book::findOrFail($bookId);
+        $book = Book::findOrFail($bookId);
+        
+        
         if ($currentPage > $book->total_pages) {
-            $currentPage = $book->total->pages;
+            $currentPage = $book->total_pages;
         }
-        $progress = \App\Models\UserReadingProgress::firstOrCreate(
-            ['coustomer_id' => $customerId, 'book_id' => $bookId],
+
+        
+        $progress = UserReadingProgress::firstOrCreate(
+            ['customer_id' => $customerId, 'book_id' => $bookId],
             ['last_page_read' => 0]
         );
 
@@ -47,44 +49,58 @@ class PointsService
             $reason = "نقاط مقابل قراءة صفحات من كتاب: " . $book->title;
 
             $this->addPoints($customerId, $pointsToEarn, 'earn', $reason);
+            
             $progress->update([
                 'last_page_read' => $currentPage
             ]);
+
+
             return [
-                'earned' => $pointsToEarn,
+                'points_earned' => $pointsToEarn, 
                 'current_page' => $currentPage,
-                'message' => 'تمة إضافة النقاط بنجاح',
+                'message' => 'تم إضافة النقاط بنجاح',
                 'is_completed' => $currentPage == $book->total_pages
             ];
         }
+
         return [
             'status' => 'no_new_points',
-            'earned' => 0,
+            'points_earned' => 0,
             'current_page' => $currentPage,
-            'message' => 'لا توجد نقاط جديدة, صفحة مقروءة مسبقاً'
+            'message' => 'لا توجد نقاط جديدة، صفحة مقروءة مسبقاً'
         ];
     }
+
     public function deductPoints($customerId, $amount, $reason = null)
-{
-    return DB::transaction(function () use ($customerId, $amount, $reason) {
-        $customer = \App\Models\Customer::findOrFail($customerId);
+    {
+        return DB::transaction(function () use ($customerId, $amount, $reason) {
+            $customer = Customer::findOrFail($customerId);
 
-        
-        if ($customer->points_balance < $amount) {
-            throw new \Exception("عذراً، رصيدك من النقاط غير كافٍ لإتمام هذه العملية.");
-        }
+            if ($customer->points_balance < $amount) {
+                throw new \Exception("عذراً، رصيدك من النقاط غير كافٍ لإتمام هذه العملية.");
+            }
 
-       
-        \App\Models\PointsTransaction::create([
-            'customer_id'      => $customerId,
-            'points_amount'    => $amount,
-            'transaction_type' => 'deduct', 
-            'reason'           => $reason,
-        ]);
+            PointsTransaction::create([
+                'customer_id'      => $customerId,
+                'points_amount'    => $amount,
+                'transaction_type' => 'deduct', 
+                'reason'           => $reason,
+            ]);
 
-        $customer->decrement('points_balance', $amount);
+            $customer->decrement('points_balance', $amount);
+            \App\Models\Notification::send(
+            $customerId,
+            'points_deducted', 
+            'تم خصم نقاط من رصيدك 📉',
+            "تم خصم {$amount} نقطة من محفظتك. السبب: " . ($reason ?? 'إجراء عملية في التطبيق.'),
+            [
+                'icon' => 'points_minus',
+                'target_screen' => 'wallet',
+                'deducted_amount' => $amount
+            ]
+        );
 
-        return $customer->points_balance;
-    });
-}
+            return $customer->points_balance;
+        });
+    }
 }

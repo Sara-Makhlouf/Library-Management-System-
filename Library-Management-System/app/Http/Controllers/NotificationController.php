@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -41,5 +42,31 @@ class NotificationController extends Controller
             'success' => true,
             'message' => 'تم تعيين الإشعار كمقروء بنجاح'
         ]);
+    }
+    public function sendGlobalNotification(Request $request)
+    {
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'body'  => 'required|string',
+            'target_screen' => 'nullable|string',
+        ]);
+
+        $users = User::all();
+        foreach ($users as $user) {
+            Notification::send(
+                $user->id,
+                'global_admin_announcement',
+                $data['title'],
+                $data['body'],
+                [
+                    'icon' => 'admin_alert',
+                    'target_screen' => $data['target_screen'] ?? 'home'
+                ]
+            );
+        }
+        return response()->json([
+            'message' => 'تم إرسال الإشعار الجماعي بنجاح إلى جميع المستخدمين'
+
+        ], 200);
     }
 }

@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-
+use App\Models\Notification;
 use App\Models\Transaction;
-
+use App\Models\Book;
 use App\Services\TransactionService;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,6 +31,20 @@ class TransactionController extends Controller
         $isDamaged = $request->input('is_damaged', false);
         $updatedTransaction = $this->transactionService->processReturn($transaction, $isDamaged);
 
+        if (isset($updatedTransaction->next_user_id)) {
+            Notification::send(
+                $updatedTransaction->next_user_id,
+                Notification::TYPE_BOOK_AVAILABLE,
+                'الكتاب الذي تنتظره متاح الآن! 📚',
+                "أصبح كتاب ({$transaction->book->title}) متاحاً، يمكنك استعارته الآن قبل نفاد الكمية.",
+                [
+                    'icon' => 'book_open',
+                    'target_screen' => 'book_details',
+                    'book_id' => $transaction->book_id
+                ]
+            );
+        }
+
         return response()->json([
             'message' => 'تم ارجاع الكتاب بنجاح',
             'data' => [
@@ -40,6 +53,7 @@ class TransactionController extends Controller
             ]
         ]);
     }
+
     public function borrowBook(Request $request)
     {
         $data = $request->validate([
@@ -48,15 +62,19 @@ class TransactionController extends Controller
             'bill_id' => 'required|exists:bills,id',
             'days' => 'required|integer|min:1'
         ]);
+
         $result = $this->transactionService->processBorrow($data);
+
         if (isset($result['error'])) {
             return response()->json(['message' => $result['error']], 403);
         }
+
         return response()->json([
             'message' => 'تمت الأستعارة بنجاح',
             'data' => $result
         ]);
     }
+
     public function getLateTransactions()
     {
         $late = Transaction::where('status', 'received')
@@ -64,8 +82,23 @@ class TransactionController extends Controller
             ->with(['user', 'book'])
             ->get();
 
+        foreach ($late as $lateTransaction) {
+            Notification::send(
+                $lateTransaction->user_id,
+                Notification::TYPE_OVERDUE_RETURN,
+                'تنبيه: تأخرت في إعادة الكتاب! ⚠️',
+                "لقد تجاوزت المدة المسموحة لإعادة كتاب ({$lateTransaction->book->title}). يرجى إعادته للمكتبة فوراً.",
+                [
+                    'icon' => 'danger_alert',
+                    'target_screen' => 'my_borrows',
+                    'transaction_id' => $lateTransaction->id
+                ]
+            );
+        }
+
         return response()->json($late);
     }
+
     public function userHistory($id)
     {
         $history = Transaction::whereHas('bill', function ($q) use ($id) {
@@ -77,41 +110,52 @@ class TransactionController extends Controller
 
     public function store(Request $request)
     {
-        // 1. التحقق من البيانات القادمة (مصفوفة كتب من السلة)
         $request->validate([
             'bill_id' => 'required|exists:bills,id',
             'items'   => 'required|array',
             'items.*.book_id'     => 'required|exists:books,id',
             'items.*.action_type' => 'required|in:borrow,buy',
-            
         ]);
 
         $results = [];
 
-        // 2. الدوران على كل كتاب في السلة ومعالجته حسب نوعه
         foreach ($request->items as $item) {
-            // نجهز البيانات المطلوبة للسيرفس
             $data = [
                 'bill_id' => $request->bill_id,
                 'user_id' => Auth::user()->id,
                 'book_id' => $item['book_id'],
-                'days'    => $item['days'] ?? 7, 
+                'days'    => $item['days'] ?? 7,
                 'payment_method' => $item['payment_method'] ?? 'cash',
             ];
 
             if ($item['action_type'] === 'buy') {
-                // نرسله لدالة الشراء
                 $results[] = $this->transactionService->processPurchase($data);
             } else {
-                // نرسله لدالة الاستعارة
                 $results[] = $this->transactionService->processBorrow($data);
             }
         }
 
-        // 3. التحقق من وجود أخطاء (مثل تجاوز الحد أو نفاد الكمية)
         foreach ($results as $result) {
             if (isset($result['error'])) {
                 return response()->json(['message' => $result['error']], 400);
+            }
+        }
+
+        foreach ($request->items as $item) {
+            if ($item['action_type'] === 'buy') {
+                $book = Book::find($item['book_id']);
+                
+                Notification::send(
+                    Auth::user()->id,
+                    Notification::TYPE_PURCHASE_SUCCESS, 
+                    'مبارك شراء الكتاب! 🛍️',
+                    "تمت عملية شراء كتاب ({$book->title}) بنجاح، وتجده الآن متوفراً في مكتبتك الدائمة للقرّاء.",
+                    [
+                        'icon' => 'bag_success',
+                        'target_screen' => 'my_library',
+                        'book_id' => $item['book_id']
+                    ]
+                );
             }
         }
 

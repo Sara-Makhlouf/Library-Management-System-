@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notification;
 use App\Services\PointsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,6 +26,20 @@ class ReadingController extends Controller
             $request->book_id,
             $request->current_page
         );
+        if (isset($result['points_earned']) && $result['points_earned'] > 0){
+        Notification::send(
+            $customer->id,
+            Notification::TYPE_POINTS_EARNED,
+            'مبروك! كسبت نقاطاً جديدة 🎉',
+            "تمت إضافة {$result['points_earned']} نقطة إلى محفظتك لتقدمك في القراءة.",
+            [
+                'icon' => 'coins_icon',
+                'target_screen' => 'wallet',
+                'earned_amount' => $result['points_earned']
+            ]
+        );
+        }
         return response()->json($result);
     }
 }
+
