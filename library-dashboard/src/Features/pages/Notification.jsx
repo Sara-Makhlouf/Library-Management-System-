@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { COLORS } from "../Core/Constants/ColorsUse";
+import { COLORS } from "../../Core/Constants/ColorsUse";
 
 import {
   CheckCircle,
