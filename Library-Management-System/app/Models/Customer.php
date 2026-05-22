@@ -20,7 +20,7 @@ class Customer extends Model
         'phone',
         'avatar',
         'lang',
-        'address', 
+        'address',
         'user_id',
         'points_balance'
     ];
@@ -30,7 +30,7 @@ class Customer extends Model
         'points_balance' => 'integer',
     ];
 
-  
+
 
     /**
      * العلاقة مع حساب المستخدم الأساسي (Auth).
@@ -42,7 +42,7 @@ class Customer extends Model
 
     /**
      * علاقة الكتب المفضلة (Favorites).
-     * 
+     *
      */
     public function favorites(): BelongsToMany
     {
@@ -75,4 +75,18 @@ class Customer extends Model
     {
         return $this->hasMany(WaitingList::class);
     }
+    // app/Models/Customer.php
+
+public function bills() {
+    return $this->hasMany(Bill::class);
+}
+
+// علاقة غير مباشرة للوصول للكتب المشتراة
+public function purchasedItems() {
+    return $this->hasManyThrough(BillDetail::class, Bill::class);
+}
+
+public function transactions() {
+    return $this->hasManyThrough(Transaction::class, Bill::class);
+}
 }
