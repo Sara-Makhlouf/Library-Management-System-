@@ -2,44 +2,40 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Notification;
-use App\Services\PointsService;
+use App\Models\UserReadingProgress;
+use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ReadingController extends Controller
 {
-    protected $PointsService;
-    public function  __construct(PointsService $pointsService)
-    {
-        $this->PointsService = $pointsService;
-    }
+    
     public function updateProgress(Request $request)
     {
         $request->validate([
-            'book_id' => 'required|exists:books,id',
+            'book_id'      => 'required|exists:books,id',
             'current_page' => 'required|integer|min:1',
         ]);
-        $customer = Auth::user()->customer;
-        $result = $this->PointsService->updateProgressAndEarnPoints(
-            $customer->id,
-            $request->book_id,
-            $request->current_page
+
+        $customerId = Auth::user()->customer->id;
+        $book = Book::findOrFail($request->book_id);
+        
+        // التحقق من عدم تجاوز عدد صفحات الكتاب
+        $page = ($request->current_page > $book->total_pages) ? $book->total_pages : $request->current_page;
+
+        // تحديث أو إنشاء سجل تقدم القراءة
+        $progress = UserReadingProgress::updateOrCreate(
+            ['customer_id' => $customerId, 'book_id' => $request->book_id],
+            ['last_page_read' => $page]
         );
-        if (isset($result['points_earned']) && $result['points_earned'] > 0){
-        Notification::send(
-            $customer->id,
-            Notification::TYPE_POINTS_EARNED,
-            'مبروك! كسبت نقاطاً جديدة 🎉',
-            "تمت إضافة {$result['points_earned']} نقطة إلى محفظتك لتقدمك في القراءة.",
-            [
-                'icon' => 'coins_icon',
-                'target_screen' => 'wallet',
-                'earned_amount' => $result['points_earned']
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'تم تحديث تقدم القراءة بنجاح',
+            'data' => [
+                'current_page' => $progress->last_page_read,
+                'is_completed' => $progress->last_page_read == $book->total_pages
             ]
-        );
-        }
-        return response()->json($result);
+        ]);
     }
 }
-

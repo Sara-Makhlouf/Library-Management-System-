@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\User;
 use App\Models\Notification;
+use App\Services\PointsService; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +14,14 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    protected $pointsService;
+
+   
+    public function __construct(PointsService $pointsService)
+    {
+        $this->pointsService = $pointsService;
+    }
+
     public function register(Request $request)
     {
         $validated = $request->validate([
@@ -52,14 +61,11 @@ class AuthController extends Controller
                 'welcome_notification',
                 'أهلاً بك في عائلتنا! 🎉',
                 'تم إنشاء حسابك بنجاح. استمتع برحلتك الثقافية واستكشف آلاف الكتب المتاحة لك.',
-                [
-                    'icon' => 'welcome_user',
-                    'target_screen' => 'home_dashboard'
-                ]
+                ['icon' => 'welcome_user', 'target_screen' => 'home_dashboard']
             );
 
             return $user;
-    }); 
+        }); 
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -84,19 +90,24 @@ class AuthController extends Controller
         $customer = Customer::where('phone', $request->phone)->first();
 
         if (! $customer) {
-            throw ValidationException::withMessages([
-                'phone' => 'رقم الهاتف غير مسجل',
-            ]);
+            throw ValidationException::withMessages(['phone' => 'رقم الهاتف غير مسجل']);
         }
 
         if (! Auth::attempt(['email' => $customer->user->email, 'password' => $request->password])) {
-            throw ValidationException::withMessages([
-                'password' => 'كلمة المرور غير صحيحة',
-            ]);
+            throw ValidationException::withMessages(['password' => 'كلمة المرور غير صحيحة']);
         }
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
+
+        // منح نقاط تسجيل الدخول إذا كان المستخدم زبوناً
+        if ($user->type === 'customer' && $user->customer) {
+            try {
+                $this->pointsService->earnPointsForLogin($user->customer->id);
+            } catch (\Exception $e) {
+                // تجاوز الخطأ لضمان استمرار عملية تسجيل الدخول
+            }
+        }
 
         $user->tokens()->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -115,11 +126,7 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم تسجيل الخروج بنجاح'
-        ]);
+        return response()->json(['status' => 'success', 'message' => 'تم تسجيل الخروج بنجاح']);
     }
 
     public function changePassword(Request $request)
@@ -129,11 +136,8 @@ class AuthController extends Controller
             'password'         => ['required', 'confirmed', 'min:8'],
         ]);
 
-        /** @var \App\Models\User $user */
         $user = $request->user();
-
         $user->update(['password' => $validated['password']]);
-
         $user->tokens()->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -143,22 +147,14 @@ class AuthController extends Controller
                 'security_alert',
                 'تنبيه أمني: تغيير كلمة المرور 🔐',
                 'نود إحاطتك بأنه قد تم تحديث كلمة المرور الخاصة بحسابك بنجاح للتو.',
-                [
-                    'icon' => 'security_shield',
-                    'target_screen' => 'profile_settings'
-                ]
+                ['icon' => 'security_shield', 'target_screen' => 'profile_settings']
             );
-        } catch (\Exception $e) {
-            // تجاوز أي خطأ طارئ
-        }
+        } catch (\Exception $e) {}
 
         return response()->json([
             'status' => 'success',
             'message' => 'تم تغيير كلمة السر بنجاح',
-            'data' => [
-                'token'      => $token,
-                'token_type' => 'Bearer',
-            ]
+            'data' => ['token' => $token, 'token_type' => 'Bearer']
         ]);
     }
 }
