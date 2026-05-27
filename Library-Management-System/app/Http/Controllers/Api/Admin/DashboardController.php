@@ -7,13 +7,32 @@ use App\Models\Book;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\Customer;
+use App\Models\Notification;
+use Illuminate\Http\Request; 
 use Illuminate\Http\JsonResponse;
 
 class DashboardController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $activeThreshold = 25;
+
+        // 🔔 إضافة دالة الإشعار الموحدة فقط عند استعراض لوحة التحكم
+        try {
+            Notification::send(
+                $request->user()->id, // معرف الآدمن الحالي من الـ Token بأمان
+                'dashboard_viewed',
+                'استعراض لوحة التحكم 📊',
+                "تم دخول لوحة تحكم الإدارة واستعراض التقارير وإحصائيات النظام العامة بنجاح.",
+                [
+                    'icon' => 'dashboard_overview',
+                    'target_screen' => 'admin_dashboard'
+                ]
+            );
+        } catch (\Exception $e) {
+            // تجاوز أي خطأ طارئ لضمان استقرار العملية
+        }
+
         return response()->json([
             'status' => 'success',
             'data' => [

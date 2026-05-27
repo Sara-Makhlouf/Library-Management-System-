@@ -5,72 +5,90 @@ namespace App\Services;
 use App\Models\PointsTransaction;
 use App\Models\Customer;
 use App\Models\Book;
-use App\Models\UserReadingProgress;
+use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 
 class PointsService
 {
+    /**
+     * الدالة الأساسية لإضافة نقاط العميل وتسجيل الحركات مع إرسال إشعار تلقائي
+     */
     public function addPoints($customerId, $amount, $type = 'earn', $reason = null)
     {
         return DB::transaction(function () use ($customerId, $amount, $type, $reason) {
             PointsTransaction::create([
-                'customer_id' => $customerId,
-                'points_amount' => $amount,
+                'customer_id'      => $customerId,
+                'points_amount'    => $amount,
                 'transaction_type' => $type,
-                'reason'         => $reason,
+                'reason'           => $reason,
             ]);
 
             $customer = Customer::findOrFail($customerId);
             $customer->increment('points_balance', $amount);
 
+            //  إرسال إشعار موحد فوري للعميل عند كسب النقاط تلقائياً
+            try {
+                Notification::send(
+                    $customer->user_id, // جلب معرف الـ User المرتبط بالزبون
+                    'points_earned',
+                    'ربحت نقاطاً جديدة! 🎉✨',
+                    "تهانينا، تم إضافة {$amount} نقطة إلى رصيدك. السبب: {$reason}. رصيدك الإجمالي الحالي هو: {$customer->points_balance} نقطة.",
+                    [
+                        'icon' => 'points_bonus',
+                        'target_screen' => 'profile',
+                        'earned_amount' => $amount
+                    ]
+                );
+            } catch (\Exception $e) {
+                // تجاوز خطأ الإشعار لضمان استقرار المعاملة المالية
+            }
+
             return $customer->points_balance;
         });
     }
 
-    public function updateProgressAndEarnPoints($customerId, $bookId, $currentPage)
+    /**
+     * 1. منح نقاط عند تسجيل الدخول الناجح (نقطة واحدة)
+     */
+    public function earnPointsForLogin($customerId)
     {
-        $book = Book::findOrFail($bookId);
+        $points = 1;
+        $reason = "مكافأة تسجيل الدخول اليومي للتطبيق 🔑";
         
-        
-        if ($currentPage > $book->total_pages) {
-            $currentPage = $book->total_pages;
-        }
-
-        
-        $progress = UserReadingProgress::firstOrCreate(
-            ['customer_id' => $customerId, 'book_id' => $bookId],
-            ['last_page_read' => 0]
-        );
-
-        if ($currentPage > $progress->last_page_read) {
-            $newPages = $currentPage - $progress->last_page_read;
-            $pointsToEarn = $newPages * 10;
-
-            $reason = "نقاط مقابل قراءة صفحات من كتاب: " . $book->title;
-
-            $this->addPoints($customerId, $pointsToEarn, 'earn', $reason);
-            
-            $progress->update([
-                'last_page_read' => $currentPage
-            ]);
-
-
-            return [
-                'points_earned' => $pointsToEarn, 
-                'current_page' => $currentPage,
-                'message' => 'تم إضافة النقاط بنجاح',
-                'is_completed' => $currentPage == $book->total_pages
-            ];
-        }
-
-        return [
-            'status' => 'no_new_points',
-            'points_earned' => 0,
-            'current_page' => $currentPage,
-            'message' => 'لا توجد نقاط جديدة، صفحة مقروءة مسبقاً'
-        ];
+        return $this->addPoints($customerId, $points, 'earn', $reason);
     }
 
+    /**
+     * 2. منح نقاط عند استعارة كتاب (5 نقاط)
+     */
+    public function earnPointsForBorrow($customerId, $bookId)
+    {
+        $book = Book::find($bookId);
+        $bookTitle = $book->title ?? 'كتاب متميز';
+        
+        $points = 5;
+        $reason = "مكافأة استعارة كتاب من المكتبة ({$bookTitle}) 📚";
+
+        return $this->addPoints($customerId, $points, 'earn', $reason);
+    }
+
+    /**
+     * 3. منح نقاط عند شراء كتاب (10 نقاط)
+     */
+    public function earnPointsForPurchase($customerId, $bookId)
+    {
+        $book = Book::find($bookId);
+        $bookTitle = $book->title ?? 'كتاب متميز';
+
+        $points = 10;
+        $reason = "مكافأة شراء كتاب وامتلاكه نهائياً ({$bookTitle}) 💰";
+
+        return $this->addPoints($customerId, $points, 'earn', $reason);
+    }
+
+    /**
+     * دالة خصم النقاط من رصيد العميل عند الشراء بالنقاط أو الغرامات
+     */
     public function deductPoints($customerId, $amount, $reason = null)
     {
         return DB::transaction(function () use ($customerId, $amount, $reason) {
@@ -88,17 +106,23 @@ class PointsService
             ]);
 
             $customer->decrement('points_balance', $amount);
-            \App\Models\Notification::send(
-            $customerId,
-            'points_deducted', 
-            'تم خصم نقاط من رصيدك 📉',
-            "تم خصم {$amount} نقطة من محفظتك. السبب: " . ($reason ?? 'إجراء عملية في التطبيق.'),
-            [
-                'icon' => 'points_minus',
-                'target_screen' => 'wallet',
-                'deducted_amount' => $amount
-            ]
-        );
+
+            //  إرسال إشعار موحد عند خصم نقاط
+            try {
+                Notification::send(
+                    $customer->user_id,
+                    'points_deducted', 
+                    'تم خصم نقاط من رصيدك 📉',
+                    "تم خصم {$amount} نقطة من محفظتك. السبب: " . ($reason ?? 'إجراء عملية في التطبيق.'),
+                    [
+                        'icon' => 'points_minus',
+                        'target_screen' => 'wallet',
+                        'deducted_amount' => $amount
+                    ]
+                );
+            } catch (\Exception $e) {
+                // تجاوز الخطأ
+            }
 
             return $customer->points_balance;
         });
