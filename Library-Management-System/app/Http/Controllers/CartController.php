@@ -19,7 +19,7 @@ class CartController extends Controller
     public function index(Request $request)
     {
         $customer = $request->user()->customer;
-        
+
         if (!$customer) {
             return response()->json([
                 'status' => 'error',
@@ -54,7 +54,7 @@ class CartController extends Controller
         ]);
 
         $customer = $request->user()->customer;
-        
+
         if (!$customer) {
             return response()->json([
                 'status' => 'error',
@@ -157,6 +157,8 @@ class CartController extends Controller
     {
         $request->validate([
             'payment_method' => ['required', 'in:cash,online'],
+            'is_delivery'      => ['required', 'boolean'],
+            'delivery_address' => ['required_if:is_delivery,true', 'string', 'max:500'],
         ]);
 
         $customer = $request->user()->customer;
@@ -179,13 +181,18 @@ class CartController extends Controller
         }
 
         $bill = DB::transaction(function () use ($cart, $customer, $request) {
-
+            // حساب رسوم التوصيل
+            $deliveryFee = $request->is_delivery ? 5000 : 0;
             $bill = Bill::create([
                 'customer_id'     => $customer->id,
-                'total_price'     => $cart->total_price,
+                'total_price'     => $cart->total_price + $deliveryFee,
                 'discount_amount'=> 0,
                 'status'          => 'paid',
                 'payment_method' => $request->payment_method,
+                'is_delivery'     => $request->is_delivery,
+                'delivery_address'=> $request->is_delivery ? $request->delivery_address : null,
+                'delivery_fee'    => $deliveryFee,
+                'delivery_status' => $request->is_delivery ? 'pending' : 'not_applicable',
             ]);
 
             foreach ($cart->details as $detail) {

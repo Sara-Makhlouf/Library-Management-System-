@@ -25,6 +25,10 @@ return new class extends Migration
             $table->enum('status', ['paid', 'unpaid', 'cancelled'])->default('unpaid'); // enum status
             $table->enum('payment_method', ['cash', 'online', 'points'])->nullable(); // enum payment_method
 
+            $table->boolean('is_delivery')->default(false);
+            $table->text('delivery_address')->nullable();
+            $table->enum('delivery_status', ['not_applicable', 'pending', 'preparing', 'out_for_delivery', 'delivered'])->default('not_applicable');
+            $table->decimal('delivery_fee', 10, 2)->default(0);
             $table->timestamps();
         });
     }

@@ -45,7 +45,7 @@ Route::get('/books/{id}',         [BookController::class, 'show']);
 // ==================== 2. Protected Routes (الروابط المحمية للمسجلين) ====================
 
 Route::middleware('auth:sanctum')->group(function () {
-    
+
     // --- بيانات المستخدم الحالي ---
     Route::get('/user', function (Request $request) {
         return $request->user();
@@ -84,7 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- الإشعارات (سارة وولاء) ---
     Route::post('/admin/notifications/global', [NotificationController::class, 'sendGlobalNotification']);
-    
+
     Route::prefix('notifications')->group(function () {
         Route::get('/', [NotificationController::class, 'index']);
         Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
@@ -141,6 +141,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('statistics/weekly-sales', [UserController::class, 'getWeeklySalesCount']);
         Route::get('statistics/weekly-borrows', [UserController::class, 'getWeeklyBorrowsCount']);
         Route::get('statistics/top-selling-books', [BookController::class, 'getTopSellingBooks']);
+
+        Route::get('delivery-requests', [BillController::class, 'deliveryRequests']);
+        Route::patch('bills/{id}/delivery-status', [BillController::class, 'updateDeliveryStatus']);
     });
 
 });
