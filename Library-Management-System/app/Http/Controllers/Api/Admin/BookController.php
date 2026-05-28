@@ -15,78 +15,78 @@ class BookController extends Controller
     /**
      * عرض كل الكتب مع دعم البحث المتقدم (دمج بين ولاء ومصطفى)
      */
-    public function index(Request $request)
-    {
-        $filters = $request->only([
-            'title',
-            'category_id',
-            'author_id',
-            'price_min',
-            'price_max',
-            'min_rating',
-        ]);
+public function index(Request $request)
+{
+    $filters = $request->only([
+        'title',
+        'category_id',
+        'author_id',
+        'price_min',
+        'price_max',
+        'min_rating',
+    ]);
 
-        $books = Book::with(['authors', 'category'])
-            ->withAvg('rating as avg_rating', 'rate')
-            // تفعيل فلاتر البحث والتحقق من كلمة البحث النصية عند ولاء
-            ->when($request->search, function ($query, $search) {
-                $query->where('title', 'like', "%{$search}%")
-                      ->orWhere('ISBN', 'like', "%{$search}%");
-            })
-            // تفعيل الفلاتر المتقدمة الخاصة بمصطفى في حال وجودها
-            ->when(!empty($filters), function ($query) use ($filters) {
-                if (isset($filters['category_id'])) $query->where('category_id', $filters['category_id']);
-                if (isset($filters['price_min'])) $query->where('price', '>=', $filters['price_min']);
-                if (isset($filters['price_max'])) $query->where('price', '<=', $filters['price_max']);
-            })
-            ->paginate(10);
+    $books = Book::with(['authors', 'category'])
+        ->withAvg('ratings as avg_rating', 'ratings.rate')
 
-        return response()->json($books);
-    }
+        ->when($request->search, function ($query, $search) {
+            $query->where('title', 'like', "%{$search}%")
+                  ->orWhere('ISBN', 'like', "%{$search}%");
+        })
+        ->when(!empty($filters), function ($query) use ($filters) {
+            if (isset($filters['category_id'])) $query->where('category_id', $filters['category_id']);
+            if (isset($filters['price_min'])) $query->where('price', '>=', $filters['price_min']);
+            if (isset($filters['price_max'])) $query->where('price', '<=', $filters['price_max']);
+        })
+        ->paginate(10);
 
+    return response()->json($books);
+}
     /**
      * إضافة كتاب جديد (كود ولاء)
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'ISBN'            => 'required|string|size:13|unique:books,ISBN',
-            'title'           => 'required|string|max:150',
-            'price'           => 'required|numeric|min:0',
-            'mortgage'        => 'nullable|numeric|min:0',
-            'category_id'     => 'required|exists:categories,id',
-            'authors'         => 'required|array',
-            'stock'           => 'required|integer|min:0',
-            'total_copies'    => 'required|integer|min:0',
-            'borrow_duration' => 'nullable|integer',
-            'is_digital'      => 'required|boolean',
-            'cover'           => 'nullable|image|max:2048',
-            'file_path'       => 'nullable|file|mimes:pdf,epub|max:10240',
-            'total_pages'     => 'nullable|integer',
-        ]);
+       $validated = $request->validate([
+        'ISBN'            => 'required|string|size:13|unique:books,ISBN',
+        'title'           => 'required|string|max:150',
+        'price'           => 'required|numeric|min:0',
+        'mortgage'        => 'nullable|numeric|min:0',
+        'category_id'     => 'required|exists:categories,id',
+        'authors'         => 'required|array',
+        'authors.*'       => 'exists:authors,id',
+        'stock'           => 'required|integer|min:0',
+        'total_copies'    => 'required|integer|min:0',
+        'borrow_duration' => 'nullable|integer',
+        'is_digital'      => 'required|boolean',
+        'cover'           => 'nullable|image|max:2048',
+        'file_path'       => 'required_if:is_digital,1|nullable|file|mimes:pdf,epub|max:10240',
+        'total_pages'     => 'nullable|integer',
+    ]);
 
         return DB::transaction(function () use ($request, $validated) {
 
-            $coverPath = $request->hasFile('cover')
-                ? $request->file('cover')->store('covers', 'public')
-                : null;
+        $coverPath = $request->hasFile('cover')
+            ? $request->file('cover')->store('covers', 'public')
+            : null;
 
-            $filePath = ($request->is_digital && $request->hasFile('file_path'))
-                ? $request->file('file_path')->store('books_files', 'public')
-                : null;
+        $filePath = ($request->is_digital && $request->hasFile('file_path'))
+            ? $request->file('file_path')->store('books_files', 'public')
+            : null;
 
-            $book = Book::create(array_merge($validated, [
-                'cover'     => $coverPath,
-                'file_path' => $filePath,
-            ]));
-            
-            $book->authors()->attach($request->authors);
-            
-            $book->stockOperations()->create([
-                'operation_type' => 'addition',
-                'quantity'       => $request->stock,
-                'note'           => 'إضافة مخزون أولية عند إنشاء الكتاب',
-            ]);
+        $bookData = $validated;
+        $bookData['cover'] = $coverPath;
+        $bookData['file_path'] = $filePath;
+
+        $book = Book::create($bookData);
+
+        $book->authors()->attach($request->authors);
+
+        $book->stockOperations()->create([
+            'operation_type' => 'addition',
+            'quantity'       => $validated['stock'],
+            'note'           => 'إضافة مخزون أولية عند إنشاء الكتاب',
+        ]);
 
             // 🔔 إشعار موحد: عند إضافة كتاب جديد
             try {
@@ -116,49 +116,52 @@ class BookController extends Controller
     /**
      * عرض تفاصيل كتاب محدد (دمج: بيانات ولاء + حساب متوسط التقييم لمصطفى)
      */
-    public function show($id)
-    {
-        $book = Book::with(['authors', 'category'])->findOrFail($id);
-        $book->loadAvg('rating as avg_rating', 'rate');
-        
-        return response()->json($book);
-    }
+   public function show($id)
+{
+    $book = Book::with(['authors', 'category'])->findOrFail($id);
+    $book->loadAvg('ratings as avg_rating', 'ratings.rate');
 
+    return response()->json($book);
+}
     /**
      * تعديل كتاب (كود ولاء)
      */
     public function update(Request $request, Book $book)
     {
         $validated = $request->validate([
-            'ISBN'            => 'required|string|size:13|unique:books,ISBN,' . $book->id,
-            'title'           => 'required|string|max:150',
-            'price'           => 'required|numeric|min:0',
-            'mortgage'        => 'nullable|numeric|min:0',
-            'category_id'     => 'required|exists:categories,id',
-            'authors'         => 'required|array',
-            'stock'           => 'required|integer|min:0',
-            'total_copies'    => 'required|integer|min:0',
-            'borrow_duration' => 'nullable|integer',
-            'is_digital'      => 'required|boolean',
-            'cover'           => 'nullable|image|max:2048',
-            'file_path'       => 'nullable|file|mimes:pdf,epub|max:10240',
-            'total_pages'     => 'nullable|integer',
-        ]);
+        'ISBN'            => 'sometimes|required|string|size:13|unique:books,ISBN,' . $book->id,
+        'title'           => 'sometimes|required|string|max:150',
+        'price'           => 'sometimes|required|numeric|min:0',
+        'mortgage'        => 'nullable|numeric|min:0',
+        'category_id'     => 'sometimes|required|exists:categories,id',
+        'authors'         => 'sometimes|required|array',
+        'stock'           => 'sometimes|required|integer|min:0',
+        'total_copies'    => 'sometimes|required|integer|min:0',
+        'borrow_duration' => 'nullable|integer',
+        'is_digital'      => 'sometimes|required|boolean',
+        'cover'           => 'nullable|image|max:2048',
+        'file_path'       => 'nullable|file|mimes:pdf,epub|max:10240',
+        'total_pages'     => 'nullable|integer',
+    ]);
 
-        return DB::transaction(function () use ($request, $validated, $book) {
+    return DB::transaction(function () use ($request, $validated, $book) {
 
-            if ($request->hasFile('cover')) {
-                if ($book->cover) Storage::disk('public')->delete($book->cover);
-                $validated['cover'] = $request->file('cover')->store('covers', 'public');
-            }
+        if ($request->hasFile('cover')) {
+            if ($book->cover) Storage::disk('public')->delete($book->cover);
+            $validated['cover'] = $request->file('cover')->store('covers', 'public');
+        }
 
-            if ($request->is_digital && $request->hasFile('file_path')) {
-                if ($book->file_path) Storage::disk('public')->delete($book->file_path);
-                $validated['file_path'] = $request->file('file_path')->store('books_files', 'public');
-            }
+        $isDigital = $request->has('is_digital') ? $request->is_digital : $book->is_digital;
 
-            $book->update($validated);
+        if ($isDigital && $request->hasFile('file_path')) {
+            if ($book->file_path) Storage::disk('public')->delete($book->file_path);
+            $validated['file_path'] = $request->file('file_path')->store('books_files', 'public');
+        }
+
+        $book->update($validated);
+        if ($request->has('authors')) {
             $book->authors()->sync($request->authors);
+        }
 
             // 🔔 إشعار موحد: عند تعديل بيانات الكتاب
             try {
@@ -188,15 +191,21 @@ class BookController extends Controller
     /**
      * حذف كتاب (كود ولاء)
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, Book $book)
     {
-        $book = Book::findOrFail($id);
+        try {
+        return DB::transaction(function () use ($request,$book) {
 
-        if ($book->cover) Storage::disk('public')->delete($book->cover);
-        if ($book->file_path) Storage::disk('public')->delete($book->file_path);
+            DB::table('book_stock_operations')->where('book_id', $book->id)->delete();
+            $book->authors()->detach();
 
-        $bookTitle = $book->title;
-        $book->delete();
+            if ($book->cover) Storage::disk('public')->delete($book->cover);
+            if ($book->file_path) Storage::disk('public')->delete($book->file_path);
+
+            $bookTitle = $book->title;
+            $bookId = $book->id;
+
+            $book->delete();
 
         // 🔔 إشعار موحد: عند حذف الكتاب من النظام
         try {
@@ -215,7 +224,14 @@ class BookController extends Controller
         }
 
         return response()->json(['message' => 'تم حذف الكتاب بنجاح']);
+    });
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'حدث خطأ أثناء الحذف: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * الإحصائيات: الكتب الأكثر مبيعاً (كود ولاء)

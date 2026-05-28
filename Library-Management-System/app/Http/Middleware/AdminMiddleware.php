@@ -19,7 +19,7 @@ class AdminMiddleware
         }
 
         $user = Auth::user();
-        if ($user->role !== 'admin') {
+        if ($user->type !== 'admin') {
             return response()->json([
                 'status' => 'error',
                 'message' => 'ليس لديك صلاحيات إدارية'

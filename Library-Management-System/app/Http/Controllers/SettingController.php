@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api; // توحيد الـ namespace مع بقية المشروع ✅
+namespace App\Http\Controllers; // توحيد الـ namespace مع بقية المشروع ✅
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;

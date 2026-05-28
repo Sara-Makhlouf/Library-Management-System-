@@ -21,9 +21,9 @@ use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\WaitingListController;
 
 // ==================== استيراد متحكمات مصطفى (المحدثة والموحدة) ====================
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\CartController;
-use App\Http\Controllers\Api\CustomerController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CustomerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,7 +35,7 @@ use App\Http\Controllers\Api\CustomerController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
-
+Route::post('/admin/login', [AuthController::class, 'adminLogin']);
 // راوتات الكتب العامة (ملاحظة مصطفى: ترتيب top-borrowed قبل {id} حرج جداً هنا)
 Route::get('/books/top-borrowed', [BookController::class, 'topBorrowed']);
 Route::get('/books',              [BookController::class, 'index']);
@@ -145,5 +145,5 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('delivery-requests', [BillController::class, 'deliveryRequests']);
         Route::patch('bills/{id}/delivery-status', [BillController::class, 'updateDeliveryStatus']);
     });
-
 });
+

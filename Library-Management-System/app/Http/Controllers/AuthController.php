@@ -1,22 +1,24 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\User;
 use App\Models\Notification;
-use App\Services\PointsService; 
+use App\Services\PointsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
     protected $pointsService;
 
-   
+
     public function __construct(PointsService $pointsService)
     {
         $this->pointsService = $pointsService;
@@ -65,7 +67,7 @@ class AuthController extends Controller
             );
 
             return $user;
-        }); 
+        });
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -157,4 +159,50 @@ class AuthController extends Controller
             'data' => ['token' => $token, 'token_type' => 'Bearer']
         ]);
     }
+
+
+    public function adminLogin(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'email'    => 'required|email',
+        'password' => 'required|string',
+    ],);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status'  => 'error',
+            'errors'  => $validator->errors()
+        ], 422);
+    }
+
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'بيانات الاعتماد المدخلة غير صحيحة'
+        ], 401);
+    }
+
+    if ($user->type !== 'admin') {
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'عذراً، هذا الحساب ليس لديه صلاحيات الإدمن للوصول'
+        ], 403);
+    }
+
+    $token = $user->createToken('admin_token')->plainTextToken;
+
+    return response()->json([
+        'status'  => 'success',
+        'message' => 'تم تسجيل دخول الإدمن بنجاح 🔑',
+        'token'   => $token,
+        'user'    => [
+            'id'    => $user->id,
+            'name'  => $user->name,
+            'email' => $user->email,
+            'type'  => $user->type
+        ]
+    ], 200);
+}
 }
