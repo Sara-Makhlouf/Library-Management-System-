@@ -71,7 +71,7 @@ class Notification extends Model
         ?array $data = null,
         ?model $relatedModel = null
     ): self {
-        return self::creat([
+        return self::create([
 
             'customer_id'  => $customerId,
             'type' => $type,

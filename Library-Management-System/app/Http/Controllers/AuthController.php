@@ -33,7 +33,7 @@ class AuthController extends Controller
             'phone'    => ['required', 'digits:10', 'unique:customers,phone'],
             'DOB'      => ['required', 'date', 'before:today'],
             'lang'     => ['sometimes', 'in:ar,en'],
-            'type'     => ['sometimes', 'in:admin,customer'],
+
             'avatar'   => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
@@ -57,7 +57,7 @@ class AuthController extends Controller
                 'lang'   => $validated['lang'] ?? 'ar',
                 'avatar' => $avatarPath,
             ]);
-
+             try {
             Notification::send(
                 $user->id,
                 'welcome_notification',
@@ -65,7 +65,7 @@ class AuthController extends Controller
                 'تم إنشاء حسابك بنجاح. استمتع برحلتك الثقافية واستكشف آلاف الكتب المتاحة لك.',
                 ['icon' => 'welcome_user', 'target_screen' => 'home_dashboard']
             );
-
+            } catch (\Exception $e) {}
             return $user;
         });
 
