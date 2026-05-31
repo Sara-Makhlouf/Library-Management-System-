@@ -1,8 +1,83 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color primary = Color(0xFFFA5C5C);
-  static const Color secondary = Color(0xFFFDBA6D);
-  static const Color background = Color(0xFFFBEF76);
-  static const Color textGrey = Color(0xFF233D40);
+  // الألوان الأساسية
+  static const Color primary = Color(0xFFB8A068); // اللون الذهبي
+
+  // ================= (الوضع الفاتح - Light Mode) =================
+  static const Color backgroundLight = Color(0xFFEAE2DA); // خلفية التطبيق
+  static const Color accentLight = Color(0xFFD8C8A8); // الهيدر العلوي (ورا اللوغو)
+  static const Color inputLight = Colors.white; // خلفية حقل الإدخال
+  static const Color iconLight = Color(0xFF685A39); // أيقونات الحقل
+  static const Color textLight = Color(0xFF605232); // النصوص الفاتحة
+
+  // ================= (الوضع الداكن - Dark Mode) =================
+  // الألوان المستخرجة بدقة من تصميمك
+  static const Color backgroundDark = Color( 0xFF181612); // خلفية التطبيق الداكنة
+  static const Color accentDark = Color(0xFF23201B); // الهيدر العلوي
+  static const Color inputDark = Color(0xFF2E2A25); // خلفية حقل الإدخال بالدارك
+  static const Color iconDark = Color(0xFFB8A068); // استخدمت الذهبي الأساسي ليكون بارز، أو فيك تحط (0xFFEAE2DA) إذا بدك ياه نفس لون النص
+  static const Color textDark = Color(0xFFEAE2DA); // النصوص بالدارك (أبيض كريمي)
+  static const Color darkCard = Color(0xFF26221D); // لون بني دافئ لبطاقات الكتب
+
+}
+
+class AppTheme {
+  // ================= ثيم الوضع الفاتح =================
+  static ThemeData lightTheme = ThemeData(
+    brightness: Brightness.light,
+    primaryColor: AppColors.primary,
+    scaffoldBackgroundColor: AppColors.backgroundLight,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: AppColors.backgroundLight,
+      elevation: 0,
+      iconTheme: IconThemeData(color: AppColors.textLight),
+      titleTextStyle: TextStyle(
+        color: AppColors.textLight,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+    // توحيد شكل حقول الإدخال (لحتى ما تكتب الكود بكل واجهة)
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: AppColors.inputLight,
+      prefixIconColor: AppColors.iconLight,
+      hintStyle: const TextStyle(color: AppColors.textLight),
+      contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+    ),
+  );
+
+  // ================= ثيم الوضع الداكن =================
+  static ThemeData darkTheme = ThemeData(
+    brightness: Brightness.dark,
+    primaryColor: AppColors.primary,
+    scaffoldBackgroundColor: AppColors.backgroundDark,
+    appBarTheme: const AppBarTheme(
+      backgroundColor: AppColors.backgroundDark,
+      elevation: 0,
+      iconTheme: IconThemeData(color: AppColors.textDark),
+      titleTextStyle: TextStyle(
+        color: AppColors.textDark,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+    // إعداد حقول الإدخال للوضع الداكن
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: AppColors.inputDark,
+      prefixIconColor: AppColors.primary, // الأيقونة ذهبية بالدارك لتبرز
+      hintStyle: const TextStyle(color: Colors.white70), // نص الـ hint مقروء
+      contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+    ),
+  );
 }
