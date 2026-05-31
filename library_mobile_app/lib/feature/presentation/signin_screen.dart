@@ -2,9 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:library_mobile_app/core/components/custom_button.dart';
+import 'package:library_mobile_app/core/components/decorCircle.dart';
+import 'package:library_mobile_app/core/components/shake_widget.dart';
+import 'package:library_mobile_app/core/components/social_button.dart';
+import 'package:library_mobile_app/core/components/theme_toggle.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/core/theme_cubit.dart';
+import 'package:library_mobile_app/feature/notifications/notifications_screen.dart';
 import 'package:library_mobile_app/feature/presentation/register.dart';
+import 'package:library_mobile_app/core/components/custom_input_field.dart';
+import 'package:library_mobile_app/core/components/custom_button.dart';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
@@ -18,7 +26,7 @@ class _SigninScreenState extends State<SigninScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
-  final _shakeKey = GlobalKey<_ShakeWidgetState>();
+  final _shakeKey = GlobalKey<ShakeWidgetState>();
 
   @override
   void dispose() {
@@ -51,7 +59,7 @@ class _SigninScreenState extends State<SigninScreen> {
           Positioned(
             top: -60,
             left: -60,
-            child: _DecorCircle(
+            child: DecorCircle(
               size: 220,
               color: AppColors.primary,
               opacity: isDark ? 0.08 : 0.13,
@@ -60,7 +68,7 @@ class _SigninScreenState extends State<SigninScreen> {
           Positioned(
             top: size.height * 0.15,
             right: -80,
-            child: _DecorCircle(
+            child: DecorCircle(
               size: 180,
               color: AppColors.primary,
               opacity: isDark ? 0.05 : 0.09,
@@ -69,7 +77,7 @@ class _SigninScreenState extends State<SigninScreen> {
           Positioned(
             top: size.height * 0.35,
             left: size.width * 0.2,
-            child: _DecorCircle(
+            child: DecorCircle(
               size: 120,
               color: AppColors.primary,
               opacity: isDark ? 0.04 : 0.07,
@@ -118,7 +126,7 @@ class _SigninScreenState extends State<SigninScreen> {
           Positioned(
             top: MediaQuery.of(context).padding.top + 12,
             right: 16,
-            child: _ThemeToggle(isDark: isDark)
+            child: ThemeToggle(isDark: isDark)
                 .animate(delay: 400.ms)
                 .fadeIn(duration: 400.ms)
                 .slideX(begin: 0.3, end: 0),
@@ -127,7 +135,7 @@ class _SigninScreenState extends State<SigninScreen> {
           Align(
             alignment: Alignment.bottomCenter,
             child:
-                _ShakeWidget(
+                ShakeWidget(
                       key: _shakeKey,
                       child: Container(
                         width: double.infinity,
@@ -199,7 +207,7 @@ class _SigninScreenState extends State<SigninScreen> {
 
                               const SizedBox(height: 32),
 
-                              _InputField(
+                              CustomInputField(
                                     controller: _phoneController,
                                     hint: 'Phone number',
                                     icon: Icons.phone_android_rounded,
@@ -212,7 +220,7 @@ class _SigninScreenState extends State<SigninScreen> {
 
                               const SizedBox(height: 14),
 
-                              _InputField(
+                              CustomInputField(
                                     controller: _passwordController,
                                     hint: 'Password',
                                     icon: Icons.lock_outline_rounded,
@@ -247,7 +255,14 @@ class _SigninScreenState extends State<SigninScreen> {
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: TextButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            NotificationsScreen(),
+                                      ),
+                                    );
+                                  },
                                   style: TextButton.styleFrom(
                                     padding: EdgeInsets.zero,
                                     minimumSize: Size.zero,
@@ -267,9 +282,10 @@ class _SigninScreenState extends State<SigninScreen> {
 
                               const SizedBox(height: 24),
 
-                              _LoginButton(
+                              CustomButton(
                                     isLoading: _isLoading,
                                     onTap: _onLogin,
+                                    text: 'Login',
                                   )
                                   .animate(delay: 420.ms)
                                   .fadeIn()
@@ -318,23 +334,23 @@ class _SigninScreenState extends State<SigninScreen> {
 
                               Row(
                                 children: [
-                                  _SocialButton(
+                                  SocialButton(
                                     label: 'Google',
                                     icon: FontAwesomeIcons.google,
                                     iconColor: const Color(0xFFEA4335),
                                     isDark: isDark,
                                   ),
                                   const SizedBox(width: 10),
-                                  _SocialButton(
+                                  SocialButton(
                                     label: 'Facebook',
                                     icon: FontAwesomeIcons.facebook,
                                     iconColor: const Color(0xFF1877F2),
                                     isDark: isDark,
                                   ),
                                   const SizedBox(width: 10),
-                                  _SocialButton(
-                                    label: 'Apple',
-                                    icon: FontAwesomeIcons.apple,
+                                  SocialButton(
+                                    label: 'Twitter',
+                                    icon: FontAwesomeIcons.twitter,
                                     iconColor: isDark
                                         ? Colors.white
                                         : Colors.black,
@@ -402,290 +418,11 @@ class _SigninScreenState extends State<SigninScreen> {
 }
 
 // ── Decorative background circle ──────────────────────────────────────────
-class _DecorCircle extends StatelessWidget {
-  final double size;
-  final Color color;
-  final double opacity;
-
-  const _DecorCircle({
-    required this.size,
-    required this.color,
-    required this.opacity,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color.withOpacity(opacity),
-      ),
-    );
-  }
-}
 
 // ── Theme toggle pill ──────────────────────────────────────────────────────
-class _ThemeToggle extends StatelessWidget {
-  final bool isDark;
-  const _ThemeToggle({required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.read<ThemeCubit>().toggleTheme(),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.inputDark : Colors.white.withOpacity(0.85),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isDark ? Colors.white12 : Colors.black12,
-            width: 0.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
-              size: 15,
-              color: AppColors.primary,
-            ),
-            const SizedBox(width: 5),
-            Text(
-              isDark ? 'Dark' : 'Light',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: isDark ? AppColors.textDark : AppColors.textLight,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Input field ───────────────────────────────────────────────────────────
-class _InputField extends StatelessWidget {
-  final TextEditingController controller;
-  final String hint;
-  final IconData icon;
-  final bool isDark;
-  final bool obscure;
-  final TextInputType keyboardType;
-  final Widget? suffixIcon;
-
-  const _InputField({
-    required this.controller,
-    required this.hint,
-    required this.icon,
-    required this.isDark,
-    this.obscure = false,
-    this.keyboardType = TextInputType.text,
-    this.suffixIcon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      obscureText: obscure,
-      keyboardType: keyboardType,
-      cursorColor: AppColors.primary,
-      style: TextStyle(
-        fontSize: 14,
-        color: isDark ? AppColors.textDark : AppColors.textLight,
-      ),
-      decoration: InputDecoration(
-        hintText: hint,
-        prefixIcon: Icon(icon, size: 18, color: AppColors.primary),
-        suffixIcon: suffixIcon,
-        filled: true,
-        fillColor: isDark ? AppColors.inputDark : AppColors.backgroundLight,
-        hintStyle: TextStyle(
-          fontSize: 13,
-          color: isDark
-              ? AppColors.textDark.withOpacity(0.35)
-              : AppColors.textLight.withOpacity(0.4),
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: isDark
-                ? Colors.white.withOpacity(0.06)
-                : Colors.black.withOpacity(0.06),
-            width: 0.5,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 16,
-          horizontal: 16,
-        ),
-      ),
-    );
-  }
-}
 
 // ── Login button ──────────────────────────────────────────────────────────
-class _LoginButton extends StatelessWidget {
-  final bool isLoading;
-  final VoidCallback onTap;
-
-  const _LoginButton({required this.isLoading, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          elevation: 0,
-        ),
-        child: isLoading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
-                ),
-              )
-            : const Text(
-                'Login',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                ),
-              ),
-      ),
-    );
-  }
-}
 
 // ── Social button ─────────────────────────────────────────────────────────
-class _SocialButton extends StatelessWidget {
-  final String label;
-  final FaIconData icon;
-  final Color iconColor;
-  final bool isDark;
-
-  const _SocialButton({
-    required this.label,
-    required this.icon,
-    required this.iconColor,
-    required this.isDark,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        height: 46,
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.inputDark : AppColors.backgroundLight,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark
-                ? Colors.white.withOpacity(0.07)
-                : Colors.black.withOpacity(0.07),
-            width: 0.5,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FaIcon(icon, size: 18, color: iconColor),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: isDark ? AppColors.textDark : AppColors.textLight,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // ── Shake widget ──────────────────────────────────────────────────────────
-class _ShakeWidget extends StatefulWidget {
-  final Widget child;
-  const _ShakeWidget({super.key, required this.child});
-
-  @override
-  State<_ShakeWidget> createState() => _ShakeWidgetState();
-}
-
-class _ShakeWidgetState extends State<_ShakeWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _anim;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    );
-    _anim = Tween<double>(begin: 0, end: 1).animate(_ctrl);
-  }
-
-  void shake() {
-    _ctrl.forward(from: 0);
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _anim,
-      builder: (_, child) {
-        final dx = _ctrl.isAnimating
-            ? 6 *
-                  (0.5 - (_anim.value * 6 % 1).abs()).sign *
-                  (_anim.value < 0.8 ? 1 : 0)
-            : 0.0;
-        return Transform.translate(offset: Offset(dx, 0), child: child);
-      },
-      child: widget.child,
-    );
-  }
-}

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:library_mobile_app/core/components/onboarding_dot.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/presentation/onboarding_three.dart';
+
 class OnboardingTwo extends StatelessWidget {
   const OnboardingTwo({super.key});
 
@@ -11,8 +13,11 @@ class OnboardingTwo extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-
-          Image.asset('assets/images/book2.jpg', fit: BoxFit.cover, alignment: Alignment.topCenter),
+          Image.asset(
+            'assets/images/book2.jpg',
+            fit: BoxFit.cover,
+            alignment: Alignment.topCenter,
+          ),
 
           Container(
             decoration: BoxDecoration(
@@ -31,110 +36,128 @@ class OnboardingTwo extends StatelessWidget {
           ),
 
           // skip
-          
 
           // bottom content
           Positioned(
-            bottom: 0, left: 0, right: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
             child: Container(
-              padding: EdgeInsets.fromLTRB(24, 28, 24, MediaQuery.of(context).padding.bottom + 24),
+              padding: EdgeInsets.fromLTRB(
+                24,
+                28,
+                24,
+                MediaQuery.of(context).padding.bottom + 24,
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
-                  const Text('HIBR & WARAQ',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
-                      color: Colors.white70, letterSpacing: 1.5)),
+                  const Text(
+                    'HIBR & WARAQ',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white70,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
 
                   const SizedBox(height: 12),
 
-                  const Text('Every Book\nHas a Story.',
-                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold,
-                      color: Colors.white, height: 1.25))
-                      .animate().fadeIn(duration: 400.ms).slideY(begin: 0.1, end: 0),
+                  const Text(
+                        'Every Book\nHas a Story.',
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          height: 1.25,
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(duration: 400.ms)
+                      .slideY(begin: 0.1, end: 0),
 
                   const SizedBox(height: 8),
 
-                  Text('Dive deep into any book — read previews, reviews, and discover new worlds.',
-                    style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.65), height: 1.6))
-                      .animate(delay: 100.ms).fadeIn(duration: 400.ms),
+                  Text(
+                    'Dive deep into any book — read previews, reviews, and discover new worlds.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withOpacity(0.65),
+                      height: 1.6,
+                    ),
+                  ).animate(delay: 100.ms).fadeIn(duration: 400.ms),
 
                   const SizedBox(height: 24),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      Row(
+                        children: [
+                          OnboardingDot(isActive: false),
+                          OnboardingDot(isActive: true),
+                          OnboardingDot(isActive: false),
+                        ],
+                      ),
 
-                      Row(children: [
-                        _Dot(active: false),
-                        _Dot(active: true),
-                        _Dot(active: false),
-                      ]),
-
-                      Row(children: [
-
-                        // back
-                        GestureDetector(
-                          onTap: () => Navigator.of(context).pop(),
-                          child: Container(
-                            width: 48, height: 48,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: Colors.white.withOpacity(0.2), width: 0.5),
+                      Row(
+                        children: [
+                          // back
+                          GestureDetector(
+                            onTap: () => Navigator.of(context).pop(),
+                            child: Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.2),
+                                  width: 0.5,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.arrow_back_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                             ),
-                            child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
                           ),
-                        ),
 
-                        const SizedBox(width: 10),
+                          const SizedBox(width: 10),
 
-                        // next
-                        GestureDetector(
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const OnboardingThree()),
-                          ),
-                          child: Container(
-                            width: 56, height: 48,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(14),
+                          // next
+                          GestureDetector(
+                            onTap: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const OnboardingThree(),
+                              ),
                             ),
-                            child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 22),
+                            child: Container(
+                              width: 56,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Icon(
+                                Icons.arrow_forward_rounded,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                            ),
                           ),
-                        ),
-
-                      ]),
-
+                        ],
+                      ),
                     ],
                   ),
-
                 ],
               ),
             ),
           ),
-
         ],
-      ),
-    );
-  }
-}
-
-class _Dot extends StatelessWidget {
-  final bool active;
-  const _Dot({required this.active});
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      width: active ? 20 : 6,
-      height: 4,
-      margin: const EdgeInsets.only(right: 5),
-      decoration: BoxDecoration(
-        color: active ? AppColors.primary : Colors.white.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(3),
       ),
     );
   }

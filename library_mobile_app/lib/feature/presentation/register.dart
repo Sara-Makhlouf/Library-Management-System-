@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:library_mobile_app/core/components/social_button.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/presentation/books/book.dart';
 import 'package:library_mobile_app/feature/presentation/signin_screen.dart';
@@ -323,23 +324,23 @@ class _RegisterState extends State<Register> {
 
                             Row(
                               children: [
-                                _SocialBtn(
+                                SocialButton(
                                   label: 'Google',
                                   icon: FontAwesomeIcons.google,
                                   iconColor: const Color(0xFFEA4335),
                                   isDark: isDark,
                                 ),
                                 const SizedBox(width: 10),
-                                _SocialBtn(
+                                SocialButton(
                                   label: 'Facebook',
                                   icon: FontAwesomeIcons.facebook,
                                   iconColor: const Color(0xFF1877F2),
                                   isDark: isDark,
                                 ),
                                 const SizedBox(width: 10),
-                                _SocialBtn(
-                                  label: 'Apple',
-                                  icon: FontAwesomeIcons.apple,
+                                SocialButton(
+                                  label: 'Twitter',
+                                  icon: FontAwesomeIcons.twitter,
                                   iconColor: isDark
                                       ? Colors.white
                                       : Colors.black,
@@ -511,50 +512,4 @@ class _Field extends StatelessWidget {
 }
 
 // ── Social button ─────────────────────────────────────────────────────────
-class _SocialBtn extends StatelessWidget {
-  final String label;
-  final FaIconData icon;
-  final Color iconColor;
-  final bool isDark;
 
-  const _SocialBtn({
-    required this.label,
-    required this.icon,
-    required this.iconColor,
-    required this.isDark,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        height: 46,
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.inputDark : AppColors.backgroundLight,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark
-                ? Colors.white.withOpacity(0.07)
-                : Colors.black.withOpacity(0.07),
-            width: 0.5,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FaIcon(icon, size: 18, color: iconColor),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: isDark ? AppColors.textDark : AppColors.textLight,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
