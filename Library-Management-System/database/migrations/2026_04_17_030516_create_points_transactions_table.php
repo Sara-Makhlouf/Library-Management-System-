@@ -18,6 +18,7 @@ return new class extends Migration
 
             // نوع العملية: مثلاً كسب من قراءة كتاب، أو خصم عند شراء
             $table->enum('transaction_type', ['earn', 'redeem', 'refund']); 
+            $table->string('reason')->nullable();
 
             $table->timestamp('created_at')->useCurrent(); 
         });

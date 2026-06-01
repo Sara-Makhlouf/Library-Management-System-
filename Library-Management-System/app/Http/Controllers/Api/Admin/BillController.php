@@ -1,0 +1,133 @@
+<?php
+
+namespace App\Http\Controllers\Api\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Bill;
+use App\Models\Notification;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+
+class BillController extends Controller
+{
+    /**
+     * عرض كل الفواتير
+     */
+    public function index(): JsonResponse
+    {
+        $bills = Bill::with('customer')
+            ->latest()
+            ->paginate(15);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $bills
+        ]);
+    }
+
+    /**
+     * عرض تفاصيل فاتورة محددة
+     */
+    public function show($id): JsonResponse
+    {
+        $bill = Bill::with(['customer', 'books'])->findOrFail($id);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $bill
+        ]);
+    }
+
+    /**
+     * حساب إجمالي الإيرادات
+     */
+    public function totalRevenue(Request $request): JsonResponse
+    {
+        $total = Bill::where('status', 'paid')->sum('total_price');
+
+        // 🔔 إرسال الإشعار الموحد باستخدام الـ ID الآمن من الـ Token
+        try {
+            Notification::send(
+                $request->user()->id,
+                'revenue_checked',
+                'استعلام عن الإيرادات 💰',
+                "تم طلب تقرير إجمالي الإيرادات، والمجموع الحالي هو: {$total} ل.س.",
+                [
+                    'icon' => 'revenue_chart',
+                    'target_screen' => 'admin_dashboard'
+                ]
+            );
+        } catch (\Exception $e) {
+            // تجاوز أي خطأ طارئ لضمان استقرار العملية
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'total_revenue' => $total
+        ]);
+    }
+
+    /**
+ * جلب كافة الفواتير التي طلبت خدمة التوصيل
+ */
+public function deliveryRequests(Request $request)
+{
+    $bills = Bill::with('customer.user')
+        ->where('is_delivery', true)
+        ->when($request->status, function ($query, $status) {
+            return $query->where('delivery_status', $status);
+        })
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+    return response()->json([
+        'status' => 'success',
+        'data' => $bills
+    ]);
+}
+/**
+ * تحديث حالة التوصيل (قيد التجهيز -> خرج للتوصيل -> تم التسليم)
+ */
+public function updateDeliveryStatus(Request $request, int $id)
+{
+    $request->validate([
+        'delivery_status' => 'required|in:pending,preparing,out_for_delivery,delivered'
+    ]);
+
+    $bill = Bill::findOrFail($id);
+
+    if (!$bill->is_delivery) {
+        return response()->json(['message' => 'هذه الفاتورة ليست طلب توصيل'], 422);
+    }
+
+    $bill->update([
+        'delivery_status' => $request->delivery_status
+    ]);
+    try {
+    Notification::send(
+        $bill->customer->user_id,
+        'delivery_update',
+        'تحديث حالة الطلب 🚚',
+        "تم تحديث حالة توصيل طلبك رقم (#{$bill->id}) إلى: " . $this->translateStatus($request->delivery_status),
+        ['bill_id' => $bill->id]
+    );
+} catch (\Exception $e) {
+            // تجاوز أي خطأ طارئ لضمان استقرار العملية
+        }
+    return response()->json([
+        'status' => 'success',
+        'message' => 'تم تحديث حالة التوصيل بنجاح',
+        'data' => $bill
+    ]);
+}
+
+private function translateStatus($status) {
+    $statuses = [
+        'pending' => 'قيد الانتظار',
+        'preparing' => 'جاري التجهيز',
+        'out_for_delivery' => 'خرج للتوصيل',
+        'delivered' => 'تم التسليم بنجاح'
+    ];
+    return $statuses[$status] ?? $status;
+}
+}

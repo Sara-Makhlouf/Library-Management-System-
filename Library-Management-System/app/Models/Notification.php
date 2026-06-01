@@ -9,20 +9,23 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Notification extends Model
 {
-    public const TYPE_BOOK_AVAILABLE = 'book_available';
-    public const TYPE_OVERDUE_RETURN  = 'overdue_return';
-
-   
-    public const RELATED_WAITING_LIST = 'waiting_list';
-    public const RELATED_TRANSACTION  = 'transaction';
+    // 1. ثوابت أنواع الإشعارات الشاملة لتغطية كل أحداث التطبيق
+    public const TYPE_BOOK_AVAILABLE   = 'book_available';
+    public const TYPE_OVERDUE_RETURN   = 'overdue_return';
+    public const TYPE_POINTS_EARNED    = 'points_earned';
+    public const TYPE_POINTS_DEDUCTED  = 'points_deducted';
+    public const TYPE_PURCHASE_SUCCESS = 'purchase_success';
+    public const TYPE_ACCOUNT_STATUS   = 'account_status';
 
     public $timestamps = false;
+
 
     protected $fillable = [
         'customer_id',
         'type',
         'title',
         'body',
+        'data',
         'related_id',
         'related_type',
         'is_read',
@@ -30,27 +33,27 @@ class Notification extends Model
         'created_at',
     ];
 
+
     protected $casts = [
         'is_read'    => 'boolean',
+        'data'       => 'array',
         'sent_at'    => 'datetime',
         'created_at' => 'datetime',
     ];
 
-    
 
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
-    
+    // علاقة الـ Morph القياسية لربط الإشعار بأي موديل آخر في المشروع
     public function related(): MorphTo
     {
         return $this->morphTo();
     }
 
-   
-
+    // Scopes لجلب الإشعارات غير المقروءة أو التصفية حسب العميل
     public function scopeUnread(Builder $query): Builder
     {
         return $query->where('is_read', false);
@@ -60,34 +63,25 @@ class Notification extends Model
     {
         return $query->where('customer_id', $customerId);
     }
-
-    
-
-    public static function sendBookAvailable(int $customerId, int $waitingListId, string $bookTitle): self
-{
-    return self::create([
-        'customer_id'  => $customerId,
-        'type'         => self::TYPE_BOOK_AVAILABLE,
-        'title'        => 'الكتاب متاح الآن',
-        'body'         => "الكتاب الذي طلبته «{$bookTitle}» أصبح متاحاً للاستعارة.",
-        'related_id'   => $waitingListId,
-        'related_type' => self::RELATED_WAITING_LIST, // نستخدم الثابت 'waiting_list'
-        'sent_at'      => now(),
-        'created_at'   => now(),
-    ]);
-}
-
-    public static function sendOverdueReturn(int $customerId, int $transactionId, string $bookTitle): self
-    {
+    public static function send(
+        int $customerId,
+        string $type,
+        string $title,
+        string $body,
+        ?array $data = null,
+        ?model $relatedModel = null
+    ): self {
         return self::create([
+
             'customer_id'  => $customerId,
-            'type'         => self::TYPE_OVERDUE_RETURN,
-            'title'        => 'تذكير بإعادة الكتاب',
-            'body'         => "تجاوز موعد إعادة كتاب «{$bookTitle}»، يرجى إعادته في أقرب وقت.",
-            'related_id'   => $transactionId,
-            'related_type' => Transaction::class, // نستخدم اسم الكلاس مباشرة
-            'sent_at'      => now(),
-            'created_at'   => now(),
+            'type' => $type,
+            'title' => $title,
+            'body' => $body,
+            'data' => $data,
+            'related_id'   => $relatedModel ? $relatedModel->getKey() : null,
+            'related_type' => $relatedModel ? $relatedModel->getMorphClass() : null,
+            'sent_at' => now(),
+            'created_at' => now(),
         ]);
     }
 }

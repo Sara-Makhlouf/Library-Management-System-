@@ -37,7 +37,7 @@ class Book extends Model
         'mortgage' => 'decimal:2',
     ];
 
-   
+
 
     /**
      * التصنيف الذي ينتمي إليه الكتاب.
@@ -57,7 +57,7 @@ class Book extends Model
 
     /**
      * الزبائن الذين أضافوا هذا الكتاب للمفضلة.
-     
+
      */
     public function favoritedBy(): BelongsToMany
     {
@@ -90,8 +90,15 @@ class Book extends Model
     {
         return $this->hasMany(WaitingList::class);
     }
+    /**
+ * سجل عمليات المخزون الخاصة بهذا الكتاب.
+ */
+public function stockOperations(): HasMany
+{
+    return $this->hasMany(BookStockOperation::class);
+}
 
-    // --- أدوات البحث والفلترة 
+    // --- أدوات البحث والفلترة
 
     public function scopeSearch($query, array $filters = [])
     {

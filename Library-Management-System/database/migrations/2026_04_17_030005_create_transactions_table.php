@@ -16,16 +16,14 @@ return new class extends Migration
             $table->foreignId('bill_id')->constrained();
             $table->foreignId('book_id')->constrained();
 
-            $table->decimal('price', 10, 2);
-            $table->decimal('mortgage', 10, 2);
-            $table->decimal('extra_price', 10, 2)->default(0);
+            $table->decimal('price', 10, 2); 
+            $table->decimal('extra_price', 10, 2)->default(0); 
 
             $table->timestamp('delivered_at');
             $table->timestamp('due_date')->nullable();
-            $table->timestamp('returned_at')->nullable();;
-            $table->decimal('customer_return_amount', 10, 2)->nullable();
+            $table->timestamp('returned_at')->nullable();
 
-            $table->enum('status', ['reserved', 'received', 'returned', 'expired']);
+            $table->enum('status', ['reserved', 'received', 'returned', 'expired'])->default('reserved');
             $table->timestamps();
         });
     }
