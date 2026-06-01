@@ -23,10 +23,7 @@ import {
 
 import { useDashboard } from "../../Core/Context/DashboardContext";
 
-/* ================= CONFIG ================= */
 
-
-/* ================= ADS ================= */
 
 const ADS = [
   {
@@ -45,8 +42,6 @@ const ADS = [
     img: "https://illustrations.popsy.co/gray/savings.svg",
   },
 ];
-
-/* ================= COMPONENT ================= */
 
 export default function Dashboard() {
   const [adIndex, setAdIndex] = useState(0);
@@ -69,7 +64,6 @@ export default function Dashboard() {
 
   const currentAd = ADS[adIndex];
 
-  /* ================= STATS FROM API ================= */
 
   const statsCards = useMemo(() => {
     if (!dashboardStats) return [];
@@ -101,7 +95,6 @@ export default function Dashboard() {
     }));
   }, [dashboardStats, totalRevenue, waitingList]);
 
-  /* ================= LOADING ================= */
 
   if (loading) {
     return (
@@ -128,7 +121,6 @@ export default function Dashboard() {
         fontFamily: "Inter, sans-serif",
       }}
     >
-      {/* ================= NAVBAR ================= */}
 
       <Box
         sx={{
@@ -164,7 +156,6 @@ export default function Dashboard() {
 
       <Box height={80} />
 
-      {/* ================= HERO ================= */}
 
       <Box
         sx={{
@@ -174,7 +165,6 @@ export default function Dashboard() {
           mb: 4,
         }}
       >
-        {/* HERO CARD */}
 
         <Box
           sx={{
@@ -214,7 +204,6 @@ export default function Dashboard() {
           </Button>
         </Box>
 
-        {/* ADS */}
 
         <Box
           sx={{
@@ -261,7 +250,6 @@ export default function Dashboard() {
         </Box>
       </Box>
 
-      {/* ================= STATS ================= */}
 
       <Box
         sx={{
@@ -314,7 +302,6 @@ export default function Dashboard() {
         ))}
       </Box>
 
-      {/* ================= CHARTS ================= */}
 
       <Box
         sx={{
@@ -323,7 +310,7 @@ export default function Dashboard() {
           gap: 3,
         }}
       >
-        {/* AREA CHART */}
+       
 
         <Box
           sx={{
@@ -357,7 +344,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </Box>
 
-        {/* TOP BORROWED */}
+     
 
         <Box
           sx={{
@@ -396,7 +383,7 @@ export default function Dashboard() {
         </Box>
       </Box>
 
-      {/* ================= WAITING LIST ================= */}
+      
 
       <Box
         sx={{

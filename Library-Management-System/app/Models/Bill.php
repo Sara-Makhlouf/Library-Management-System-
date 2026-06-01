@@ -26,7 +26,7 @@ class Bill extends Model
         'discount_amount' => 'decimal:2',
     ];
 
-    /**
+    /*
      * ربط الفاتورة بالعميل
      */
     public function customer(): BelongsTo
@@ -40,11 +40,11 @@ class Bill extends Model
         return $this->hasMany(BillDetail::class);
     }
 
-    
+
     public function books(): BelongsToMany
     {
         return $this->belongsToMany(Book::class, 'bill_details')
-                    ->withPivot('quantity', 'unit_price') // لجلب بيانات الجدول الوسيط
-                    ->withTimestamps();
+            ->withPivot('quantity', 'unit_price') // لجلب بيانات الجدول الوسيط
+            ->withTimestamps();
     }
 }

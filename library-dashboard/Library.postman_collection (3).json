@@ -1,0 +1,1818 @@
+{
+  "info": {
+    "_postman_id": "ae009fb2-abde-40da-963d-c9576120d9fd",
+    "name": "Library",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "50337626",
+    "_collection_link": "https://go.postman.co/collection/50337626-ae009fb2-abde-40da-963d-c9576120d9fd?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "روابط الادمن",
+      "item": [
+        {
+          "name": "اضافة مؤلف",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "LKMlFMM0CjV3o5VaFC2gprZUdss2H3SWlz2rRJhqea61a2db",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/authors?name=محمد الأحمد&birth_date=1990-01-12&country=syria",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "authors"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "محمد الأحمد"
+                },
+                {
+                  "key": "birth_date",
+                  "value": "1990-01-12",
+                  "type": "text"
+                },
+                {
+                  "key": "country",
+                  "value": "syria",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "عرض كل المؤلفين",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "LKMlFMM0CjV3o5VaFC2gprZUdss2H3SWlz2rRJhqea61a2db",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/authors",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "authors"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "اضافة تصنيف",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "LKMlFMM0CjV3o5VaFC2gprZUdss2H3SWlz2rRJhqea61a2db",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/categories?name=البرمجة",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "categories"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "البرمجة"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "عرض قائمة التصنيفات",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "LKMlFMM0CjV3o5VaFC2gprZUdss2H3SWlz2rRJhqea61a2db",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/categories/list",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "categories",
+                "list"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "اضافة كتاب",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "LKMlFMM0CjV3o5VaFC2gprZUdss2H3SWlz2rRJhqea61a2db",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "ISBN",
+                  "value": "9781234567890",
+                  "type": "text",
+                  "uuid": "d150603b-d61c-4f48-ae8c-58b733cd7972"
+                },
+                {
+                  "key": "title",
+                  "value": "هندسة الشبكات المتقدمة",
+                  "type": "text",
+                  "uuid": "b5db8418-ea2e-4289-9464-3f0169ac9b54"
+                },
+                {
+                  "key": "price",
+                  "value": "50.00",
+                  "type": "text",
+                  "uuid": "68f8e586-4ebc-4e4e-9a41-3a5af8765bb0"
+                },
+                {
+                  "key": "category_id",
+                  "value": "1",
+                  "type": "text",
+                  "uuid": "bebe6ab3-2696-48dd-aae4-5081a55e555c"
+                },
+                {
+                  "key": "authors[]",
+                  "value": "1",
+                  "type": "text",
+                  "uuid": "4c61374e-1b00-4014-8f54-bc30fec051f7"
+                },
+                {
+                  "key": "stock",
+                  "value": "10",
+                  "type": "text",
+                  "uuid": "095c0c5b-deb1-430b-98d1-b51b106c3e39"
+                },
+                {
+                  "key": "total_copies",
+                  "value": "10",
+                  "type": "text",
+                  "uuid": "1d7dada7-ecb5-4e5e-ac47-e8c3e4a191f3"
+                },
+                {
+                  "key": "is_digital",
+                  "value": "1",
+                  "type": "text",
+                  "uuid": "a796ac9a-8cbc-4f1b-8002-5fa27d3e8988"
+                },
+                {
+                  "key": "cover",
+                  "type": "file",
+                  "uuid": "76ff22c5-7d5c-469f-bbbb-4d45a32be644",
+                  "src": "/C:/Users/asus/Pictures/1.png"
+                },
+                {
+                  "key": "file_path",
+                  "type": "file",
+                  "uuid": "f37a2279-b988-4d79-8106-bcf95392524a",
+                  "src": "/C:/Users/asus/Downloads/Telegram Desktop/مشروع 2026.pdf"
+                },
+                {
+                  "key": "total_pages",
+                  "value": "100",
+                  "type": "text",
+                  "uuid": "71162b2d-1c76-47ad-837b-add8129b00cb"
+                },
+                {
+                  "key": "borrow_duration",
+                  "value": "3",
+                  "type": "text",
+                  "uuid": "cf742398-ede6-4cdc-bd40-b1cb6766757f"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/books",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "books"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "عرض كل الكتب مع  امكانية الفلترة",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "LKMlFMM0CjV3o5VaFC2gprZUdss2H3SWlz2rRJhqea61a2db",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/books",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "books"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "عرض تفاصيل كتاب محدد مع المؤلف والتصنيف",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "LKMlFMM0CjV3o5VaFC2gprZUdss2H3SWlz2rRJhqea61a2db",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/books/1",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "books",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "تعديل كتاب معين",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "LKMlFMM0CjV3o5VaFC2gprZUdss2H3SWlz2rRJhqea61a2db",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "price",
+                  "value": "100.00",
+                  "type": "text",
+                  "uuid": "d40c653f-868c-4ac0-aa68-26101e110d22"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/books/2",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "books",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "حذف كتاب",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "LKMlFMM0CjV3o5VaFC2gprZUdss2H3SWlz2rRJhqea61a2db",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/books/2",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "books",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "عرض احصائيات الداشبورد",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "vctRnyKztVTm4LG29RkHV4Qfij5DJ13OsHKXdzS59ffad695",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/dashboard-stats",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "dashboard-stats"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "عرض قائمة طلب الكتب الغير متوفرة",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "vctRnyKztVTm4LG29RkHV4Qfij5DJ13OsHKXdzS59ffad695",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/waiting-list",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "waiting-list"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "عرض قائمة العملاء مع البحث",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "vctRnyKztVTm4LG29RkHV4Qfij5DJ13OsHKXdzS59ffad695",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/users",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "عرض بيانات عميل",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "vctRnyKztVTm4LG29RkHV4Qfij5DJ13OsHKXdzS59ffad695",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/users/5",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "5"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "حذف عميل",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "vctRnyKztVTm4LG29RkHV4Qfij5DJ13OsHKXdzS59ffad695",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/users/5",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "5"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "جلب التفاصيل المالية والنشاطات الشاملة للمستخدم",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/users/6/full-details",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "users",
+                "6",
+                "full-details"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "جلب إحصائيات الطلبات المدفوعة والأرباح الكلية",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/statistics/total-paid-orders",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "statistics",
+                "total-paid-orders"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "عرض كل الفواتير",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/bills",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "bills"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "عرض فاتورة محددة",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/bills/1",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "bills",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "حساب اجمالي الارباح",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/bills/total-revenue",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "bills",
+                "total-revenue"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "عرض كل العمليات مع امكانية الفترة",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/transactions",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "transactions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "الكتب الاكثر استعارة",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "vctRnyKztVTm4LG29RkHV4Qfij5DJ13OsHKXdzS59ffad695",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/transactions/top-borrowed",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "transactions",
+                "top-borrowed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "\" جلب إجمالي عمليات الاستعارة وحالاتها (النشطة، المسترجعة، والمنتهية",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "vctRnyKztVTm4LG29RkHV4Qfij5DJ13OsHKXdzS59ffad695",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/statistics/total-borrows",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "statistics",
+                "total-borrows"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "عدد المبيعات في هذا الاسبوع",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "vctRnyKztVTm4LG29RkHV4Qfij5DJ13OsHKXdzS59ffad695",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/statistics/weekly-sales",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "statistics",
+                "weekly-sales"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "عدد الاستعارات في هذا الاسبوع",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "vctRnyKztVTm4LG29RkHV4Qfij5DJ13OsHKXdzS59ffad695",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/statistics/weekly-borrows",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "statistics",
+                "weekly-borrows"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "الكتب الاكثر مبيعا",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "vctRnyKztVTm4LG29RkHV4Qfij5DJ13OsHKXdzS59ffad695",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/statistics/top-selling-books",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "statistics",
+                "top-selling-books"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "الكتب الاكثر استعارة",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/books/top-borrowed",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "books",
+                "top-borrowed"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "جلب كافة الفواتير التي طلبت خدمة التوصيل",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/delivery-requests",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "delivery-requests"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "تحديث حالة التوصيل (قيد التجهيز -> خرج للتوصيل -> تم التسليم)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "vctRnyKztVTm4LG29RkHV4Qfij5DJ13OsHKXdzS59ffad695",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/admin/bills/1/delivery-status?delivery_status=delivered",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "admin",
+                "bills",
+                "1",
+                "delivery-status"
+              ],
+              "query": [
+                {
+                  "key": "delivery_status",
+                  "value": "delivered",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "vctRnyKztVTm4LG29RkHV4Qfij5DJ13OsHKXdzS59ffad695",
+            "type": "string"
+          }
+        ]
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "المستخدم",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "password",
+                  "value": "11111111",
+                  "type": "text",
+                  "uuid": "02c385b2-9408-471e-9e3e-ca572f5b656e"
+                },
+                {
+                  "key": "password_confirmation",
+                  "value": "11111111",
+                  "type": "text",
+                  "uuid": "b23810cd-9625-4856-856a-ac15c62894d3"
+                },
+                {
+                  "key": "name",
+                  "value": "raghad",
+                  "type": "text",
+                  "uuid": "521ccb15-05cf-4c40-9a38-bd1988cb2f6f"
+                },
+                {
+                  "key": "gender",
+                  "value": "F",
+                  "type": "text",
+                  "uuid": "915e9044-0949-4c3a-a125-1b3ca2b06370"
+                },
+                {
+                  "key": "phone",
+                  "value": "0991450545",
+                  "type": "text",
+                  "uuid": "4c82ce59-7f55-45b0-b72b-7dedb4fe4f47"
+                },
+                {
+                  "key": "DOB",
+                  "value": "2005-06-13",
+                  "type": "text",
+                  "uuid": "23acc975-461e-4e03-8211-db4ebca67b7e"
+                },
+                {
+                  "key": "lang",
+                  "value": "ar",
+                  "type": "text",
+                  "uuid": "f1c3135b-9b79-4f30-a9dc-dd3d15c1fcb4"
+                },
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "uuid": "3c758823-2b65-4fef-ae5e-b72acf8bed4b",
+                  "src": "/C:/Users/asus/Pictures/2.png"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/register",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "phone",
+                  "value": "0991450541",
+                  "type": "text",
+                  "uuid": "fe6c98f5-fa6a-4ef3-acf8-5254ea816ab7"
+                },
+                {
+                  "key": "password",
+                  "value": "22222222",
+                  "type": "text",
+                  "uuid": "070a31f1-87cf-4326-823a-6f716935a0cf"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/login",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "change-password",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "5mpLkDq2PvJRE032quMvQlzn7ayYmnGSzaccs6xwa202d825",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "current_password",
+                  "value": "22222222",
+                  "type": "text",
+                  "uuid": "63cbf78a-aec4-41c4-93a6-8d1a7d1f9bef"
+                },
+                {
+                  "key": "password",
+                  "value": "00000000",
+                  "type": "text",
+                  "uuid": "bd4e5dfe-b544-4b9c-9e5e-a31502055d48"
+                },
+                {
+                  "key": "password_confirmation",
+                  "value": "00000000",
+                  "type": "text",
+                  "uuid": "316a3ec3-a27d-4fe7-aa2e-6efc93d32228"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/change-password",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "change-password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "logout",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "6|BrEGODEAxxugiHz5rmwIe3CXwQNurEOfgALzeNIp091853e3",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/logout",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "عرض بيانات عميل",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "WLzOzDST2cb0CABiJMBihT0I8lZIIhruXTtxHF2dcce861ae",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/customer",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "customer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "تحديث بيانات عميل",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "WLzOzDST2cb0CABiJMBihT0I8lZIIhruXTtxHF2dcce861ae",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "phone",
+                  "value": "0991450549",
+                  "type": "text",
+                  "uuid": "e1ec4668-a49b-4477-bcae-9281fad0b247"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/customer?phone=0991450549",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "customer"
+              ],
+              "query": [
+                {
+                  "key": "phone",
+                  "value": "0991450549",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "عرض كل الكتب",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/books",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "books"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "عرض كتاب",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/books/1",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "books",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "تحديث أو إنشاء سجل تقدم القراءة",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "8U8zlEcDOsHQILkxGCgvYL6gqTmmnNLreOcQpBpzab3fef26",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "book_id",
+                  "value": "1",
+                  "type": "text",
+                  "uuid": "d3c65d4f-0526-4e2c-89ed-fdb54634a554"
+                },
+                {
+                  "key": "current_page",
+                  "value": "25",
+                  "type": "text",
+                  "uuid": "81a039ec-659e-48a7-b60c-de08c58ecaab"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://127.0.0.1:8000/api/reading/update-progress",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "reading",
+                "update-progress"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Login Admin",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "email",
+              "value": "walaa@gmail.com",
+              "type": "text",
+              "uuid": "48185d0d-eb69-4330-92d5-1762c74d3e12"
+            },
+            {
+              "key": "password",
+              "value": "12345678",
+              "type": "text",
+              "uuid": "db5a03a9-fc11-4ab9-b1b7-737cae36dac8"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/admin/login",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "admin",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
