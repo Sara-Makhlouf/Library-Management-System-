@@ -126,20 +126,22 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // تقارير الاستعارات للآدمن
         Route::get('/transactions', [AdminTransactionController::class, 'index']);
-        Route::get('/transactions/{id}', [AdminTransactionController::class, 'show']);
         Route::get('/transactions/top-borrowed', [AdminTransactionController::class, 'topBorrowedBooks']);
+        Route::get('/transactions/{id}', [AdminTransactionController::class, 'show']);
+
 
         // الفواتير والأرباح والمالية
         Route::get('/bills', [BillController::class, 'index']);
-        Route::get('/bills/{id}', [BillController::class, 'show']);
         Route::get('/bills/total-revenue', [BillController::class, 'totalRevenue']);
+        Route::get('/bills/{id}', [BillController::class, 'show']);
+
 
         // تفاصيل وإحصائيات متقدمة للمشتركين والتقارير الأسبوعية
         Route::get('users/{id}/full-details', [UserController::class, 'getFullUserDetails']);
         Route::get('statistics/total-paid-orders', [UserController::class, 'getTotalPaidOrdersCount']);
-        Route::get('statistics/total-borrows', [UserController::class, 'getTotalBorrowsCount']);
-        Route::get('statistics/weekly-sales', [UserController::class, 'getWeeklySalesCount']);
-        Route::get('statistics/weekly-borrows', [UserController::class, 'getWeeklyBorrowsCount']);
+        Route::get('statistics/total-borrows', [AdminTransactionController::class, 'getTotalBorrowsCount']);
+        Route::get('statistics/weekly-sales', [AdminTransactionController::class, 'getWeeklySalesCount']);
+        Route::get('statistics/weekly-borrows', [AdminTransactionController::class, 'getWeeklyBorrowsCount']);
         Route::get('statistics/top-selling-books', [BookController::class, 'getTopSellingBooks']);
 
         Route::get('delivery-requests', [BillController::class, 'deliveryRequests']);
