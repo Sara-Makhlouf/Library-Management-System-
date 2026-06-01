@@ -103,7 +103,7 @@ public function updateDeliveryStatus(Request $request, int $id)
     $bill->update([
         'delivery_status' => $request->delivery_status
     ]);
-
+    try {
     Notification::send(
         $bill->customer->user_id,
         'delivery_update',
@@ -111,7 +111,9 @@ public function updateDeliveryStatus(Request $request, int $id)
         "تم تحديث حالة توصيل طلبك رقم (#{$bill->id}) إلى: " . $this->translateStatus($request->delivery_status),
         ['bill_id' => $bill->id]
     );
-
+} catch (\Exception $e) {
+            // تجاوز أي خطأ طارئ لضمان استقرار العملية
+        }
     return response()->json([
         'status' => 'success',
         'message' => 'تم تحديث حالة التوصيل بنجاح',

@@ -148,7 +148,7 @@ class TransactionController extends Controller
                 $book = Book::find($item['book_id']);
                 Notification::send(
                     $user->id,
-                    'purchase_success', 
+                    'purchase_success',
                     'مبارك شراء الكتاب! 🛍️',
                     "تمت عملية شراء كتاب ({$book->title}) بنجاح.",
                     ['icon' => 'bag_success', 'target_screen' => 'my_library', 'book_id' => $item['book_id']]
