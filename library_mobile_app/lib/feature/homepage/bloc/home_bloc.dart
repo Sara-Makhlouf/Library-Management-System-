@@ -22,7 +22,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
     });
 
-    // ✅ منطق جلب العروض الجديد
+    
     on<GetOffersEvent>((event, emit) async {
       emit(state.copyWith(offersStatus: HomeStatus.loading));
       try {

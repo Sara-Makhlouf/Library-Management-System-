@@ -67,7 +67,10 @@ class CartItemCard extends StatelessWidget {
             ),
 
             IconButton(
-              icon: Icon(Icons.delete, color: Colors.red),
+              icon: Icon(
+                Icons.delete,
+                color: const Color.fromARGB(255, 226, 105, 97),
+              ),
               onPressed: () {
                 context.read<CartBloc>().add(RemoveBookEvent(item.id));
               },

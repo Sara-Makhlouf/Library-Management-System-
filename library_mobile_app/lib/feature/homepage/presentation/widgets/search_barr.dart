@@ -21,7 +21,7 @@ class Search extends StatelessWidget {
               textAlign: TextAlign.left,
               style: const TextStyle(color: Colors.black),
               decoration: InputDecoration(
-                hintText: "Search Your Place",
+                hintText: "Search You Book",
                 hintStyle: const TextStyle(
                   color: Color.fromARGB(179, 138, 136, 136),
                 ),

@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: Routes.initialRoute, // سيبدأ من '/' الذي هو SplashScreen
+      initialRoute: Routes.initialRoute,
       onGenerateRoute: AppRouter.generateRoute,
       title: 'Library App',
       theme: ThemeData(

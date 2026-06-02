@@ -4,6 +4,7 @@ import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/cart/presentation/cart_screen.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/BottomNav.dart';
+
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/seaction.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/search_barr.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/slider.dart';
@@ -61,62 +62,176 @@ class HomeScreen extends StatelessWidget {
               : null,
 
           drawer: Drawer(
+            // تغيير لون خلفية القائمة بالكامل للون البيج الفاتح جداً والمتناسق مع التطبيق
+            backgroundColor: const Color(0xFFF5EFEB),
+            surfaceTintColor: Colors.transparent,
             child: Column(
               children: [
-                DrawerHeader(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundImage: AssetImage(
-                            'assets/images/2bab8519fbca535669c22065061978be.jpg',
-                          ), // صورة المستخدم
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'ghufran@gmail.com',
-                          style: TextStyle(color: Colors.grey, fontSize: 16),
-                        ),
-                      ],
+                // --- قسم الـ Header (معلومات المستخدم) ---
+                UserAccountsDrawerHeader(
+                  decoration: const BoxDecoration(
+                    // إعطاء الهيدر لون بيج دافئ ومميز لفصله عن بقية الخيارات
+                    color: Color(0xFFD8C8A8),
+                  ),
+                  currentAccountPicture: const CircleAvatar(
+                    radius: 35,
+                    backgroundColor: Color(0xFF605232),
+                    // يمكنك استبدالها بـ AssetImage مخصصة لصورة المستخدم لاحقاً
+                    child: Icon(
+                      Icons.person,
+                      size: 40,
+                      color: Color(0xFFF5EFEB),
                     ),
                   ),
-                ),
-                Container(height: 30),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xff81C3D7), // اللون الداخلي
-                    borderRadius: BorderRadius.circular(12), // الحواف المستديرة
-                    border: Border.all(
-                      color: Color(0xff3A7CA5), // لون الإطار الخارجي
-                      width: 2, // سمك الإطار
+                  accountName: const Text(
+                    'Ghufran Ibrahim',
+                    style: TextStyle(
+                      color: Color(0xFF2C2518),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
                     ),
                   ),
-                  child: ListTile(
-                    leading: Icon(Icons.person),
-                    title: Text('Profile'),
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
+                  accountEmail: const Text(
+                    'ghufran@example.com',
+                    style: TextStyle(color: Color(0xFF605232), fontSize: 14),
                   ),
                 ),
 
-                Container(height: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Color(0xff81C3D7),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Color(0xff3A7CA5), width: 2),
+                // --- قسم خيارات التنقل والمكتبة ---
+                Expanded(
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      ListTile(
+                        leading: const Icon(
+                          Icons.history_edu,
+                          color: Color(0xFF605232),
+                        ),
+                        title: const Text(
+                          'سجل الاستعارات',
+                          style: TextStyle(
+                            color: Color(0xFF2C2518),
+                            fontSize: 16,
+                          ),
+                        ),
+                        trailing: const Icon(
+                          Icons.arrow_forward_ios,
+                          size: 14,
+                          color: Color(0xFF605232),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(
+                          Icons.local_shipping_outlined,
+                          color: Color(0xFF605232),
+                        ),
+                        title: const Text(
+                          'طلباتي والتوصيل',
+                          style: TextStyle(
+                            color: Color(0xFF2C2518),
+                            fontSize: 16,
+                          ),
+                        ),
+                        trailing: const Icon(
+                          Icons.arrow_forward_ios,
+                          size: 14,
+                          color: Color(0xFF605232),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(
+                          Icons.card_giftcard,
+                          color: Color(0xFF605232),
+                        ),
+                        title: const Text(
+                          'نقاطي والمكافآت',
+                          style: TextStyle(
+                            color: Color(0xFF2C2518),
+                            fontSize: 16,
+                          ),
+                        ),
+                        trailing: const Icon(
+                          Icons.arrow_forward_ios,
+                          size: 14,
+                          color: Color(0xFF605232),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+
+                      const Divider(
+                        color: Color(0xFFD8C8A8),
+                        thickness: 1,
+                        indent: 15,
+                        endIndent: 15,
+                      ),
+
+                      // --- قسم الإعدادات والدعم ---
+                      ListTile(
+                        leading: const Icon(
+                          Icons.settings_outlined,
+                          color: Color(0xFF605232),
+                        ),
+                        title: const Text(
+                          'الإعدادات',
+                          style: TextStyle(
+                            color: Color(0xFF2C2518),
+                            fontSize: 16,
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(
+                          Icons.chat_bubble_outline,
+                          color: Color(0xFF605232),
+                        ),
+                        title: const Text(
+                          'تواصل معنا',
+                          style: TextStyle(
+                            color: Color(0xFF2C2518),
+                            fontSize: 16,
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
                   ),
-                  child: ListTile(
-                    leading: Icon(Icons.logout),
-                    title: Text('Logout'),
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
+                ),
+
+                // --- قسم تسجيل الخروج (مثبت في الأسفل تماماً) ---
+                const Divider(color: Color(0xFFD8C8A8), thickness: 1),
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
                   ),
+                  leading: const Icon(
+                    Icons.logout,
+                    color: Color(0xFFB33A3A),
+                  ), // لون أحمر هادئ وغير صارخ
+                  title: const Text(
+                    'تسجيل الخروج',
+                    style: TextStyle(
+                      color: Color(0xFFB33A3A),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
                 ),
               ],
             ),
@@ -146,11 +261,9 @@ class HomeScreen extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Search(),
             ),
-            Container(
-              color: AppColors.background,
-              height: 250,
-              child: SliderWidget(),
-            ),
+
+            SliderWidget(),
+
             SizedBox(height: 100, child: Section()),
             SizedBox(height: 5),
             Align(

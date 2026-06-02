@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:library_mobile_app/core/constant.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/cart/bloc/cart_bloc.dart';
 import 'package:library_mobile_app/feature/cart/bloc/cart_event.dart';
 import 'package:library_mobile_app/feature/cart/bloc/cart_state.dart';
 import 'package:library_mobile_app/feature/cart/presentation/widgets/cart_item.dart';
+
+import '../../payment_page/data/payment_mode.dart';
 
 class CartScreen extends StatelessWidget {
   @override
@@ -13,6 +16,13 @@ class CartScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(
+              25,
+            ), // يمكنك زيادة الرقم لزيادة الانحناء (شكل بيضوي أكثر)
+          ),
+        ),
         title: Text(" Shopping Cart"),
         automaticallyImplyLeading: false,
         centerTitle: true,
@@ -39,19 +49,48 @@ class CartScreen extends StatelessWidget {
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.only(bottom: 80, left: 20, right: 20),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Color.fromARGB(255, 189, 170, 127),
-            foregroundColor: Color.fromARGB(255, 96, 82, 50),
-          ),
-          onPressed: () => _showOrderSummary(context),
-          child: Text("Order Information"),
+        child: Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 189, 170, 127),
+                  foregroundColor: const Color.fromARGB(255, 96, 82, 50),
+                ),
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    Routes.payment,
+                    arguments: PaymentMode.buy, // تمرير نوع العملية
+                  );
+                },
+                child: const Text("Buying"),
+              ),
+            ),
+            const SizedBox(width: 15),
+            Expanded(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 189, 170, 127),
+                  foregroundColor: const Color.fromARGB(255, 96, 82, 50),
+                ),
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    Routes.payment,
+                    arguments: PaymentMode.borrow, // تمرير نوع العملية
+                  );
+                },
+                child: const Text("Borrows"),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  void _showOrderSummary(BuildContext context) {
+  /*void _showOrderSummary(BuildContext context) {
     final cartBloc = BlocProvider.of<CartBloc>(context);
     showModalBottomSheet(
       context: context,
@@ -148,7 +187,7 @@ class CartScreen extends StatelessWidget {
         );
       },
     );
-  }
+  }*/
 
   Widget _buildSummaryRow(String title, String value, {bool isPrice = false}) {
     return Row(

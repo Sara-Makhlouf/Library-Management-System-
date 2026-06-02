@@ -32,7 +32,7 @@ class _TabsScreenState extends State<SigninScreen> {
                   children: [
                     SizedBox(height: 50),
 
-                    Image.asset("assets/logo.png", height: 200),
+                    Image.asset("lib/assets/images/logo.png.png", height: 200),
                   ],
                 ),
               ),
