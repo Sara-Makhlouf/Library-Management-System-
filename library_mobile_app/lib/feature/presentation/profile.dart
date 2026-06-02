@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:library_mobile_app/core/theme.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:library_mobile_app/core/theme_cubit.dart';
 class Profile extends StatefulWidget {
   const Profile({super.key});
 
@@ -13,40 +15,91 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> {
   File? coverImage;
   File? porfileImage;
+  File? imageFile;
+  final ImagePicker _picker = ImagePicker();
+  Future<void> _imageFromGallery() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        imageFile = File(image.path);
+      });
+    }
+  }
+
+  Future<void> _imageFromCamera() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+    if (image != null) {
+      setState(() {
+        imageFile = File(image.path);
+      });
+    }
+  }
+
+  void _showOption(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[200],
+        title: const Text("Make a Choice"),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.image),
+                title: const Text("Gallery"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _imageFromGallery();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text("Camera"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _imageFromCamera();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         title: Text(
           "Profile",
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppColors.textGrey,
           ),
         ),
         backgroundColor: AppColors.primary,
       ),
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundLight,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Container(
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppColors.secondary,
-                  borderRadius: BorderRadius.vertical(
-                    bottom: Radius.circular(8),
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(height: 40),
-
-                    Image.asset("assets/logo.png", height: 200),
-                  ],
-                ),
+            const SizedBox(height: 20),
+            GestureDetector(
+              onTap: () => _showOption(context),
+              child: CircleAvatar(
+                radius: 90,
+                backgroundColor: Colors.grey[500],
+                backgroundImage: imageFile != null
+                    ? FileImage(imageFile!)
+                    : null,
+                child: imageFile == null
+                    ? const Icon(
+                        Icons.camera_alt,
+                        size: 40,
+                        color: Colors.white,
+                      )
+                    : null,
               ),
             ),
             SizedBox(height: 25),
