@@ -63,3 +63,12 @@ catch(error){
     return error.response.data;
 }
  });
+export const getBooksWithDetails = createAsyncThunk("books/getBooksWithDetails",async (bookId,thunkApi) =>{
+    try {
+        const response = await api.get("/books/"+bookId);
+        return response.data;
+    }
+    catch (error) {
+        return thunkApi.rejectWithValue(error.response.data);
+    }
+});

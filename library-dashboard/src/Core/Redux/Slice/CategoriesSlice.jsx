@@ -11,10 +11,6 @@ addCase(getcategory.pending, (state, action) => {})
 .addCase(getcategory.fulfilled, (state, action) => {})
 .addCase(getcategory.rejected, (state, action) => {})
 
-        },
-            // eslint-disable-next-line no-dupe-keys
-            extraReducers: (builder) =>{
-builder.
 addCase(getcategory.pending, (state, action) => {})
 .addCase(getcategory.fulfilled, (state, action) => {})
 .addCase(getcategory.rejected, (state, action) => {})
