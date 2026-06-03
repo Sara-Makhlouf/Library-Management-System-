@@ -3,10 +3,10 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// ==================== استيراد متحكماتكِ أنتِ وولاء ====================
-use App\Http\Controllers\ContestController;
+
+
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\PollController;
+
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ReadingController;
 
@@ -69,10 +69,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // --- التقييمات (مصطفى) ---
     Route::post('/books/rate', [BookController::class, 'rateBook']);
 
-    // --- متابعة القراءة وتحديث التقدم (سارة وولاء) ---
+
     Route::post('/reading/update-progress', [ReadingController::class, 'updateProgress']);
 
-    // --- المعاملات والاستعارات للعملاء (سارة وولاء) ---
+
     Route::prefix('transactions')->group(function () {
         Route::post('/borrow', [TransactionController::class, 'borrowBook']);
         Route::post('/checkout', [TransactionController::class, 'store']);
@@ -82,7 +82,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/users/{id}/transactions', [TransactionController::class, 'userHistory']);
 
-    // --- الإشعارات (سارة وولاء) ---
+
     Route::post('/admin/notifications/global', [NotificationController::class, 'sendGlobalNotification']);
 
     Route::prefix('notifications')->group(function () {
@@ -91,18 +91,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/mark-as-read', [NotificationController::class, 'markAsRead']);
     });
 
-    // --- المسابقات والتحديات (سارة وولاء) ---
-    Route::prefix('contests')->group(function () {
-        Route::get('/', [ContestController::class, 'index']);
-        Route::post('/{id}/join', [ContestController::class, 'join']);
-        Route::post('/{id}/progress', [ContestController::class, 'updateProgress']);
-    });
 
-    // --- الاستطلاعات والتصويت (سارة وولاء) ---
-    Route::prefix('polls')->group(function () {
-        Route::get('/', [PollController::class, 'index']);
-        Route::post('/vote', [PollController::class, 'vote']);
-    });
+
 
 
     // ==================== 3. Admin Routes (لوحة التحكم للآدمن فقط) ====================
@@ -148,4 +138,3 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('bills/{id}/delivery-status', [BillController::class, 'updateDeliveryStatus']);
     });
 });
-

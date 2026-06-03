@@ -32,10 +32,9 @@ class Transaction extends Model
     ];
 
     
-    public function bill(): BelongsTo
-    {
-        return $this->belongsTo(Bill::class);
-    }
+   public function bill() {
+    return $this->belongsTo(\App\Models\Bill::class);
+}
 
    
     public function book(): BelongsTo
