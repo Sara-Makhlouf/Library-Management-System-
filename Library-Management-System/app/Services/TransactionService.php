@@ -4,7 +4,10 @@ namespace App\Services;
 
 use App\Models\Transaction;
 use App\Models\Complaint;
+use App\Models\User;
+use App\Models\Book;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class TransactionService
 {
@@ -49,116 +52,79 @@ class TransactionService
         foreach ($lateTransactions as $transaction) {
             $daysLate = now()->diffInDays($transaction->due_date);
 
-            // المرحلة 1: تذكير (من يوم إلى 7 أيام)
-            if ($daysLate >= 1 && $daysLate < 7) {
-                // منطق الإشعارات يوضع هنا لاحقاً
-            }
-
-            // المرحلة 2 و 3: إيقاف الحساب (بعد 7 أيام تأخير)
             if ($daysLate >= 7) {
-                if ($transaction->user) {
-                    $transaction->user->update(['is_active' => false]);
-                }
+                $transaction->user?->update(['is_active' => false]);
             }
 
-            // المرحلة 4: اعتبار الكتاب مفقود وفتح شكوى (بعد 15 يوم)
             if ($daysLate >= 15) {
-                $alreadyComplained = Complaint::where('transaction_id', $transaction->id)->exists();
-
-                if (!$alreadyComplained) {
+                if (!Complaint::where('transaction_id', $transaction->id)->exists()) {
                     Complaint::create([
                         'transaction_id' => $transaction->id,
                         'user_id'        => $transaction->user->id,
                         'reason'         => "تأخير حرج: الكتاب مفقود لتجاوزه 15 يوماً",
                         'total_fine'     => $transaction->book->price,
                     ]);
-
                     $transaction->update(['status' => 'expired']);
                 }
             }
         }
     }
+
     public function processBorrow($data)
     {
-        $user = \App\Models\User::find($data['user_id']);
-        if (!$user->is_active) {
-        return [
-            'error' => 'عذراً، حسابك مغلق حالياً بسبب تأخرك في إرجاع الكتب المستعارة.'
-        ];
-    }
-        $currentlyBorrowed = Transaction::whereHas('bill', function ($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })
+        $user = User::find($data['user_id']);
+        if (!$user->is_active) return ['error' => 'حسابك مغلق بسبب تأخر في إرجاع كتب.'];
+
+        $currentlyBorrowed = Transaction::whereHas('bill', fn($q) => $q->where('user_id', $user->id))
             ->where('status', 'received')
             ->where('type', 'borrow')
             ->count();
 
+        if ($currentlyBorrowed >= $user->max_borrowing_limit) return ['error' => "تجاوزت الحد المسموح للاستعارة."];
 
-        if ($currentlyBorrowed >= $user->max_borrowing_limit) {
-            return [
-                'error' => "عذراً، لقد تجاوزت الحد المسموح لك وهو ({$user->max_borrowing_limit})يرجى ارجاع الكتب المستعارة اولا"
-            ];
-        }
-        $book = \App\Models\Book::find($data['book_id']);
-        if (!$book->is_available) {
-            return [
-                'error' => 'هذا الكتاب مستعار حاليا لشخص اخر'
-            ];
-        }
-     return \Illuminate\Support\Facades\DB::transaction(function () use ($data, $book) {
+        $book = Book::find($data['book_id']);
+        if (!$book->is_available) return ['error' => 'هذا الكتاب غير متاح حالياً.'];
+
+        return DB::transaction(function () use ($data, $book) {
             $transaction = Transaction::create([
+                'bill_id'      => $data['bill_id'],
+                'book_id'      => $data['book_id'],
+                'price'        => $book->price,
+                'delivered_at' => now(),
+                'due_date'     => now()->addDays($data['days']),
+                'status'       => 'received',
+                'type'         => 'borrow'
+            ]);
 
-            'bill_id'      => $data['bill_id'],
-            'book_id'      => $data['book_id'],
-            'price'        => $book->price, // سعر الاستعارة
-            'delivered_at' => now(),
-            'due_date'     => now()->addDays($data['days']),
-            'status'       => 'received',
-            'type'         => 'borrow'
-        ]);
-
-        $book->update(['is_available' => false]);
-
-        return $transaction;
-    });
+            $book->update(['is_available' => false]);
+            return $transaction;
+        });
     }
-   public function processPurchase($data)
+
+    public function processPurchase($data)
     {
-        $book = \App\Models\Book::find($data['book_id']);
-        if ($book->stock <= 0) {
-            return ['error' => 'هذا الكتاب نفذت كميته من المخزن.'];
-        }
+        $book = Book::find($data['book_id']);
+        if ($book->stock <= 0) return ['error' => 'نفذت كمية هذا الكتاب.'];
 
-        $paymentMethod = $data['payment_method'] ?? 'cash';
-
-
-        if ($paymentMethod === 'points') {
-           
-            $pointsRequired = $book->sale_price * 100; 
-
+        if (($data['payment_method'] ?? 'cash') === 'points') {
             try {
-        
-                app(PointsService::class)->deductPoints($data['user_id'], $pointsRequired, "شراء كتاب: " . $book->title);
+                app(PointsService::class)->deductPoints($data['user_id'], $book->sale_price * 100, "شراء: " . $book->title);
             } catch (\Exception $e) {
-    
                 return ['error' => $e->getMessage()];
             }
         }
 
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($data, $book, $paymentMethod) {
+        return DB::transaction(function () use ($data, $book) {
             $transaction = Transaction::create([
                 'bill_id'      => $data['bill_id'],
                 'book_id'      => $data['book_id'],
                 'price'        => $book->sale_price,
                 'delivered_at' => now(),
-                'due_date'     => null,
                 'status'       => 'sold',
                 'type'         => 'buy',
-    
             ]);
 
             $book->decrement('stock');
-
             return $transaction;
         });
     }

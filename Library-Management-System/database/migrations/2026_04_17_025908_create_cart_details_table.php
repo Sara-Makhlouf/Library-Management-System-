@@ -13,13 +13,16 @@ return new class extends Migration
     {
         Schema::create('cart_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cart_id')->constrained();
-            $table->foreignId('book_id')->constrained();
+            $table->foreignId('cart_id')->constrained()->onDelete('cascade');
+            $table->foreignId('book_id')->constrained()->onDelete('cascade');
 
             $table->decimal('price', 10, 2);
-            $table->decimal('mortgage', 10, 2);
-
-            $table->timestamp('due_at');
+            
+            // إضافة حقل النوع (buy أو borrow)
+            $table->enum('type', ['buy', 'borrow'])->default('borrow');
+            
+            // جعل تاريخ الاستحقاق اختيارياً (nullable)
+            $table->timestamp('due_at')->nullable();
 
             $table->timestamps();
         });
