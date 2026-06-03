@@ -26,22 +26,26 @@ const authSlice = createSlice({
       .addCase(loginAdmin.pending, (state) => {
         state.loading = true;
       })
+.addCase(loginAdmin.fulfilled, (state, action) => {
+  state.loading = false;
+  state.error = null;
 
-      .addCase(loginAdmin.fulfilled, (state, action) => {
-        state.loading = false;
+  state.token = action.payload.token;
 
-        state.token = action.payload.token;
-
-        localStorage.setItem(
-          "token",
-          action.payload.token
-        );
-      })
+  localStorage.setItem(
+    "token",
+    action.payload.token
+  );
+})
 
       .addCase(loginAdmin.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+  state.loading = false;
+
+  state.error =
+    action.payload?.message ||
+    action.payload?.error ||
+    "Login failed";
+})
 
     
   },

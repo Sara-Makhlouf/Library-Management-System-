@@ -1,4 +1,4 @@
-import api from "../../Api/axios";
+import api from "../../Api/aixos";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export const getauthor = createAsyncThunk(
