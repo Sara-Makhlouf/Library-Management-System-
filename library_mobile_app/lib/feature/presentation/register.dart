@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:library_mobile_app/core/components/decorCircle.dart';
+import 'package:library_mobile_app/core/components/field.dart';
 import 'package:library_mobile_app/core/components/social_button.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/presentation/books/book.dart';
@@ -46,7 +48,7 @@ class _RegisterState extends State<Register> {
           Positioned(
             top: -60,
             left: -60,
-            child: _DecorCircle(
+            child: DecorCircle(
               size: 220,
               color: AppColors.primary,
               opacity: isDark ? 0.08 : 0.13,
@@ -55,7 +57,7 @@ class _RegisterState extends State<Register> {
           Positioned(
             top: size.height * 0.12,
             right: -80,
-            child: _DecorCircle(
+            child: DecorCircle(
               size: 180,
               color: AppColors.primary,
               opacity: isDark ? 0.05 : 0.09,
@@ -64,7 +66,7 @@ class _RegisterState extends State<Register> {
           Positioned(
             top: size.height * 0.3,
             left: size.width * 0.2,
-            child: _DecorCircle(
+            child: DecorCircle(
               size: 120,
               color: AppColors.primary,
               opacity: isDark ? 0.04 : 0.07,
@@ -187,7 +189,7 @@ class _RegisterState extends State<Register> {
                             Row(
                                   children: [
                                     Expanded(
-                                      child: _Field(
+                                      child: Field(
                                         controller: _firstNameController,
                                         hint: 'First name',
                                         icon: Icons.person_outline_rounded,
@@ -196,7 +198,7 @@ class _RegisterState extends State<Register> {
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
-                                      child: _Field(
+                                      child: Field(
                                         controller: _lastNameController,
                                         hint: 'Last name',
                                         icon: Icons.person_outline_rounded,
@@ -211,7 +213,7 @@ class _RegisterState extends State<Register> {
 
                             const SizedBox(height: 12),
 
-                            _Field(
+                            Field(
                                   controller: _phoneController,
                                   hint: 'Phone number',
                                   icon: Icons.phone_android_rounded,
@@ -224,7 +226,7 @@ class _RegisterState extends State<Register> {
 
                             const SizedBox(height: 12),
 
-                            _Field(
+                            Field(
                                   controller: _passController,
                                   hint: 'Password',
                                   icon: Icons.lock_outline_rounded,
@@ -239,7 +241,7 @@ class _RegisterState extends State<Register> {
 
                             const SizedBox(height: 12),
 
-                            _Field(
+                            Field(
                                   controller: _rePassController,
                                   hint: 'Confirm password',
                                   icon: Icons.lock_outline_rounded,
@@ -404,112 +406,3 @@ class _RegisterState extends State<Register> {
     );
   }
 }
-
-// ── Decorative circle ─────────────────────────────────────────────────────
-class _DecorCircle extends StatelessWidget {
-  final double size;
-  final Color color;
-  final double opacity;
-  const _DecorCircle({
-    required this.size,
-    required this.color,
-    required this.opacity,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color.withOpacity(opacity),
-      ),
-    );
-  }
-}
-
-// ── Input field ───────────────────────────────────────────────────────────
-class _Field extends StatelessWidget {
-  final TextEditingController controller;
-  final String hint;
-  final IconData icon;
-  final bool isDark;
-  final bool obscure;
-  final TextInputType keyboardType;
-  final VoidCallback? onToggleObscure;
-
-  const _Field({
-    required this.controller,
-    required this.hint,
-    required this.icon,
-    required this.isDark,
-    this.obscure = false,
-    this.keyboardType = TextInputType.text,
-    this.onToggleObscure,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      obscureText: obscure,
-      keyboardType: keyboardType,
-      cursorColor: AppColors.primary,
-      style: TextStyle(
-        fontSize: 14,
-        color: isDark ? AppColors.textDark : AppColors.textLight,
-      ),
-      decoration: InputDecoration(
-        hintText: hint,
-        prefixIcon: Icon(icon, size: 18, color: AppColors.primary),
-        suffixIcon: onToggleObscure != null
-            ? IconButton(
-                icon: Icon(
-                  obscure
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
-                  size: 18,
-                  color: isDark
-                      ? AppColors.textDark.withOpacity(0.4)
-                      : AppColors.textLight.withOpacity(0.4),
-                ),
-                onPressed: onToggleObscure,
-              )
-            : null,
-        filled: true,
-        fillColor: isDark ? AppColors.inputDark : AppColors.backgroundLight,
-        hintStyle: TextStyle(
-          fontSize: 13,
-          color: isDark
-              ? AppColors.textDark.withOpacity(0.35)
-              : AppColors.textLight.withOpacity(0.4),
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: isDark
-                ? Colors.white.withOpacity(0.06)
-                : Colors.black.withOpacity(0.06),
-            width: 0.5,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 16,
-          horizontal: 16,
-        ),
-      ),
-    );
-  }
-}
-
-// ── Social button ─────────────────────────────────────────────────────────
-

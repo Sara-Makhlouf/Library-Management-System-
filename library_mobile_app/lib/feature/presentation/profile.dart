@@ -3,8 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:library_mobile_app/core/theme.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:library_mobile_app/core/theme_cubit.dart';
+
 class Profile extends StatefulWidget {
   const Profile({super.key});
 
@@ -69,15 +68,10 @@ class _ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
+    // final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Profile",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: Text("Profile", style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: AppColors.primary,
       ),
       backgroundColor: AppColors.backgroundLight,

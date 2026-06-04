@@ -1,9 +1,10 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:library_mobile_app/core/components/dots_shape.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/presentation/onboarding_own.dart';
+
 class Splashscreen extends StatefulWidget {
   const Splashscreen({super.key});
 
@@ -78,7 +79,7 @@ class _SplashscreenState extends State<Splashscreen>
           children: [
             const Spacer(),
 
-            // ── Logo + shimmer ──────────────────────────────────
+            //Logo + shimmer
             AnimatedBuilder(
                   animation: _shimmerController ?? kAlwaysCompleteAnimation,
                   builder: (context, child) {
@@ -116,65 +117,11 @@ class _SplashscreenState extends State<Splashscreen>
                 ),
 
             const Spacer(),
-
-            // ── Loading dots ────────────────────────────────────
-            _LoadingDots(),
+            LoadingDots(),
             SizedBox(height: size.height * 0.08),
           ],
         ),
       ),
-    );
-  }
-}
-
-// ── Loading dots ───────────────────────────────────────────────────────────
-class _LoadingDots extends StatefulWidget {
-  @override
-  State<_LoadingDots> createState() => _LoadingDotsState();
-}
-
-class _LoadingDotsState extends State<_LoadingDots>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (_, __) {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(3, (i) {
-            final delay = i / 3;
-            final phase = (_ctrl.value - delay).clamp(0.0, 1.0);
-            final opacity = (sin(phase * pi)).clamp(0.15, 1.0);
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 5),
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primary.withOpacity(opacity),
-              ),
-            );
-          }),
-        );
-      },
     );
   }
 }

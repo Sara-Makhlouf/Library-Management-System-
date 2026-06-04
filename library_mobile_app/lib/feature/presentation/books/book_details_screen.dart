@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:library_mobile_app/core/components/circle_button.dart';
+import 'package:library_mobile_app/core/components/review_card.dart';
+import 'package:library_mobile_app/core/components/set_card.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:library_mobile_app/core/theme.dart';
 
@@ -52,7 +55,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
           generator.darkMutedColor?.color ??
           generator.dominantColor?.color ??
           const Color(0xFF2a2010);
-      // اختار نص أبيض أو داكن حسب brightness الخلفية
       _textColor =
           ThemeData.estimateBrightnessForColor(_bgColor) == Brightness.dark
           ? Colors.white
@@ -164,7 +166,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // لون الخلفية الرئيسية تحت الكارد
     final scaffoldBg = isDark
         ? AppColors.backgroundDark
         : AppColors.backgroundLight;
@@ -173,7 +174,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
       backgroundColor: scaffoldBg,
       body: CustomScrollView(
         slivers: [
-          // ── Header: خلفية مستخلصة من الغلاف ───────────────
           SliverToBoxAdapter(
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 600),
@@ -197,7 +197,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _CircleBtn(
+                      CircleBtn(
                         onTap: () => Navigator.of(context).pop(),
                         child: Icon(
                           Icons.arrow_back_ios_rounded,
@@ -205,7 +205,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
                           color: _textColor,
                         ),
                       ),
-                      _CircleBtn(
+                      CircleBtn(
                         onTap: () =>
                             setState(() => _isBookmarked = !_isBookmarked),
                         child: Icon(
@@ -365,27 +365,26 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
             ),
           ),
 
-          // ── Stats cards ─────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: Row(
                 children: [
-                  _StatCard(
+                  StatCard(
                     value: '320',
                     label: 'Pages',
                     icon: Icons.menu_book_rounded,
                     isDark: isDark,
                   ),
                   const SizedBox(width: 10),
-                  _StatCard(
+                  StatCard(
                     value: 'EN',
                     label: 'Language',
                     icon: Icons.language_rounded,
                     isDark: isDark,
                   ),
                   const SizedBox(width: 10),
-                  _StatCard(
+                  StatCard(
                     value: '2024',
                     label: 'Year',
                     icon: Icons.calendar_today_rounded,
@@ -396,7 +395,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
             ),
           ),
 
-          // ── Overview ────────────────────────────────────────
+          //Overview
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
@@ -428,7 +427,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
             ),
           ),
 
-          // ── Reviews ─────────────────────────────────────────
+          //Reviews
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
@@ -464,7 +463,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
             delegate: SliverChildBuilderDelegate(
               (_, i) => Padding(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                child: _ReviewCard(review: _reviews[i], isDark: isDark)
+                child: ReviewCard(review: _reviews[i], isDark: isDark)
                     .animate(delay: Duration(milliseconds: 380 + i * 60))
                     .fadeIn()
                     .slideY(begin: 0.1, end: 0),
@@ -477,7 +476,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
         ],
       ),
 
-      // ── Add to Cart ─────────────────────────────────────────
+      // Add to Cart
       bottomNavigationBar: Container(
         padding: EdgeInsets.fromLTRB(
           16,
@@ -533,170 +532,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
           ),
         ),
       ).animate(delay: 400.ms).fadeIn().slideY(begin: 0.2, end: 0),
-    );
-  }
-}
-
-// ── Circle button ─────────────────────────────────────────────────────────
-class _CircleBtn extends StatelessWidget {
-  final VoidCallback onTap;
-  final Widget child;
-  const _CircleBtn({required this.onTap, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withOpacity(0.2), width: 0.5),
-        ),
-        child: Center(child: child),
-      ),
-    );
-  }
-}
-
-// ── Stat card ─────────────────────────────────────────────────────────────
-class _StatCard extends StatelessWidget {
-  final String value;
-  final String label;
-  final IconData icon;
-  final bool isDark;
-  const _StatCard({
-    required this.value,
-    required this.label,
-    required this.icon,
-    required this.isDark,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.accentDark : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark ? Colors.white12 : Colors.black12,
-            width: 0.5,
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: AppColors.primary, size: 20),
-            const SizedBox(height: 5),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: isDark ? AppColors.textDark : AppColors.textLight,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                color: isDark
-                    ? AppColors.textDark.withOpacity(0.5)
-                    : AppColors.textLight.withOpacity(0.5),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Review card ───────────────────────────────────────────────────────────
-class _ReviewCard extends StatelessWidget {
-  final Map<String, dynamic> review;
-  final bool isDark;
-  const _ReviewCard({required this.review, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.accentDark : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? Colors.white12 : Colors.black12,
-          width: 0.5,
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: AppColors.primary.withOpacity(0.15),
-            child: Text(
-              review['name'].substring(0, 1),
-              style: TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      review['name'],
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: isDark
-                            ? AppColors.textDark
-                            : AppColors.textLight,
-                      ),
-                    ),
-                    Row(
-                      children: List.generate(
-                        5,
-                        (i) => Icon(
-                          i < review['rating']
-                              ? Icons.star_rounded
-                              : Icons.star_outline_rounded,
-                          color: AppColors.primary,
-                          size: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  review['comment'],
-                  style: TextStyle(
-                    fontSize: 12,
-                    height: 1.4,
-                    color: isDark
-                        ? AppColors.textDark.withOpacity(0.6)
-                        : AppColors.textLight.withOpacity(0.6),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

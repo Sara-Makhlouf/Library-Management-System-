@@ -35,9 +35,6 @@ class OnboardingTwo extends StatelessWidget {
             ),
           ),
 
-          // skip
-
-          // bottom content
           Positioned(
             bottom: 0,
             left: 0,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:library_mobile_app/core/components/custom_button.dart';
 import 'package:library_mobile_app/core/components/decorCircle.dart';
@@ -8,11 +7,9 @@ import 'package:library_mobile_app/core/components/shake_widget.dart';
 import 'package:library_mobile_app/core/components/social_button.dart';
 import 'package:library_mobile_app/core/components/theme_toggle.dart';
 import 'package:library_mobile_app/core/theme.dart';
-import 'package:library_mobile_app/core/theme_cubit.dart';
 import 'package:library_mobile_app/feature/notifications/notifications_screen.dart';
 import 'package:library_mobile_app/feature/presentation/register.dart';
 import 'package:library_mobile_app/core/components/custom_input_field.dart';
-import 'package:library_mobile_app/core/components/custom_button.dart';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
@@ -416,13 +413,3 @@ class _SigninScreenState extends State<SigninScreen> {
     );
   }
 }
-
-// ── Decorative background circle ──────────────────────────────────────────
-
-// ── Theme toggle pill ──────────────────────────────────────────────────────
-
-// ── Login button ──────────────────────────────────────────────────────────
-
-// ── Social button ─────────────────────────────────────────────────────────
-
-// ── Shake widget ──────────────────────────────────────────────────────────
