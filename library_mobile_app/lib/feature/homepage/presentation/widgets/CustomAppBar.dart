@@ -6,21 +6,30 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ─── التعديل: فحص حالة الثيم الحالية لتطبيق الألوان الداكنة ───
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return AppBar(
-      backgroundColor: AppColors.background,
+      // ─── التعديل: تغيير لون الخلفية في الدارك مود ───
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
       elevation: 0,
       centerTitle: true,
-      title: const Text(
+      title: Text(
         'Hi',
         style: TextStyle(
-          color: Colors.black,
+          // ─── التعديل: تغيير لون نص العنوان ليصبح فاتحاً في الدارك مود ───
+          color: isDark ? AppColors.textDark : Colors.black,
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
       ),
       leading: Builder(
         builder: (context) => IconButton(
-          icon: const Icon(Icons.menu, color: AppColors.primary),
+          icon: Icon(
+            Icons.menu,
+            // يبقى الذهبي الأساسي بالوضعين لأنه بارز ومناسب
+            color: AppColors.primary,
+          ),
           onPressed: () {
             Scaffold.of(context).openDrawer();
           },

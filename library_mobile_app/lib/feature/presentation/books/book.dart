@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:library_mobile_app/core/constant.dart';
 import 'package:library_mobile_app/core/theme.dart';
-import 'package:library_mobile_app/feature/presentation/books/book_details_screen.dart';
 
 class Book extends StatefulWidget {
   final String categoryName;
-  const Book({super.key, this.categoryName = 'History Books'});
+
+  // جعلنا المعامل مطلوباً (required) لاستقبال اسم الفئة القادمة من الـ Router
+  const Book({super.key, required this.categoryName});
 
   @override
   State<Book> createState() => _BookState();
@@ -15,6 +17,14 @@ class Book extends StatefulWidget {
 class _BookState extends State<Book> {
   String _sort = 'Default';
 
+  @override
+  void initState() {
+    super.initState();
+    // 💡 هنا المكان المثالي لاستدعاء الـ Bloc لجلب كتب الفئة المحددة عند فتح الشاشة:
+    // context.read<BooksBloc>().add(FetchBooksByCategoryEvent(categoryName: widget.categoryName));
+  }
+
+  // قائمة الكتب التجريبية (Static Data)
   final List<Map<String, dynamic>> _books = [
     {
       'image': 'assets/images/bookHis.png',
@@ -168,7 +178,7 @@ class _BookState extends State<Book> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.categoryName,
+              widget.categoryName, // يعرض الآن اسم الفئة الممررة بشكل ديناميكي
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -187,7 +197,6 @@ class _BookState extends State<Book> {
           ],
         ),
         actions: [
-          // Sort button
           GestureDetector(
             onTap: _showSortSheet,
             child: Container(
@@ -230,7 +239,7 @@ class _BookState extends State<Book> {
           crossAxisSpacing: 10,
           itemBuilder: (context, index) {
             final book = books[index];
-            return _BookCard(book: book, isDark: isDark)
+            return BookCard(book: book, isDark: isDark)
                 .animate()
                 .fadeIn(
                   delay: Duration(milliseconds: 60 * index),
@@ -245,20 +254,18 @@ class _BookState extends State<Book> {
 }
 
 // ── Book card ─────────────────────────────────────────────────────────────
-class _BookCard extends StatelessWidget {
+class BookCard extends StatelessWidget {
   final Map<String, dynamic> book;
   final bool isDark;
 
-  const _BookCard({required this.book, required this.isDark});
+  const BookCard({super.key, required this.book, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => BookDetailsScreen(imagePath: book['image']),
-        ),
-      ),
+      onTap: () => Navigator.of(
+        context,
+      ).pushNamed(Routes.bookDetails, arguments: book['image']),
       child: Container(
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkCard : Colors.white,
@@ -275,7 +282,6 @@ class _BookCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // cover image
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(12),
@@ -301,8 +307,6 @@ class _BookCard extends StatelessWidget {
                 ),
               ),
             ),
-
-            // info
             Padding(
               padding: const EdgeInsets.all(7),
               child: Column(
@@ -331,7 +335,6 @@ class _BookCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 5),
-                  // price badge
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 6,

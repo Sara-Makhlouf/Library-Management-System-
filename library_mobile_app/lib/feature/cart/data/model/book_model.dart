@@ -4,6 +4,7 @@ class CartBookModel {
   final String author;
   final double price;
   final String imageUrl;
+  final bool isBorrow; // الحقل الجديد للتمييز
   int quantity; // نحتاجها في السلة لتعديل الكمية
 
   CartBookModel({
@@ -12,6 +13,7 @@ class CartBookModel {
     required this.author,
     required this.price,
     required this.imageUrl,
+    this.isBorrow = false, // القيمة الافتراضية شراء
     this.quantity = 1,
   });
 
@@ -23,6 +25,7 @@ class CartBookModel {
       author: json['author'] ?? '',
       price: (json['price'] as num).toDouble(),
       imageUrl: json['image_url'] ?? '',
+      isBorrow: json['is_borrow'] ?? false,
       quantity: json['quantity'] ?? 1,
     );
   }
@@ -35,6 +38,7 @@ class CartBookModel {
       'author': author,
       'price': price,
       'image_url': imageUrl,
+      'is_borrow': isBorrow,
       'quantity': quantity,
     };
   }
@@ -47,6 +51,7 @@ class CartBookModel {
       author: this.author,
       price: this.price,
       imageUrl: this.imageUrl,
+      isBorrow: isBorrow ?? this.isBorrow,
       quantity: quantity ?? this.quantity,
     );
   }

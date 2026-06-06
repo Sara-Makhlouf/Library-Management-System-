@@ -1,18 +1,16 @@
-import 'payment_mode.dart';
-
 class OrderRequest {
   final String fullName;
   final String phone;
   final String address;
-  final PaymentMode mode;
-  final String? paymentMethod;
+  final String paymentMethod;
+  final bool wantsDelivery;
 
   OrderRequest({
     required this.fullName,
     required this.phone,
     required this.address,
-    required this.mode,
-    this.paymentMethod,
+    required this.paymentMethod,
+    required this.wantsDelivery,
   });
 
   Map<String, dynamic> toJson() {
@@ -20,8 +18,9 @@ class OrderRequest {
       'full_name': fullName,
       'phone': phone,
       'address': address,
-      'type': mode == PaymentMode.buy ? 'purchase' : 'borrow',
       'payment_method': paymentMethod,
+      'wants_delivery': wantsDelivery,
+      'order_type': 'combined', // إشارة إلى أن الطلب يحتوي على عمليات مدمجة
     };
   }
 }

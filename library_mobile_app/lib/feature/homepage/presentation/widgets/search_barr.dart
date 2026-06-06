@@ -6,26 +6,44 @@ class Search extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ─── التعديل: فحص حالة الثيم الحالية لتطبيق الألوان الداكنة ───
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Row(
       children: [
         Expanded(
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.accent,
+              // ─── التعديل: تغيير لون الخلفية للحقل في الدارك مود ───
+              color: isDark ? AppColors.inputDark : AppColors.accent,
               borderRadius: BorderRadius.circular(20),
-              boxShadow: const [
-                BoxShadow(color: Colors.black26, blurRadius: 4),
+              boxShadow: [
+                BoxShadow(
+                  // تخفيف حدة الظل في الوضع الداكن لتبدو الواجهة مريحة
+                  color: isDark ? Colors.black38 : Colors.black12,
+                  blurRadius: 4,
+                ),
               ],
             ),
             child: TextField(
               textAlign: TextAlign.left,
-              style: const TextStyle(color: Colors.black),
+              // ─── التعديل: لون النص المكتوب يتغير حسب الوضع ليكون واضحاً ───
+              style: TextStyle(
+                color: isDark ? AppColors.textDark : Colors.black,
+              ),
               decoration: InputDecoration(
-                hintText: "Search You Book",
-                hintStyle: const TextStyle(
-                  color: Color.fromARGB(179, 138, 136, 136),
+                hintText: "Search Your Book", // تصحيح إملائي بسيط لـ Your
+                hintStyle: TextStyle(
+                  // ─── التعديل: لون نص التلميح التوضيحي متوافق مع الثيمين ───
+                  color: isDark
+                      ? AppColors.textGrey
+                      : const Color.fromARGB(179, 138, 136, 136),
                 ),
-                prefixIcon: const Icon(Icons.search, color: AppColors.textGrey),
+                prefixIcon: Icon(
+                  Icons.search,
+                  // ─── التعديل: تلوين أيقونة البحث بالذهبي بالداكن لتبرز بشكل جميل ───
+                  color: isDark ? AppColors.primary : AppColors.textGrey,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
                   borderSide: BorderSide.none,
@@ -41,20 +59,30 @@ class Search extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 10),
-        /*  Container(
+
+        // ─── تهيئة الزر المعلق ليدعم الداكن فوراً عند تفعيله وفك التعليق عنه ───
+        Container(
           decoration: BoxDecoration(
-            color: const Color(0xff3A7CA5),
+            color: isDark ? AppColors.darkCard : AppColors.accent,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 4)],
+            boxShadow: [
+              BoxShadow(
+                color: isDark ? Colors.black45 : Colors.black38,
+                blurRadius: 4,
+              ),
+            ],
           ),
           child: IconButton(
-            onPressed: () {},
-            icon: const Icon(
+            onPressed: () {
+              print('Sort pressed');
+            },
+            icon: Icon(
               Icons.sort_by_alpha,
-              color: Color.fromARGB(255, 17, 16, 16),
+              // الأيقونة تصبح ذهبية في الداكن لتتناسب مع هوية التطبيق البصرية
+              color: isDark ? AppColors.primary : Color(0xFF685A39),
             ),
           ),
-        ),*/
+        ),
       ],
     );
   }

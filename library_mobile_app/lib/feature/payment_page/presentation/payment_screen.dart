@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart'; // استيراد حزمة الأنميشن
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:library_mobile_app/core/theme.dart';
+import 'package:library_mobile_app/feature/cart/bloc/cart_bloc.dart';
+import 'package:library_mobile_app/feature/cart/bloc/cart_state.dart';
 
 import '../bloc/payment_bloc.dart';
 import '../bloc/payment_event.dart';
 import '../bloc/payment_state.dart';
-import '../data/payment_mode.dart';
 
 class CheckoutScreen extends StatefulWidget {
-  final PaymentMode mode;
-  const CheckoutScreen({super.key, required this.mode});
+  const CheckoutScreen({super.key});
 
   @override
   _CheckoutScreenState createState() => _CheckoutScreenState();
@@ -33,35 +34,66 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ─── التعديل: فحص حالة الثيم الحالية للتطبيق ───
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // جلب حالة السلة الحالية لحساب محتويات الفاتورة بدقة
+    final cartState = context.read<CartBloc>().state;
+    int buyingCount = 0;
+    int borrowingCount = 0;
+    double totalPrice = 0.0;
+
+    if (cartState is CartLoaded) {
+      buyingCount = cartState.cartItems
+          .where((item) => item.isBorrow != true)
+          .length;
+      borrowingCount = cartState.cartItems
+          .where((item) => item.isBorrow == true)
+          .length;
+      totalPrice = cartState.totalAmount;
+    }
+
     return BlocProvider(
       create: (context) => CheckoutBloc(),
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        // ─── التعديل: تكييف لون خلفية الشاشة ───
+        backgroundColor: isDark
+            ? AppColors.backgroundDark
+            : const Color(0xFFEFE3D3),
         appBar: AppBar(
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(
-              bottom: Radius.circular(
-                25,
-              ), // يمكنك زيادة الرقم لزيادة الانحناء (شكل بيضوي أكثر)
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(25)),
+          ),
+          title: Text(
+            "Checkout & Payment",
+            style: TextStyle(
+              color: isDark
+                  ? AppColors.primary
+                  : const Color.fromARGB(255, 96, 82, 50),
+              fontWeight: FontWeight.bold,
             ),
           ),
-
-          title: Text(
-            widget.mode == PaymentMode.buy
-                ? "Confirm Purchase"
-                : "Borrow Request",
-            style: const TextStyle(color: Color.fromARGB(255, 96, 82, 50)),
-          ),
-          backgroundColor: const Color.fromARGB(255, 189, 170, 127),
+          // ─── التعديل: تكييف لون خلفية الـ AppBar والأيقونات ───
+          backgroundColor: isDark
+              ? AppColors.darkCard
+              : const Color.fromARGB(255, 189, 170, 127),
           centerTitle: true,
-          iconTheme: const IconThemeData(
-            color: Color.fromARGB(255, 96, 82, 50),
+          iconTheme: IconThemeData(
+            color: isDark
+                ? AppColors.primary
+                : const Color.fromARGB(255, 96, 82, 50),
           ),
         ),
         body: BlocConsumer<CheckoutBloc, CheckoutState>(
           listener: (context, state) {
             if (state is CheckoutSuccess) {
-              _showSuccessDialog(context, state);
+              _showSuccessDialog(
+                context,
+                state,
+                buyingCount,
+                borrowingCount,
+                isDark,
+              );
             } else if (state is CheckoutFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -76,121 +108,250 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  // --- Order Summary / Invoice (Only for Purchase) ---
-                  if (widget.mode == PaymentMode.buy)
-                    _buildSection("Order Summary", [
-                      _buildSummaryRow("Total Books:", "3 Items"), // Mock Data
-                      _buildSummaryRow("Total Price:", "\$120.00"), // Mock Data
-                    ]),
-
-                  if (widget.mode == PaymentMode.buy)
-                    const SizedBox(height: 16),
-
-                  // --- Personal Information ---
-                  _buildSection("Personal Information", [
-                    _buildTextField("Full Name", _nameController),
-                    _buildTextField(
-                      "Phone Number",
-                      _phoneController,
-                      isPhone: true,
-                    ),
-                    _buildTextField("Detailed Address", _addressController),
-                  ]),
-
-                  const SizedBox(height: 16),
-
-                  // --- Delivery Service ---
-                  _buildSection("Delivery Service", [
-                    RadioListTile<bool>(
-                      title: const Text("Yes, I want delivery"),
-                      secondary: const Icon(Icons.delivery_dining),
-                      value: true,
-                      groupValue: _wantsDelivery,
-                      onChanged: (v) => setState(() => _wantsDelivery = v!),
-                    ),
-                    RadioListTile<bool>(
-                      title: const Text("No, I will pick it up"),
-                      secondary: const Icon(Icons.store),
-                      value: false,
-                      groupValue: _wantsDelivery,
-                      onChanged: (v) => setState(() => _wantsDelivery = v!),
-                    ),
-                  ]),
+                  // --- 1. Order Summary / Invoice ---
+                  _buildSection(
+                    "Invoice Summary",
+                    [
+                      _buildSummaryRow(
+                        "Buying Books:",
+                        "$buyingCount Items",
+                        isDark,
+                      ),
+                      _buildSummaryRow(
+                        "Borrowing Books:",
+                        "$borrowingCount Items",
+                        isDark,
+                      ),
+                      Divider(
+                        color: isDark
+                            ? AppColors.textGrey.withOpacity(0.3)
+                            : Colors.grey.withOpacity(0.5),
+                      ),
+                      _buildSummaryRow(
+                        "Total Price:",
+                        "${totalPrice.toStringAsFixed(0)} ل.س",
+                        isDark,
+                        isTotal: true,
+                      ),
+                    ],
+                    index: 0,
+                    isDark: isDark,
+                  ),
 
                   const SizedBox(height: 16),
 
-                  // --- Payment Method (For Purchase) or Terms (For Borrowing) ---
-                  if (widget.mode == PaymentMode.buy)
-                    _buildSection("Payment Method", [
+                  // --- 2. Personal Information ---
+                  _buildSection(
+                    "Personal Information",
+                    [
+                      _buildTextField(
+                        "Full Name",
+                        _nameController,
+                        isDark: isDark,
+                      ),
+                      _buildTextField(
+                        "Phone Number",
+                        _phoneController,
+                        isPhone: true,
+                        isDark: isDark,
+                      ),
+                      _buildTextField(
+                        "Detailed Address",
+                        _addressController,
+                        isDark: isDark,
+                      ),
+                    ],
+                    index: 1,
+                    isDark: isDark,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // --- 3. Delivery Service ---
+                  _buildSection(
+                    "Delivery Service",
+                    [
+                      RadioListTile<bool>(
+                        title: Text(
+                          "Yes, I want delivery",
+                          style: TextStyle(
+                            color: isDark ? AppColors.textDark : Colors.black87,
+                          ),
+                        ),
+                        secondary: Icon(
+                          Icons.delivery_dining,
+                          color: isDark
+                              ? AppColors.primary
+                              : const Color.fromARGB(255, 96, 82, 50),
+                        ),
+                        activeColor: isDark
+                            ? AppColors.primary
+                            : const Color.fromARGB(255, 96, 82, 50),
+                        value: true,
+                        groupValue: _wantsDelivery,
+                        onChanged: (v) => setState(() => _wantsDelivery = v!),
+                      ),
+                      RadioListTile<bool>(
+                        title: Text(
+                          "No, I will pick it up",
+                          style: TextStyle(
+                            color: isDark ? AppColors.textDark : Colors.black87,
+                          ),
+                        ),
+                        secondary: Icon(
+                          Icons.store,
+                          color: isDark
+                              ? AppColors.primary
+                              : const Color.fromARGB(255, 96, 82, 50),
+                        ),
+                        activeColor: isDark
+                            ? AppColors.primary
+                            : const Color.fromARGB(255, 96, 82, 50),
+                        value: false,
+                        groupValue: _wantsDelivery,
+                        onChanged: (v) => setState(() => _wantsDelivery = v!),
+                      ),
+                    ],
+                    index: 2,
+                    isDark: isDark,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // --- 4. Payment Method ---
+                  _buildSection(
+                    "Payment Method",
+                    [
                       RadioListTile(
-                        title: const Text("Credit Card"),
-                        secondary: const Icon(Icons.credit_card),
+                        title: Text(
+                          "Credit Card",
+                          style: TextStyle(
+                            color: isDark ? AppColors.textDark : Colors.black87,
+                          ),
+                        ),
+                        secondary: Icon(
+                          Icons.credit_card,
+                          color: isDark
+                              ? AppColors.primary
+                              : const Color.fromARGB(255, 96, 82, 50),
+                        ),
+                        activeColor: isDark
+                            ? AppColors.primary
+                            : const Color.fromARGB(255, 96, 82, 50),
                         value: 'card',
                         groupValue: _selectedPayment,
                         onChanged: (v) =>
                             setState(() => _selectedPayment = v.toString()),
                       ),
                       RadioListTile(
-                        title: const Text("Cash on Delivery"),
-                        secondary: const Icon(Icons.money),
+                        title: Text(
+                          "Cash on Delivery",
+                          style: TextStyle(
+                            color: isDark ? AppColors.textDark : Colors.black87,
+                          ),
+                        ),
+                        secondary: Icon(
+                          Icons.money,
+                          color: isDark
+                              ? AppColors.primary
+                              : const Color.fromARGB(255, 96, 82, 50),
+                        ),
+                        activeColor: isDark
+                            ? AppColors.primary
+                            : const Color.fromARGB(255, 96, 82, 50),
                         value: 'cash',
                         groupValue: _selectedPayment,
                         onChanged: (v) =>
                             setState(() => _selectedPayment = v.toString()),
                       ),
-                    ])
-                  else
-                    _buildSection("Borrowing Terms", [
-                      const ListTile(
-                        leading: Icon(
-                          Icons.calendar_month,
+                    ],
+                    index: 3,
+                    isDark: isDark,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // --- 5. Borrowing Terms Note ---
+                  _buildSection(
+                    "Borrowing Terms",
+                    [
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(
+                          Icons.info_outline,
                           color: Colors.orange,
+                          size: 28,
                         ),
-                        title: Text("Borrowing period: 7 days"),
-                        subtitle: Text("Expected return date: May 22, 2026"),
+                        title: Text(
+                          "Important Note for Borrowed Books",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: isDark ? AppColors.textDark : Colors.black87,
+                          ),
+                        ),
+                        subtitle: Text(
+                          "The maximum borrowing period is 7 days only from the date of receiving the order. Please ensure timely returns.",
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isDark ? AppColors.textGrey : Colors.black54,
+                          ),
+                        ),
                       ),
-                    ]),
+                    ],
+                    index: 4,
+                    isDark: isDark,
+                  ),
 
                   const SizedBox(height: 30),
 
                   // --- Submit Button ---
                   state is CheckoutLoading
-                      ? const CircularProgressIndicator()
+                      ? CircularProgressIndicator(
+                          color: isDark
+                              ? AppColors.primary
+                              : const Color.fromARGB(255, 96, 82, 50),
+                        )
                       : ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: const Size(double.infinity, 55),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50),
-                            ),
-                            backgroundColor: const Color.fromARGB(
-                              255,
-                              189,
-                              170,
-                              127,
-                            ),
-                          ),
-                          onPressed: () {
-                            context.read<CheckoutBloc>().add(
-                              ConfirmPaymentEvent(
-                                name: _nameController.text,
-                                phone: _phoneController.text,
-                                address: _addressController.text,
-                                isPurchase: widget.mode == PaymentMode.buy,
-                                paymentMethod: widget.mode == PaymentMode.buy
-                                    ? _selectedPayment
-                                    : null,
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: const Size(double.infinity, 55),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                                // ─── التعديل: مواءمة ألوان زر الإرسال مع الوضع الحالي ───
+                                backgroundColor: isDark
+                                    ? AppColors.inputDark
+                                    : const Color.fromARGB(255, 189, 170, 127),
                               ),
-                            );
-                          },
-                          child: const Text(
-                            "Confirm Order Now",
-                            style: TextStyle(
-                              color: Color.fromARGB(255, 96, 82, 50),
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                              onPressed: () {
+                                context.read<CheckoutBloc>().add(
+                                  ConfirmPaymentEvent(
+                                    name: _nameController.text,
+                                    phone: _phoneController.text,
+                                    address: _addressController.text,
+                                    paymentMethod: _selectedPayment,
+                                    wantsDelivery: _wantsDelivery,
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                "Confirm Order Now",
+                                style: TextStyle(
+                                  color: isDark
+                                      ? AppColors.primary
+                                      : const Color.fromARGB(255, 96, 82, 50),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            )
+                            .animate()
+                            .fadeIn(delay: 400.ms, duration: 400.ms)
+                            .slideY(
+                              begin: 0.2,
+                              end: 0,
+                              curve: Curves.easeOutCubic,
                             ),
-                          ),
-                        ),
                 ],
               ),
             );
@@ -200,8 +361,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  // Helper for Order Summary rows
-  Widget _buildSummaryRow(String label, String value) {
+  Widget _buildSummaryRow(
+    String label,
+    String value,
+    bool isDark, {
+    bool isTotal = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -209,14 +374,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         children: [
           Text(
             label,
-            style: const TextStyle(fontSize: 16, color: Colors.black),
+            style: TextStyle(
+              fontSize: 16,
+              color: isDark ? AppColors.textDark : Colors.black87,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: isTotal
+                  ? (isDark
+                        ? AppColors.primary
+                        : const Color.fromARGB(255, 96, 82, 50))
+                  : (isDark ? AppColors.textDark : Colors.black),
             ),
           ),
         ],
@@ -224,27 +397,70 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  void _showSuccessDialog(BuildContext context, CheckoutSuccess state) {
+  void _showSuccessDialog(
+    BuildContext context,
+    CheckoutSuccess state,
+    int buyingCount,
+    int borrowingCount,
+    bool isDark,
+  ) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
+        backgroundColor: isDark ? AppColors.darkCard : const Color(0xFFEFE3D3),
         icon: const Icon(Icons.check_circle, color: Colors.green, size: 60),
-        title: const Text("Order Received!"),
+        title: Text(
+          "Order Received!",
+          style: TextStyle(color: isDark ? AppColors.textDark : Colors.black87),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Order ID: ${state.orderId}"),
-            Text("Date: ${state.date}"),
-            const SizedBox(height: 10),
             Text(
-              "Type: ${widget.mode == PaymentMode.buy ? 'Purchase' : 'Borrowing'}",
+              "Order ID: ${state.orderId}",
+              style: TextStyle(
+                color: isDark ? AppColors.textDark : Colors.black87,
+              ),
             ),
-            Text("Delivery: ${_wantsDelivery ? 'Requested' : 'Store Pickup'}"),
+            Text(
+              "Date: ${state.date}",
+              style: TextStyle(
+                color: isDark ? AppColors.textDark : Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              "Buying Items: $buyingCount",
+              style: TextStyle(
+                color: isDark ? AppColors.textDark : Colors.black87,
+              ),
+            ),
+            Text(
+              "Borrowing Items: $borrowingCount",
+              style: TextStyle(
+                color: isDark ? AppColors.textDark : Colors.black87,
+              ),
+            ),
+            Text(
+              "Delivery: ${_wantsDelivery ? 'Requested' : 'Store Pickup'}",
+              style: TextStyle(
+                color: isDark ? AppColors.textDark : Colors.black87,
+              ),
+            ),
           ],
         ),
         actions: [
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isDark
+                  ? AppColors.inputDark
+                  : const Color.fromARGB(255, 189, 170, 127),
+              foregroundColor: isDark
+                  ? AppColors.primary
+                  : const Color.fromARGB(255, 96, 82, 50),
+            ),
             onPressed: () {
               Navigator.pop(context);
               Navigator.pop(context);
@@ -256,52 +472,103 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  Widget _buildSection(String title, List<Widget> children) {
+  Widget _buildSection(
+    String title,
+    List<Widget> children, {
+    int index = 0,
+    required bool isDark,
+  }) {
     return Card(
-      color: AppColors.accent,
-
-      surfaceTintColor: AppColors.accent,
-      elevation: 8,
-      //  shadowColor: Colors.black.withOpacity(0.4),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: const EdgeInsets.all(15),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 17,
-                color: Color.fromARGB(255, 96, 82, 50),
-              ),
+          // ─── التعديل: تكييف لون خلفية الكارت ───
+          color: isDark ? AppColors.darkCard : AppColors.accent,
+          surfaceTintColor: isDark ? AppColors.darkCard : AppColors.accent,
+          elevation: isDark ? 2 : 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: isDark
+                ? BorderSide(color: AppColors.textGrey.withOpacity(0.1))
+                : BorderSide.none,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(15),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                    color: isDark
+                        ? AppColors.primary
+                        : const Color.fromARGB(255, 96, 82, 50),
+                  ),
+                ),
+                Divider(
+                  color: isDark
+                      ? AppColors.textGrey.withOpacity(0.2)
+                      : Colors.grey.withOpacity(0.4),
+                ),
+                ...children,
+              ],
             ),
-            const Divider(),
-            ...children,
-          ],
-        ),
-      ),
-    );
+          ),
+        )
+        .animate()
+        .fadeIn(
+          delay: Duration(milliseconds: 100 * index),
+          duration: 500.ms,
+          curve: Curves.easeOutCubic,
+        )
+        .slideY(
+          begin: 0.15,
+          end: 0,
+          duration: 500.ms,
+          curve: Curves.easeOutCubic,
+        );
   }
 
   Widget _buildTextField(
     String label,
     TextEditingController controller, {
     bool isPhone = false,
+    required bool isDark,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextField(
-        cursorColor: Color.fromARGB(255, 234, 226, 218),
+        cursorColor: isDark
+            ? AppColors.primary
+            : const Color.fromARGB(255, 234, 226, 218),
         controller: controller,
+        style: TextStyle(color: isDark ? AppColors.textDark : Colors.black87),
         keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
         decoration: InputDecoration(
           filled: true,
-          fillColor: Color.fromARGB(255, 234, 226, 218),
+          // ─── التعديل: تلوين حقول الإدخال لتتناسب مع الدارك مود ───
+          fillColor: isDark ? AppColors.inputDark : const Color(0xFFEFE3D3),
           labelText: label,
-          prefixIcon: Icon(isPhone ? Icons.phone : Icons.edit),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(50)),
+          labelStyle: TextStyle(
+            color: isDark ? AppColors.textGrey : Colors.black54,
+          ),
+          prefixIcon: Icon(
+            isPhone ? Icons.phone : Icons.edit,
+            color: isDark ? AppColors.primary : Colors.black54,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(50),
+            borderSide: BorderSide(
+              color: isDark ? AppColors.primary : Colors.grey,
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(50),
+            borderSide: BorderSide(
+              color: isDark
+                  ? AppColors.textGrey.withOpacity(0.3)
+                  : Colors.grey.withOpacity(0.5),
+            ),
+          ),
         ),
       ),
     );

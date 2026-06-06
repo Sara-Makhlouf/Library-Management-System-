@@ -1,59 +1,70 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:library_mobile_app/core/constant.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/cart/presentation/cart_screen.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/BottomNav.dart';
-
-import 'package:library_mobile_app/feature/homepage/presentation/widgets/seaction.dart';
+import 'package:library_mobile_app/feature/homepage/presentation/widgets/PointsStickyNote.dart';
+import 'package:library_mobile_app/feature/homepage/presentation/widgets/category_seation.dart';
+import 'package:library_mobile_app/feature/homepage/presentation/widgets/popular_books.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/search_barr.dart';
-import 'package:library_mobile_app/feature/homepage/presentation/widgets/slider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return BlocBuilder<HomeBloc, HomeState>(
       builder: (context, state) {
         return Scaffold(
           extendBody: true,
-          backgroundColor: AppColors.background,
+          // ─── التعديل المطلوب: تغيير لون الخلفية بالوضع الفاتح إلى اللون البيج المتناسق ───
+          backgroundColor: isDark
+              ? AppColors.backgroundDark
+              : const Color(0xFFEFE3D3),
           appBar: state.tabIndex == 1
               ? AppBar(
-                  backgroundColor: AppColors.background,
+                  backgroundColor: isDark
+                      ? AppColors.backgroundDark
+                      : const Color(0xFFEFE3D3),
                   elevation: 0,
                   centerTitle: true,
-                  title: const Text(
+                  title: Text(
                     'Home',
                     style: TextStyle(
-                      color: Colors.black,
+                      color: isDark ? AppColors.textDark : Colors.black,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   leading: Builder(
                     builder: (context) => IconButton(
-                      icon: const Icon(Icons.menu, color: Colors.black),
+                      icon: Icon(
+                        Icons.menu,
+                        color: isDark ? AppColors.textDark : Colors.black,
+                      ),
                       onPressed: () {
                         Scaffold.of(context).openDrawer();
                       },
                     ),
                   ),
                   actions: [
-                    Container(
+                    SizedBox(
                       width: 50,
                       height: 50,
-
                       child: IconButton(
                         padding: EdgeInsets.zero,
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.notifications_none,
-                          color: AppColors.secondary,
+                          color: isDark
+                              ? AppColors.primary
+                              : AppColors.secondary,
                           size: 30,
                         ),
                         onPressed: () {
-                          print('Notifications pressed');
+                          Navigator.of(context).pushNamed(Routes.notifications);
                         },
                       ),
                     ),
@@ -62,143 +73,181 @@ class HomeScreen extends StatelessWidget {
               : null,
 
           drawer: Drawer(
-            // تغيير لون خلفية القائمة بالكامل للون البيج الفاتح جداً والمتناسق مع التطبيق
-            backgroundColor: const Color(0xFFF5EFEB),
+            backgroundColor: isDark
+                ? AppColors.backgroundDark
+                : const Color(0xFFEFE3D3),
             surfaceTintColor: Colors.transparent,
             child: Column(
               children: [
-                // --- قسم الـ Header (معلومات المستخدم) ---
                 UserAccountsDrawerHeader(
-                  decoration: const BoxDecoration(
-                    // إعطاء الهيدر لون بيج دافئ ومميز لفصله عن بقية الخيارات
-                    color: Color(0xFFD8C8A8),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? AppColors.accentDark
+                        : const Color(0xFFD8C8A8),
                   ),
-                  currentAccountPicture: const CircleAvatar(
+                  currentAccountPicture: CircleAvatar(
                     radius: 35,
-                    backgroundColor: Color(0xFF605232),
-                    // يمكنك استبدالها بـ AssetImage مخصصة لصورة المستخدم لاحقاً
+                    backgroundColor: isDark
+                        ? AppColors.inputDark
+                        : const Color(0xFF605232),
                     child: Icon(
                       Icons.person,
                       size: 40,
-                      color: Color(0xFFF5EFEB),
+                      color: isDark
+                          ? AppColors.primary
+                          : const Color(0xFFF5EFEB),
                     ),
                   ),
-                  accountName: const Text(
+                  accountName: Text(
                     'Ghufran Ibrahim',
                     style: TextStyle(
-                      color: Color(0xFF2C2518),
+                      color: isDark
+                          ? AppColors.textDark
+                          : const Color(0xFF2C2518),
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                     ),
                   ),
-                  accountEmail: const Text(
+                  accountEmail: Text(
                     'ghufran@example.com',
-                    style: TextStyle(color: Color(0xFF605232), fontSize: 14),
+                    style: TextStyle(
+                      color: isDark
+                          ? AppColors.textGrey
+                          : const Color(0xFF605232),
+                      fontSize: 14,
+                    ),
                   ),
                 ),
 
-                // --- قسم خيارات التنقل والمكتبة ---
                 Expanded(
                   child: ListView(
                     padding: EdgeInsets.zero,
                     children: [
                       ListTile(
-                        leading: const Icon(
+                        leading: Icon(
                           Icons.history_edu,
-                          color: Color(0xFF605232),
+                          color: isDark
+                              ? AppColors.primary
+                              : const Color(0xFF605232),
                         ),
-                        title: const Text(
-                          'سجل الاستعارات',
+                        title: Text(
+                          'سجل الطلبات',
                           style: TextStyle(
-                            color: Color(0xFF2C2518),
+                            color: isDark
+                                ? AppColors.textDark
+                                : const Color(0xFF2C2518),
                             fontSize: 16,
                           ),
                         ),
-                        trailing: const Icon(
+                        trailing: Icon(
                           Icons.arrow_forward_ios,
                           size: 14,
-                          color: Color(0xFF605232),
+                          color: isDark
+                              ? AppColors.textGrey
+                              : const Color(0xFF605232),
                         ),
                         onTap: () {
                           Navigator.pop(context);
                         },
                       ),
                       ListTile(
-                        leading: const Icon(
+                        leading: Icon(
                           Icons.local_shipping_outlined,
-                          color: Color(0xFF605232),
+                          color: isDark
+                              ? AppColors.primary
+                              : const Color(0xFF605232),
                         ),
-                        title: const Text(
-                          'طلباتي والتوصيل',
+                        title: Text(
+                          'التوصيل',
                           style: TextStyle(
-                            color: Color(0xFF2C2518),
+                            color: isDark
+                                ? AppColors.textDark
+                                : const Color(0xFF2C2518),
                             fontSize: 16,
                           ),
                         ),
-                        trailing: const Icon(
+                        trailing: Icon(
                           Icons.arrow_forward_ios,
                           size: 14,
-                          color: Color(0xFF605232),
+                          color: isDark
+                              ? AppColors.textGrey
+                              : const Color(0xFF605232),
                         ),
                         onTap: () {
                           Navigator.pop(context);
                         },
                       ),
                       ListTile(
-                        leading: const Icon(
+                        leading: Icon(
                           Icons.card_giftcard,
-                          color: Color(0xFF605232),
+                          color: isDark
+                              ? AppColors.primary
+                              : const Color(0xFF605232),
                         ),
-                        title: const Text(
-                          'نقاطي والمكافآت',
+                        title: Text(
+                          'البروفايل',
                           style: TextStyle(
-                            color: Color(0xFF2C2518),
+                            color: isDark
+                                ? AppColors.textDark
+                                : const Color(0xFF2C2518),
                             fontSize: 16,
                           ),
                         ),
-                        trailing: const Icon(
+                        trailing: Icon(
                           Icons.arrow_forward_ios,
                           size: 14,
-                          color: Color(0xFF605232),
+                          color: isDark
+                              ? AppColors.textGrey
+                              : const Color(0xFF605232),
                         ),
                         onTap: () {
                           Navigator.pop(context);
+                          Navigator.of(context).pushNamed(Routes.profile);
                         },
                       ),
 
-                      const Divider(
-                        color: Color(0xFFD8C8A8),
+                      Divider(
+                        color: isDark
+                            ? AppColors.accentDark
+                            : const Color(0xFFD8C8A8),
                         thickness: 1,
                         indent: 15,
                         endIndent: 15,
                       ),
 
-                      // --- قسم الإعدادات والدعم ---
                       ListTile(
-                        leading: const Icon(
+                        leading: Icon(
                           Icons.settings_outlined,
-                          color: Color(0xFF605232),
+                          color: isDark
+                              ? AppColors.primary
+                              : const Color(0xFF605232),
                         ),
-                        title: const Text(
+                        title: Text(
                           'الإعدادات',
                           style: TextStyle(
-                            color: Color(0xFF2C2518),
+                            color: isDark
+                                ? AppColors.textDark
+                                : const Color(0xFF2C2518),
                             fontSize: 16,
                           ),
                         ),
                         onTap: () {
-                          Navigator.pop(context);
+                          Navigator.pushNamed(context, Routes.settings);
                         },
                       ),
                       ListTile(
-                        leading: const Icon(
+                        leading: Icon(
                           Icons.chat_bubble_outline,
-                          color: Color(0xFF605232),
+                          color: isDark
+                              ? AppColors.primary
+                              : const Color(0xFF605232),
                         ),
-                        title: const Text(
+                        title: Text(
                           'تواصل معنا',
                           style: TextStyle(
-                            color: Color(0xFF2C2518),
+                            color: isDark
+                                ? AppColors.textDark
+                                : const Color(0xFF2C2518),
                             fontSize: 16,
                           ),
                         ),
@@ -210,17 +259,18 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
 
-                // --- قسم تسجيل الخروج (مثبت في الأسفل تماماً) ---
-                const Divider(color: Color(0xFFD8C8A8), thickness: 1),
+                Divider(
+                  color: isDark
+                      ? AppColors.accentDark
+                      : const Color(0xFFD8C8A8),
+                  thickness: 1,
+                ),
                 ListTile(
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 10,
                   ),
-                  leading: const Icon(
-                    Icons.logout,
-                    color: Color(0xFFB33A3A),
-                  ), // لون أحمر هادئ وغير صارخ
+                  leading: const Icon(Icons.logout, color: Color(0xFFB33A3A)),
                   title: const Text(
                     'تسجيل الخروج',
                     style: TextStyle(
@@ -237,7 +287,7 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
 
-          body: buildBody(state.tabIndex),
+          body: buildBody(state.tabIndex, isDark),
           bottomNavigationBar: BottomNav(
             currentIndex: state.tabIndex,
             onTap: (index) {
@@ -249,45 +299,86 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget buildBody(int state) {
+  Widget buildBody(int state, bool isDark) {
     switch (state) {
       case 0:
-        return const Center(child: Text("Favourite Page"));
+        // التعديل: تلوين نصوص الصفحات الأخرى لتتناسب مع لون الخلفية الجديد للفاتح/الداكن
+        return Center(
+          child: Text(
+            "Favourite Page",
+            style: TextStyle(
+              color: isDark ? AppColors.textDark : Colors.black87,
+            ),
+          ),
+        );
 
       case 1:
-        return Column(
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Search(),
-            ),
-
-            SliderWidget(),
-
-            SizedBox(height: 100, child: Section()),
-            SizedBox(height: 5),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "   PopularBooks",
-                style: TextStyle(fontSize: 18, color: AppColors.textGrey),
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Search(),
+                    const Positioned(
+                      right: 15,
+                      top: 40,
+                      child: PointsStickyNote(points: 150),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            SizedBox(height: 10),
-            /* Expanded(
-              child: BlocProvider(
-                create: (context) => OffersBloc(
-                  tourRepository: TourRepository(tourApi: TourOffersApi()),
-                )..getOffers(),
-                child: Offers(),
+
+              const SizedBox(height: 65),
+              const SizedBox(height: 20),
+
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Text(
+                    "Most popular",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDark
+                          ? AppColors.primary
+                          : const Color(0xFF685A39),
+                    ),
+                  ),
+                ),
               ),
-            ),*/
-          ],
+
+              const SizedBox(height: 10),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: PopularBooksSlider(),
+              ),
+
+              const SizedBox(height: 20),
+              const BookCategoriesSection(),
+
+              const SizedBox(height: 100),
+            ],
+          ),
         );
       case 2:
-        return CartScreen();
+        return const CartScreen();
       default:
-        return const Center(child: Text("Home"));
+        return Center(
+          child: Text(
+            "Home",
+            style: TextStyle(
+              color: isDark ? AppColors.textDark : Colors.black87,
+            ),
+          ),
+        );
     }
   }
 }

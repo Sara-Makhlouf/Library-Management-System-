@@ -3,8 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:library_mobile_app/core/components/social_button.dart';
 import 'package:library_mobile_app/core/theme.dart';
-import 'package:library_mobile_app/feature/presentation/books/book.dart';
-import 'package:library_mobile_app/feature/presentation/signin_screen.dart';
+import 'package:library_mobile_app/feature/presentation/signin_screen.dart'; // تم الإبقاء على استيراد صفحة تسجيل الدخول
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -141,7 +140,7 @@ class _RegisterState extends State<Register> {
                             Center(
                               child: Container(
                                 width: 40,
-                                height: 4,
+                                height: 40,
                                 decoration: BoxDecoration(
                                   color: isDark
                                       ? Colors.white12
@@ -261,7 +260,8 @@ class _RegisterState extends State<Register> {
                                 onPressed: () =>
                                     Navigator.of(context).pushReplacement(
                                       MaterialPageRoute(
-                                        builder: (_) => const Book(),
+                                        builder: (_) =>
+                                            const SigninScreen(), // التعديل هنا ليتوجه إلى صفحة تسجيل الدخول مباشرة
                                       ),
                                     ),
                                 style: ElevatedButton.styleFrom(
@@ -510,6 +510,3 @@ class _Field extends StatelessWidget {
     );
   }
 }
-
-// ── Social button ─────────────────────────────────────────────────────────
-

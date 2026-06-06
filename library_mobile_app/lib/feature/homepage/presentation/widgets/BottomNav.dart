@@ -10,23 +10,37 @@ class BottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ─── فحص حالة الثيم الحالية لتطبيق الألوان الداكنة ───
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return CurvedNavigationBar(
       index: currentIndex,
       height: 55.0,
       items: <Widget>[
-        Icon(Icons.favorite, size: 30, color: AppColors.textGrey),
-        Icon(Icons.home, size: 40, color: AppColors.textGrey),
+        Icon(
+          Icons.favorite,
+          size: 30,
+          // التعديل: الأيقونة بالوضع الداكن تأخذ الذهبي لتبرز، وبالنهاري لونك الأصلي
+          color: isDark ? AppColors.primary : AppColors.textGrey,
+        ),
+        Icon(
+          Icons.home,
+          size: 40,
+          color: isDark ? AppColors.primary : AppColors.textGrey,
+        ),
         Icon(
           Icons.shopping_cart,
           size: 30,
-          color: AppColors.textGrey,
+          color: isDark ? AppColors.primary : AppColors.textGrey,
         ), // index 2: Cart
       ],
-      color: AppColors.secondary,
-      buttonBackgroundColor: AppColors.secondary,
+      // التعديل: خلفية البار بالكامل بالوضع الداكن تصبح لون الكارت الغامق من كود محمد
+      color: isDark ? AppColors.darkCard : AppColors.secondary,
+      // التعديل: لون الدائرة المرتفعة للزر النشط بالوضع الداكن
+      buttonBackgroundColor: isDark ? AppColors.inputDark : AppColors.secondary,
       backgroundColor: Colors.transparent,
       animationCurve: Curves.easeInOut,
-      animationDuration: Duration(milliseconds: 600),
+      animationDuration: const Duration(milliseconds: 600),
       onTap: onTap,
     );
   }

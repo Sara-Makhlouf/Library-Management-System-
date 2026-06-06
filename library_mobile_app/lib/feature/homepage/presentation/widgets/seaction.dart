@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:library_mobile_app/core/constant.dart';
 import 'package:library_mobile_app/core/theme.dart';
 
 class Section extends StatelessWidget {
@@ -24,11 +25,21 @@ class Section extends StatelessWidget {
   }
 
   Widget _buildInkWellItem(BuildContext context, String title, IconData icon) {
-    return InkWell(
-      onTap: () {},
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-        child: SectionIcon(title: title, icon: icon),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: SectionIcon(
+        title: title,
+        icon: icon,
+        onTap: () {
+          if (title == 'Category') {
+            Navigator.of(context).pushNamed(
+              Routes.book,
+              arguments: 'assets/images/book_placeholder.png',
+            );
+          } else {
+            print("$title pressed");
+          }
+        },
       ),
     );
   }
@@ -37,31 +48,52 @@ class Section extends StatelessWidget {
 class SectionIcon extends StatelessWidget {
   final String title;
   final IconData icon;
+  final VoidCallback onTap;
 
-  const SectionIcon({super.key, required this.title, required this.icon});
+  const SectionIcon({
+    super.key,
+    required this.title,
+    required this.icon,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
+    // ─── التعديل: فحص حالة الثيم الحالية لتطبيق الألوان الداكنة ───
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.only(right: 16),
       child: Column(
         children: [
           CircleAvatar(
             radius: 25,
-            backgroundColor: AppColors.secondary,
+            // ─── التعديل: خلفية الدائرة تصبح داكنة في الدارك مود ───
+            backgroundColor: isDark ? AppColors.darkCard : AppColors.secondary,
             child: Material(
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(25),
-                onTap: () {
-                  print("$title pressed");
-                },
-                child: Center(child: Icon(icon, color: AppColors.textGrey)),
+                onTap: onTap,
+                child: Center(
+                  child: Icon(
+                    icon,
+                    // ─── التعديل: تلوين الأيقونة بالذهبي لتبرز في الوضع الداكن ───
+                    color: isDark ? AppColors.primary : AppColors.textGrey,
+                  ),
+                ),
               ),
             ),
           ),
           const SizedBox(height: 8),
-          Text(title, style: const TextStyle(fontSize: 12)),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              // ─── التعديل: تلوين النص باللون الفاتح في الدارك مود لكي لا يختفي ───
+              color: isDark ? AppColors.textDark : Colors.black87,
+            ),
+          ),
         ],
       ),
     );

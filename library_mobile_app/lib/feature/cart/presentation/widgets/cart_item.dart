@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:library_mobile_app/core/theme.dart'; // للتأكد من الوصول إلى AppColors
 import 'package:library_mobile_app/feature/cart/bloc/cart_bloc.dart';
 import 'package:library_mobile_app/feature/cart/bloc/cart_event.dart';
 import 'package:library_mobile_app/feature/cart/data/model/book_model.dart';
@@ -11,18 +12,29 @@ class CartItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isBorrowItem = item.isBorrow ?? false;
+    // ─── التعديل: فحص حالة الثيم الحالية للتطبيق ───
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Card(
-      color: Color(0xFFD8C8A8),
+      // ─── التعديل: تغيير لون الكارت بناءً على الوضع الحالي ───
+      color: isDark ? AppColors.darkCard : const Color(0xFFD8C8A8),
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      elevation: isDark ? 1 : 2,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
           children: [
-            Image.asset(
-              item.imageUrl,
-              width: 60,
-              height: 80,
-              fit: BoxFit.cover,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(
+                8,
+              ), // إضافة لمسة جمالية لزوايا الغلاف
+              child: Image.asset(
+                item.imageUrl,
+                width: 60,
+                height: 80,
+                fit: BoxFit.cover,
+              ),
             ),
             const SizedBox(width: 10),
 
@@ -32,44 +44,80 @@ class CartItemCard extends StatelessWidget {
                 children: [
                   Text(
                     item.title,
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      // ─── التعديل: لون خط العنوان يتكيف مع الخلفية ───
+                      color: isDark ? AppColors.textDark : Colors.black87,
+                      fontSize: 15,
+                    ),
                   ),
-                  Text("${item.price} ل.س"),
+                  const SizedBox(height: 5),
+                  Text(
+                    isBorrowItem
+                        ? "رسم استعارة: ${item.price} ل.س"
+                        : "سعر الشراء: ${item.price} ل.س",
+                    style: TextStyle(
+                      // ─── التعديل: تلوين السعر ليتناسب مع تباين الألوان في الثيمين ───
+                      color: isDark
+                          ? AppColors.primary
+                          : (isBorrowItem
+                                ? const Color.fromARGB(255, 96, 82, 50)
+                                : Colors.black87),
+                      fontSize: 13,
+                    ),
+                  ),
                 ],
               ),
             ),
-            Row(
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.remove_circle_outline,
-                    color: Color.fromARGB(255, 96, 82, 50),
+
+            if (!isBorrowItem)
+              Row(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.remove_circle_outline,
+                      // ─── التعديل: تلوين أيقونة الإنقاص ───
+                      color: isDark
+                          ? AppColors.primary
+                          : const Color.fromARGB(255, 96, 82, 50),
+                    ),
+                    onPressed: () {
+                      context.read<CartBloc>().add(
+                        DecreaseQuantityEvent(item.id),
+                      );
+                    },
                   ),
-                  onPressed: () {
-                    context.read<CartBloc>().add(
-                      DecreaseQuantityEvent(item.id),
-                    );
-                  },
-                ),
-                Text("${item.quantity}", style: TextStyle(fontSize: 16)),
-                IconButton(
-                  icon: Icon(
-                    Icons.add_circle_outline,
-                    color: Color.fromARGB(255, 96, 82, 50),
+                  Text(
+                    "${item.quantity}",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      // ─── التعديل: لون عداد الكمية ───
+                      color: isDark ? AppColors.textDark : Colors.black87,
+                    ),
                   ),
-                  onPressed: () {
-                    context.read<CartBloc>().add(
-                      IncreaseQuantityEvent(item.id),
-                    );
-                  },
-                ),
-              ],
-            ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.add_circle_outline,
+                      // ─── التعديل: تلوين أيقونة الزيادة ───
+                      color: isDark
+                          ? AppColors.primary
+                          : const Color.fromARGB(255, 96, 82, 50),
+                    ),
+                    onPressed: () {
+                      context.read<CartBloc>().add(
+                        IncreaseQuantityEvent(item.id),
+                      );
+                    },
+                  ),
+                ],
+              ),
 
             IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.delete,
-                color: const Color.fromARGB(255, 226, 105, 97),
+                // لون الحذف يبقى أحمر/وردي دافئ واضح ومميز في الحالتين
+                color: Color.fromARGB(255, 226, 105, 97),
               ),
               onPressed: () {
                 context.read<CartBloc>().add(RemoveBookEvent(item.id));

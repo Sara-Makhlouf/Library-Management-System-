@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
-import 'package:library_mobile_app/core/constant.dart';
-=======
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -10,13 +7,15 @@ import 'package:library_mobile_app/core/components/decorCircle.dart';
 import 'package:library_mobile_app/core/components/shake_widget.dart';
 import 'package:library_mobile_app/core/components/social_button.dart';
 import 'package:library_mobile_app/core/components/theme_toggle.dart';
->>>>>>> origin/mohammed-frontend
+import 'package:library_mobile_app/core/constant.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/core/theme_cubit.dart';
+import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
+import 'package:library_mobile_app/feature/homepage/presentation/screens/home_page.dart';
 import 'package:library_mobile_app/feature/notifications/notifications_screen.dart';
 import 'package:library_mobile_app/feature/presentation/register.dart';
 import 'package:library_mobile_app/core/components/custom_input_field.dart';
-import 'package:library_mobile_app/core/components/custom_button.dart';
+// تأكد من إضافة الـ import الصحيح لصفحة الـ HomeScreen هنا، مثلاً:
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
@@ -33,193 +32,10 @@ class _SigninScreenState extends State<SigninScreen> {
   final _shakeKey = GlobalKey<ShakeWidgetState>();
 
   @override
-<<<<<<< HEAD
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppColors.accent,
-                  borderRadius: BorderRadius.vertical(
-                    bottom: Radius.circular(15),
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(height: 50),
-
-                    Image.asset("lib/assets/images/logo.png.png", height: 200),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 30),
-            Container(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextField(
-                      cursorColor: Colors.black,
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.phone_android_rounded),
-                        prefixIconColor: AppColors.iconscol,
-                        hintText: "Enter Phone Number",
-                        hintStyle: TextStyle(color: AppColors.textGrey),
-                        filled: true,
-                        fillColor: Colors.white,
-
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 15,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 12),
-
-                    TextField(
-                      cursorColor: Colors.black,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.lock_open),
-                        prefixIconColor: AppColors.iconscol,
-                        hintStyle: TextStyle(color: AppColors.textGrey),
-                        hintText: "Password",
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 15,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 20),
-
-                    SizedBox(
-                      width: double.infinity,
-                      height: 45,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () {
-                          Navigator.of(
-                            context,
-                          ).pushReplacementNamed(Routes.homePage);
-                        },
-                        child: Text(
-                          "login",
-                          style: TextStyle(color: AppColors.textGrey),
-                        ),
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        TextButton(
-                          style: ButtonStyle(
-                            overlayColor: WidgetStatePropertyAll(
-                              Colors.transparent,
-                            ),
-                          ),
-                          onPressed: () {},
-                          child: Text(
-                            "I foregot password",
-                            style: TextStyle(
-                              color: const Color.fromARGB(255, 199, 16, 16),
-                              fontSize: 10,
-                            ),
-                          ),
-                        ),
-                        TextButton(
-                          style: ButtonStyle(
-                            overlayColor: WidgetStatePropertyAll(
-                              Colors.transparent,
-                            ),
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (context) => Register(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            "I dont have accont",
-                            style: TextStyle(
-                              color: const Color.fromARGB(255, 5, 110, 197),
-                              fontSize: 10,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Column(
-              children: [
-                Row(
-                  children: [
-                    socialButton(
-                      text: "Google",
-                      asset: "assets/google.png",
-                      bgColor: Colors.white,
-                      textColor: Colors.black,
-                      border: true,
-                    ),
-
-                    SizedBox(height: 12),
-
-                    socialButton(
-                      text: "Facebook",
-                      asset: "assets/facebook.png",
-                      bgColor: Color.fromARGB(255, 24, 79, 152),
-                      textColor: Colors.white,
-                    ),
-                  ],
-                ),
-                SizedBox(height: 12),
-
-                socialButton(
-                  text: "Apple",
-                  asset: "assets/apple.png",
-                  bgColor: const Color.fromARGB(255, 255, 255, 255),
-                  textColor: const Color.fromARGB(255, 0, 0, 0),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-=======
   void dispose() {
     _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
->>>>>>> origin/mohammed-frontend
   }
 
   void _onLogin() async {
@@ -228,8 +44,16 @@ class _SigninScreenState extends State<SigninScreen> {
       return;
     }
     setState(() => _isLoading = true);
+
+    // محاكاة عملية تسجيل الدخول
     await Future.delayed(const Duration(milliseconds: 1500));
-    if (mounted) setState(() => _isLoading = false);
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+
+      // الانتقال إلى الصفحة الرئيسية واستبدال صفحة تسجيل الدخول الحالية
+      Navigator.of(context).pushReplacementNamed(Routes.homePage);
+    }
   }
 
   @override
@@ -456,7 +280,7 @@ class _SigninScreenState extends State<SigninScreen> {
                                     tapTargetSize:
                                         MaterialTapTargetSize.shrinkWrap,
                                   ),
-                                  child: Text(
+                                  child: const Text(
                                     'Forgot password?',
                                     style: TextStyle(
                                       fontSize: 12,
@@ -572,7 +396,7 @@ class _SigninScreenState extends State<SigninScreen> {
                                               builder: (_) => const Register(),
                                             ),
                                           ),
-                                      child: Text(
+                                      child: const Text(
                                         'Sign up',
                                         style: TextStyle(
                                           fontSize: 13,
@@ -603,13 +427,3 @@ class _SigninScreenState extends State<SigninScreen> {
     );
   }
 }
-
-// ── Decorative background circle ──────────────────────────────────────────
-
-// ── Theme toggle pill ──────────────────────────────────────────────────────
-
-// ── Login button ──────────────────────────────────────────────────────────
-
-// ── Social button ─────────────────────────────────────────────────────────
-
-// ── Shake widget ──────────────────────────────────────────────────────────
