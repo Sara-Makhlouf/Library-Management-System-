@@ -4,7 +4,6 @@ import 'package:library_mobile_app/feature/cart/bloc/cart_state.dart';
 import 'package:library_mobile_app/feature/cart/data/model/book_model.dart';
 
 class CartBloc extends Bloc<CartEvent, CartState> {
-  // إضافة كتابين شراء وكتابين استعارة لتجربة الواجهة
   final List<CartBookModel> _cartItems = [
     // --- كتب الشراء ---
     CartBookModel(
@@ -72,8 +71,6 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
     add(LoadCartEvent());
   }
-
-  // حساب المجموع الإجمالي لجميع العناصر (شراء واستعارة معاً)
   double _calculateTotal() {
     return _cartItems.fold(
       0.0,

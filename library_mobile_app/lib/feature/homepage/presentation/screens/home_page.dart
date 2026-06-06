@@ -20,7 +20,6 @@ class HomeScreen extends StatelessWidget {
       builder: (context, state) {
         return Scaffold(
           extendBody: true,
-          // ─── التعديل المطلوب: تغيير لون الخلفية بالوضع الفاتح إلى اللون البيج المتناسق ───
           backgroundColor: isDark
               ? AppColors.backgroundDark
               : const Color(0xFFEFE3D3),
@@ -131,7 +130,7 @@ class HomeScreen extends StatelessWidget {
                               : const Color(0xFF605232),
                         ),
                         title: Text(
-                          'سجل الطلبات',
+                          'Order history',
                           style: TextStyle(
                             color: isDark
                                 ? AppColors.textDark
@@ -158,7 +157,7 @@ class HomeScreen extends StatelessWidget {
                               : const Color(0xFF605232),
                         ),
                         title: Text(
-                          'التوصيل',
+                          'Delivery',
                           style: TextStyle(
                             color: isDark
                                 ? AppColors.textDark
@@ -185,7 +184,7 @@ class HomeScreen extends StatelessWidget {
                               : const Color(0xFF605232),
                         ),
                         title: Text(
-                          'البروفايل',
+                          'Profile',
                           style: TextStyle(
                             color: isDark
                                 ? AppColors.textDark
@@ -223,7 +222,7 @@ class HomeScreen extends StatelessWidget {
                               : const Color(0xFF605232),
                         ),
                         title: Text(
-                          'الإعدادات',
+                          'Settings',
                           style: TextStyle(
                             color: isDark
                                 ? AppColors.textDark
@@ -243,7 +242,7 @@ class HomeScreen extends StatelessWidget {
                               : const Color(0xFF605232),
                         ),
                         title: Text(
-                          'تواصل معنا',
+                          'Contact us',
                           style: TextStyle(
                             color: isDark
                                 ? AppColors.textDark
@@ -272,7 +271,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   leading: const Icon(Icons.logout, color: Color(0xFFB33A3A)),
                   title: const Text(
-                    'تسجيل الخروج',
+                    'Log out',
                     style: TextStyle(
                       color: Color(0xFFB33A3A),
                       fontWeight: FontWeight.bold,
@@ -302,7 +301,6 @@ class HomeScreen extends StatelessWidget {
   Widget buildBody(int state, bool isDark) {
     switch (state) {
       case 0:
-        // التعديل: تلوين نصوص الصفحات الأخرى لتتناسب مع لون الخلفية الجديد للفاتح/الداكن
         return Center(
           child: Text(
             "Favourite Page",

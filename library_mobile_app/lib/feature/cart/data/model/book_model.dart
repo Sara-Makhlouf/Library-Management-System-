@@ -4,8 +4,8 @@ class CartBookModel {
   final String author;
   final double price;
   final String imageUrl;
-  final bool isBorrow; // الحقل الجديد للتمييز
-  int quantity; // نحتاجها في السلة لتعديل الكمية
+  final bool isBorrow;
+  int quantity;
 
   CartBookModel({
     required this.id,
@@ -13,11 +13,10 @@ class CartBookModel {
     required this.author,
     required this.price,
     required this.imageUrl,
-    this.isBorrow = false, // القيمة الافتراضية شراء
+    this.isBorrow = false,
     this.quantity = 1,
   });
 
-  // تحويل من JSON (قادم من API أو قاعدة بيانات)
   factory CartBookModel.fromJson(Map<String, dynamic> json) {
     return CartBookModel(
       id: json['id'] ?? '',
@@ -30,7 +29,6 @@ class CartBookModel {
     );
   }
 
-  // تحويل إلى JSON (لإرسال الطلب للسيرفر)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -43,7 +41,6 @@ class CartBookModel {
     };
   }
 
-  // ميثود لزيادة الكمية (اختياري، يساعد في الـ BLoC)
   CartBookModel copyWith({int? quantity}) {
     return CartBookModel(
       id: this.id,

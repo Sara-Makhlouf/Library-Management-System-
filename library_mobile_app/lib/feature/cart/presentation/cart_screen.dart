@@ -23,13 +23,11 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ─── التعديل: فحص حالة الثيم الحالية لتطبيق الألوان الداكنة ديناميكياً ───
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        // ─── التعديل: الخلفية تأخذ لونكِ المفضل بالوضع الفاتح وتتحول للداكن المعتمد بالثيم الآخر ───
         backgroundColor: isDark
             ? AppColors.backgroundDark
             : const Color(0xFFEFE3D3),
@@ -46,12 +44,11 @@ class _CartScreenState extends State<CartScreen> {
           ),
           automaticallyImplyLeading: false,
           centerTitle: true,
-          // ─── التعديل: خلفية الـ AppBar تتغير حسب الثيم ───
+
           backgroundColor: isDark
               ? AppColors.darkCard
               : const Color.fromARGB(255, 189, 170, 127),
           bottom: TabBar(
-            // ─── التعديل: مواءمة ألوان الـ TabBar والمؤشر لتبرز في السنديان الغامق ───
             indicatorColor: isDark
                 ? AppColors.primary
                 : const Color.fromARGB(255, 96, 82, 50),
@@ -104,7 +101,6 @@ class _CartScreenState extends State<CartScreen> {
                       height: 48,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          // ─── التعديل: زر تأكيد الطلب يتلون ليلائم الدارك مود بأناقة ───
                           backgroundColor: isDark
                               ? AppColors.inputDark
                               : const Color.fromARGB(255, 189, 170, 127),
@@ -113,7 +109,7 @@ class _CartScreenState extends State<CartScreen> {
                               : const Color.fromARGB(255, 96, 82, 50),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
-                            // إضافة حدود خفيفة في الوضع الداكن لإبراز معالم الزر
+
                             side: isDark
                                 ? BorderSide(
                                     color: AppColors.primary.withOpacity(0.3),
@@ -155,7 +151,6 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  // ─── التعديل: تمرير الـ isDark لضبط نصوص التنبيهات الفارغة ───
   Widget _buildCartList(List<dynamic> items, bool isDark) {
     if (items.isEmpty) {
       return Center(

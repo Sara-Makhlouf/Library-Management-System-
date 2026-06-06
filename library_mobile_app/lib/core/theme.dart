@@ -10,9 +10,9 @@ class AppColors {
   static const Color primacy = Color(0xFFB8A068);
   static const Color backgroundLight = Color(0xFFEAE2DA);
   static const Color accentLight = Color(0xFFD8C8A8);
-  static const Color inputLight = Colors.white; // خلفية حقل الإدخال
-  static const Color iconLight = Color(0xFF685A39); // أيقونات الحقل
-  static const Color textLight = Color(0xFF605232); // النصوص الفاتحة
+  static const Color inputLight = Colors.white;
+  static const Color iconLight = Color(0xFF685A39);
+  static const Color textLight = Color(0xFF605232);
 
   // ================= (الوضع الداكن - Dark Mode) =================
   // الألوان المستخرجة بدقة من تصميمك

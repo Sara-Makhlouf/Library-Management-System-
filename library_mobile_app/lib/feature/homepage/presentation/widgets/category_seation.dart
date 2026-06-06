@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart'; // استيراد حزمة الأنميشن
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:library_mobile_app/core/constant.dart';
-// ─── التعديل: استيراد كلاس الألوان للوصول إلى متغيرات الثيم ───
 import 'package:library_mobile_app/core/theme.dart';
 
 class BookCategoriesSection extends StatelessWidget {
@@ -9,27 +8,29 @@ class BookCategoriesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ─── التعديل: فحص حالة الثيم الحالية لتطبيق الألوان الداكنة ───
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final List<Map<String, String>> categories = [
       {
-        'title': 'تاريخ',
+        'title': 'History',
         'image': 'assets/images/photo_2026-06-05_16-09-20.jpg',
       },
       {
-        'title': 'أدب وروايات',
+        'title': 'Literature and Novels',
         'image': 'assets/images/photo_2026-06-05_16-09-03.jpg',
       },
       {
-        'title': 'فلسفة',
+        'title': 'Philosophy',
         'image': 'assets/images/photo_2026-06-05_16-09-03.jpg',
       },
       {
-        'title': 'تطوير ذات',
+        'title': 'Self-Development',
         'image': 'assets/images/photo_2026-06-05_16-09-09.jpg',
       },
-      {'title': 'علوم', 'image': 'assets/images/photo_2026-06-05_16-09-09.jpg'},
+      {
+        'title': 'Science',
+        'image': 'assets/images/photo_2026-06-05_16-09-09.jpg',
+      },
     ];
 
     return Directionality(
@@ -46,7 +47,6 @@ class BookCategoriesSection extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  // ─── التعديل: تلوين العنوان الرئيسي بالذهبي في الدارك مود ───
                   color: isDark ? AppColors.primary : const Color(0xFF685A39),
                 ),
               ),
@@ -79,7 +79,6 @@ class BookCategoriesSection extends StatelessWidget {
                           Expanded(
                             child: Container(
                               decoration: BoxDecoration(
-                                // ─── التعديل: تلوين خلفية الحاوية بلون الكارت الداكن في الدارك مود ───
                                 color: isDark
                                     ? AppColors.darkCard
                                     : const Color(0xFFD8C8A8),
@@ -108,7 +107,7 @@ class BookCategoriesSection extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              // ─── التعديل: تلوين اسم الفئة باللون الفاتح المخصص للدارك مود ───
+
                               color: isDark
                                   ? AppColors.textDark
                                   : const Color(0xFF2C1E11),

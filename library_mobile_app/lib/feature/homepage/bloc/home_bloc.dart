@@ -22,19 +22,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
     });
 
-    
     on<GetOffersEvent>((event, emit) async {
       emit(state.copyWith(offersStatus: HomeStatus.loading));
       try {
-        // محاكاة جلب البيانات
         await Future.delayed(const Duration(seconds: 1));
         // final fetchedOffers = await repository.getOffers();
-        emit(
-          state.copyWith(
-            offersStatus: HomeStatus.loaded,
-            offers: [], // ضعي البيانات القادمة من السيرفر هنا
-          ),
-        );
+        emit(state.copyWith(offersStatus: HomeStatus.loaded, offers: []));
       } catch (e) {
         emit(
           state.copyWith(

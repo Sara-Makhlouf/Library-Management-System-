@@ -20,7 +20,7 @@ class OrderRequest {
       'address': address,
       'payment_method': paymentMethod,
       'wants_delivery': wantsDelivery,
-      'order_type': 'combined', // إشارة إلى أن الطلب يحتوي على عمليات مدمجة
+      'order_type': 'combined',
     };
   }
 }

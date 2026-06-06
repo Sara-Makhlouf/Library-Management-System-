@@ -95,12 +95,6 @@ abstract class AppLocalizations {
     Locale('en')
   ];
 
-  /// No description provided for @appTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Library App'**
-  String get appTitle;
-
   /// No description provided for @settings.
   ///
   /// In en, this message translates to:
@@ -118,6 +112,336 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Light Mode'**
   String get lightMode;
+
+  /// No description provided for @appLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'App Language'**
+  String get appLanguage;
+
+  /// No description provided for @home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// No description provided for @searchPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Your Book...'**
+  String get searchPlaceholder;
+
+  /// No description provided for @points.
+  ///
+  /// In en, this message translates to:
+  /// **'Points: {count}'**
+  String points(Object count);
+
+  /// No description provided for @mostPopular.
+  ///
+  /// In en, this message translates to:
+  /// **'Most popular'**
+  String get mostPopular;
+
+  /// No description provided for @bookCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Book categories'**
+  String get bookCategories;
+
+  /// No description provided for @philosophy.
+  ///
+  /// In en, this message translates to:
+  /// **'Philosophy'**
+  String get philosophy;
+
+  /// No description provided for @literatureAndNovels.
+  ///
+  /// In en, this message translates to:
+  /// **'Literature & Novels'**
+  String get literatureAndNovels;
+
+  /// No description provided for @history.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get history;
+
+  /// No description provided for @science.
+  ///
+  /// In en, this message translates to:
+  /// **'Science'**
+  String get science;
+
+  /// No description provided for @selfDevelopment.
+  ///
+  /// In en, this message translates to:
+  /// **'Self-development'**
+  String get selfDevelopment;
+
+  /// No description provided for @borrowingRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowing Record'**
+  String get borrowingRecord;
+
+  /// No description provided for @myOrdersAndDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'My Orders & Delivery'**
+  String get myOrdersAndDelivery;
+
+  /// No description provided for @profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// No description provided for @contactUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Us'**
+  String get contactUs;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Out'**
+  String get logout;
+
+  /// No description provided for @shoppingCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping Cart'**
+  String get shoppingCart;
+
+  /// No description provided for @buyingTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Buying'**
+  String get buyingTab;
+
+  /// No description provided for @borrowingTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowing'**
+  String get borrowingTab;
+
+  /// No description provided for @borrowPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowing fee: {price} SYP'**
+  String borrowPrice(Object price);
+
+  /// No description provided for @buyPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Buying price: {price} SYP'**
+  String buyPrice(Object price);
+
+  /// No description provided for @confirmOrderAndPay.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Order & Pay'**
+  String get confirmOrderAndPay;
+
+  /// No description provided for @checkoutAndPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout & Payment'**
+  String get checkoutAndPayment;
+
+  /// No description provided for @invoiceSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Summary'**
+  String get invoiceSummary;
+
+  /// No description provided for @buyingBooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Buying Books:'**
+  String get buyingBooks;
+
+  /// No description provided for @borrowingBooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowing Books:'**
+  String get borrowingBooks;
+
+  /// No description provided for @itemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Items'**
+  String itemsCount(Object count);
+
+  /// No description provided for @totalPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Price:'**
+  String get totalPrice;
+
+  /// No description provided for @currency.
+  ///
+  /// In en, this message translates to:
+  /// **'SYP'**
+  String get currency;
+
+  /// No description provided for @personalInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Information'**
+  String get personalInformation;
+
+  /// No description provided for @fullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get fullName;
+
+  /// No description provided for @phoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get phoneNumber;
+
+  /// No description provided for @detailedAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed Address'**
+  String get detailedAddress;
+
+  /// No description provided for @deliveryService.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Service'**
+  String get deliveryService;
+
+  /// No description provided for @yesDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, I want delivery'**
+  String get yesDelivery;
+
+  /// No description provided for @noDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'No, I will pick it up'**
+  String get noDelivery;
+
+  /// No description provided for @paymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get paymentMethod;
+
+  /// No description provided for @creditCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Card'**
+  String get creditCard;
+
+  /// No description provided for @cashOnDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash on Delivery'**
+  String get cashOnDelivery;
+
+  /// No description provided for @borrowingTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowing Terms'**
+  String get borrowingTerms;
+
+  /// No description provided for @importantNoteBorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Important Note for Borrowed Books'**
+  String get importantNoteBorrow;
+
+  /// No description provided for @borrowPeriodNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'The maximum borrowing period is 7 days only from the date of receiving the order. Please ensure timely returns.'**
+  String get borrowPeriodNotice;
+
+  /// No description provided for @confirmOrderNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Order Now'**
+  String get confirmOrderNow;
+
+  /// No description provided for @orderReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Received!'**
+  String get orderReceived;
+
+  /// No description provided for @orderId.
+  ///
+  /// In en, this message translates to:
+  /// **'Order ID: {id}'**
+  String orderId(Object id);
+
+  /// No description provided for @orderDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date: {date}'**
+  String orderDate(Object date);
+
+  /// No description provided for @deliveryRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery: Requested'**
+  String get deliveryRequested;
+
+  /// No description provided for @deliveryNotRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery: Self Pickup'**
+  String get deliveryNotRequested;
+
+  /// No description provided for @backToHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Home'**
+  String get backToHome;
+
+  /// No description provided for @booksCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} books'**
+  String booksCount(Object count);
+
+  /// No description provided for @sortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by'**
+  String get sortBy;
+
+  /// No description provided for @sortDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get sortDefault;
+
+  /// No description provided for @sortTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get sortTitle;
+
+  /// No description provided for @sortPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get sortPrice;
+
+  /// No description provided for @free.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get free;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

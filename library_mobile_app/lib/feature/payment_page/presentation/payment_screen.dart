@@ -34,10 +34,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ─── التعديل: فحص حالة الثيم الحالية للتطبيق ───
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // جلب حالة السلة الحالية لحساب محتويات الفاتورة بدقة
     final cartState = context.read<CartBloc>().state;
     int buyingCount = 0;
     int borrowingCount = 0;
@@ -56,7 +54,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return BlocProvider(
       create: (context) => CheckoutBloc(),
       child: Scaffold(
-        // ─── التعديل: تكييف لون خلفية الشاشة ───
         backgroundColor: isDark
             ? AppColors.backgroundDark
             : const Color(0xFFEFE3D3),
@@ -73,7 +70,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          // ─── التعديل: تكييف لون خلفية الـ AppBar والأيقونات ───
+
           backgroundColor: isDark
               ? AppColors.darkCard
               : const Color.fromARGB(255, 189, 170, 127),
@@ -318,7 +315,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(50),
                                 ),
-                                // ─── التعديل: مواءمة ألوان زر الإرسال مع الوضع الحالي ───
+
                                 backgroundColor: isDark
                                     ? AppColors.inputDark
                                     : const Color.fromARGB(255, 189, 170, 127),
@@ -479,7 +476,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     required bool isDark,
   }) {
     return Card(
-          // ─── التعديل: تكييف لون خلفية الكارت ───
           color: isDark ? AppColors.darkCard : AppColors.accent,
           surfaceTintColor: isDark ? AppColors.darkCard : AppColors.accent,
           elevation: isDark ? 2 : 8,

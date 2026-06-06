@@ -1,6 +1,72 @@
 {
-  "appTitle": "تطبيق المكتبة",
+  "@@locale": "ar",
   "settings": "الإعدادات",
   "darkMode": "الوضع الليلي",
-  "lightMode": "الوضع النهاري"
+  "lightMode": "الوضع النهاري",
+  "appLanguage": "لغة التطبيق",
+  
+  "home": "الرئيسية",
+  "searchPlaceholder": "ابحث عن كتابك...",
+  "points": "نقاطي: {count}",
+  "mostPopular": "الأكثر شهرة",
+  "bookCategories": "تصنيفات الكتب",
+  
+  "philosophy": "فلسفة",
+  "literatureAndNovels": "أدب وروايات",
+  "history": "تاريخ",
+  "science": "علوم",
+  "selfDevelopment": "تطوير ذات",
+  
+  "borrowingRecord": "سجل الاستعارات",
+  "myOrdersAndDelivery": "طلباتي والتوصيل",
+  "profile": "البروفايل",
+  "contactUs": "تواصل معنا",
+  "logout": "تسجيل الخروج",
+  
+  "shoppingCart": "سلة المشتريات",
+  "buyingTab": "الشراء",
+  "borrowingTab": "الاستعارة",
+  "borrowPrice": "رسم استعارة: {price} ل.س",
+  "buyPrice": "سعر الشراء: {price} ل.س",
+  "confirmOrderAndPay": "تأكيد الطلب والدفع",
+  
+  "checkoutAndPayment": "الدفع والتشيك أوت",
+  "invoiceSummary": "ملخص الفاتورة",
+  "buyingBooks": "كتب للشراء:",
+  "borrowingBooks": "كتب للاستعارة:",
+  "itemsCount": "{count} عناصر",
+  "totalPrice": "السعر الإجمالي:",
+  "currency": "ل.س",
+  
+  "personalInformation": "المعلومات الشخصية",
+  "fullName": "الاسم الكامل",
+  "phoneNumber": "رقم الهاتف",
+  "detailedAddress": "العنوان بالتفصيل",
+  
+  "deliveryService": "خدمة التوصيل",
+  "yesDelivery": "نعم، أريد التوصيل",
+  "noDelivery": "لا، سأقوم باستلامها بنفسي",
+  
+  "paymentMethod": "طريقة الدفع",
+  "creditCard": "بطاقة ائتمان",
+  "cashOnDelivery": "الدفع عند الاستلام",
+  
+  "borrowingTerms": "شروط الاستعارة",
+  "importantNoteBorrow": "ملاحظة هامة للكتب المستعارة",
+  "borrowPeriodNotice": "الحد الأقصى لفترة الاستعارة هو 7 أيام فقط من تاريخ استلام الطلب. يرجى التأكد من الإعادة في الوقت المحدد.",
+  "confirmOrderNow": "تأكيد الطلب الآن",
+  
+  "orderReceived": "تم استلام الطلب!",
+  "orderId": "رقم الطلب: {id}",
+  "orderDate": "التاريخ: {date}",
+  "deliveryRequested": "التوصيل: مطلوب",
+  "deliveryNotRequested": "التوصيل: استلام شخصي",
+  "backToHome": "العودة للرئيسية",
+  
+  "booksCount": "{count} كتب",
+  "sortBy": "ترتيب حسب",
+  "sortDefault": "الافتراضي",
+  "sortTitle": "العنوان",
+  "sortPrice": "السعر",
+  "free": "مجاني"
 }

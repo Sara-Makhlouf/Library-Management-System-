@@ -8,8 +8,6 @@ class BookModel {
     required this.author,
     required this.publishYear,
   });
-
-  // لتحويل بيانات الـ JSON القادمة من الـ API (أو من زميلك المسؤول عن الباكيند)
   factory BookModel.fromJson(Map<String, dynamic> json) {
     return BookModel(
       title: json['title'] ?? 'عنوان غير معروف',

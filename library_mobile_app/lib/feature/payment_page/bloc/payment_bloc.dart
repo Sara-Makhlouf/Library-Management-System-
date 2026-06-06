@@ -7,8 +7,6 @@ class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
   CheckoutBloc() : super(CheckoutInitial()) {
     on<ConfirmPaymentEvent>((event, emit) async {
       emit(CheckoutLoading());
-
-      // محاكاة تأخير الشبكة
       await Future.delayed(const Duration(seconds: 2));
 
       bool isSuccess = true;

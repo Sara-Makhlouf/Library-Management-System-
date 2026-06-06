@@ -13,11 +13,9 @@ class CartItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isBorrowItem = item.isBorrow ?? false;
-    // ─── التعديل: فحص حالة الثيم الحالية للتطبيق ───
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Card(
-      // ─── التعديل: تغيير لون الكارت بناءً على الوضع الحالي ───
       color: isDark ? AppColors.darkCard : const Color(0xFFD8C8A8),
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       elevation: isDark ? 1 : 2,
@@ -26,9 +24,7 @@ class CartItemCard extends StatelessWidget {
         child: Row(
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(
-                8,
-              ), // إضافة لمسة جمالية لزوايا الغلاف
+              borderRadius: BorderRadius.circular(8),
               child: Image.asset(
                 item.imageUrl,
                 width: 60,
@@ -46,7 +42,7 @@ class CartItemCard extends StatelessWidget {
                     item.title,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      // ─── التعديل: لون خط العنوان يتكيف مع الخلفية ───
+
                       color: isDark ? AppColors.textDark : Colors.black87,
                       fontSize: 15,
                     ),
@@ -57,7 +53,6 @@ class CartItemCard extends StatelessWidget {
                         ? "رسم استعارة: ${item.price} ل.س"
                         : "سعر الشراء: ${item.price} ل.س",
                     style: TextStyle(
-                      // ─── التعديل: تلوين السعر ليتناسب مع تباين الألوان في الثيمين ───
                       color: isDark
                           ? AppColors.primary
                           : (isBorrowItem
@@ -76,7 +71,7 @@ class CartItemCard extends StatelessWidget {
                   IconButton(
                     icon: Icon(
                       Icons.remove_circle_outline,
-                      // ─── التعديل: تلوين أيقونة الإنقاص ───
+
                       color: isDark
                           ? AppColors.primary
                           : const Color.fromARGB(255, 96, 82, 50),
@@ -92,14 +87,14 @@ class CartItemCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      // ─── التعديل: لون عداد الكمية ───
+
                       color: isDark ? AppColors.textDark : Colors.black87,
                     ),
                   ),
                   IconButton(
                     icon: Icon(
                       Icons.add_circle_outline,
-                      // ─── التعديل: تلوين أيقونة الزيادة ───
+
                       color: isDark
                           ? AppColors.primary
                           : const Color.fromARGB(255, 96, 82, 50),
@@ -116,7 +111,7 @@ class CartItemCard extends StatelessWidget {
             IconButton(
               icon: const Icon(
                 Icons.delete,
-                // لون الحذف يبقى أحمر/وردي دافئ واضح ومميز في الحالتين
+
                 color: Color.fromARGB(255, 226, 105, 97),
               ),
               onPressed: () {

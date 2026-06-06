@@ -21,16 +21,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // ─── التعديل هنا لضمان قراءة الثيم المحفوظ قبل بناء الواجهات ───
-  // إذا كان محمد مستخدماً HydratedBloc لتخزين الثيم، ستحتاجين لتهيئة مسار التخزين هنا:
-  // await HydratedBloc.storage = await HydratedStorage.build(
-  //   storageDirectory: await getApplicationDocumentsDirectory(),
-  // );
-
-  // أما إذا كان الاعتماد على SharedPreferences العادية داخل الـ Cubit، فالكود الحالي يكفي
-  // طالما يتم استدعاء تهيئتها داخل الـ ThemeCubit نفسه.
-
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -51,16 +41,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          // 💡 تأكدي أن الـ ThemeCubit يستدعي دالة لود الثيم المحفوظ عند إنشائه، مثلاً:
-          create: (context) =>
-              ThemeCubit(), // أو يقرأها مباشرة بالـ Constructor
-        ),
-        BlocProvider(
-          create: (context) => LocaleCubit(), // إضافة كابيت اللغة
-        ),
+        BlocProvider(create: (context) => ThemeCubit()),
+        BlocProvider(create: (context) => LocaleCubit()),
       ],
-      // ─── تم إصلاح الدمج والترتيب هنا ───
+
       child: BlocBuilder<LocaleCubit, Locale>(
         builder: (context, localeState) {
           return BlocBuilder<ThemeCubit, ThemeMode>(
@@ -72,8 +56,6 @@ class MyApp extends StatelessWidget {
                 theme: AppTheme.lightTheme,
                 darkTheme: AppTheme.darkTheme,
                 themeMode: themeMode,
-
-                // ─── إعدادات اللغة المدعومة تلقائياً ───
                 locale: localeState,
                 supportedLocales: AppLocalizations.supportedLocales,
                 localizationsDelegates: const [
@@ -83,7 +65,6 @@ class MyApp extends StatelessWidget {
                   GlobalCupertinoLocalizations.delegate,
                 ],
 
-                // إعدادات المسارات والراوتر المنظم (شغلك أنتِ) 👇
                 initialRoute: Routes.initialRoute,
                 onGenerateRoute: AppRouter.generateRoute,
               );

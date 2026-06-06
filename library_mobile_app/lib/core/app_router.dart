@@ -41,12 +41,10 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
 
       case Routes.book:
-        // استقبال اسم الفئة الممررة من صفحة الفئات
         final categoryTitle = settings.arguments as String? ?? 'الكل';
 
         return MaterialPageRoute(
-          builder: (_) =>
-              Book(categoryName: categoryTitle), // نقوم بتمرير الاسم هنا للشاشة
+          builder: (_) => Book(categoryName: categoryTitle),
         );
 
       case Routes.bookDetails:

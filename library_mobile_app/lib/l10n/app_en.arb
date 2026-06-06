@@ -1,6 +1,72 @@
 {
-  "appTitle": "Library App",
+  "@@locale": "en",
   "settings": "Settings",
   "darkMode": "Dark Mode",
-  "lightMode": "Light Mode"
+  "lightMode": "Light Mode",
+  "appLanguage": "App Language",
+  
+  "home": "Home",
+  "searchPlaceholder": "Search Your Book...",
+  "points": "Points: {count}",
+  "mostPopular": "Most popular",
+  "bookCategories": "Book categories",
+  
+  "philosophy": "Philosophy",
+  "literatureAndNovels": "Literature & Novels",
+  "history": "History",
+  "science": "Science",
+  "selfDevelopment": "Self-development",
+  
+  "borrowingRecord": "Borrowing Record",
+  "myOrdersAndDelivery": "My Orders & Delivery",
+  "profile": "Profile",
+  "contactUs": "Contact Us",
+  "logout": "Log Out",
+  
+  "shoppingCart": "Shopping Cart",
+  "buyingTab": "Buying",
+  "borrowingTab": "Borrowing",
+  "borrowPrice": "Borrowing fee: {price} SYP",
+  "buyPrice": "Buying price: {price} SYP",
+  "confirmOrderAndPay": "Confirm Order & Pay",
+  
+  "checkoutAndPayment": "Checkout & Payment",
+  "invoiceSummary": "Invoice Summary",
+  "buyingBooks": "Buying Books:",
+  "borrowingBooks": "Borrowing Books:",
+  "itemsCount": "{count} Items",
+  "totalPrice": "Total Price:",
+  "currency": "SYP",
+  
+  "personalInformation": "Personal Information",
+  "fullName": "Full Name",
+  "phoneNumber": "Phone Number",
+  "detailedAddress": "Detailed Address",
+  
+  "deliveryService": "Delivery Service",
+  "yesDelivery": "Yes, I want delivery",
+  "noDelivery": "No, I will pick it up",
+  
+  "paymentMethod": "Payment Method",
+  "creditCard": "Credit Card",
+  "cashOnDelivery": "Cash on Delivery",
+  
+  "borrowingTerms": "Borrowing Terms",
+  "importantNoteBorrow": "Important Note for Borrowed Books",
+  "borrowPeriodNotice": "The maximum borrowing period is 7 days only from the date of receiving the order. Please ensure timely returns.",
+  "confirmOrderNow": "Confirm Order Now",
+  
+  "orderReceived": "Order Received!",
+  "orderId": "Order ID: {id}",
+  "orderDate": "Date: {date}",
+  "deliveryRequested": "Delivery: Requested",
+  "deliveryNotRequested": "Delivery: Self Pickup",
+  "backToHome": "Back to Home",
+  
+  "booksCount": "{count} books",
+  "sortBy": "Sort by",
+  "sortDefault": "Default",
+  "sortTitle": "Title",
+  "sortPrice": "Price",
+  "free": "Free"
 }
