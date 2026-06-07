@@ -13,12 +13,12 @@ class Transaction extends Model
     protected $fillable = [
         'bill_id',
         'book_id',
+        'user_id',
         'price',
         'extra_price',
         'delivered_at',
         'due_date',
         'returned_at',
-        'customer_return_amount', 
         'status',
         'type'
     ];
@@ -31,27 +31,24 @@ class Transaction extends Model
         'extra_price' => 'decimal:2'
     ];
 
-    
-   public function bill() {
-    return $this->belongsTo(\App\Models\Bill::class);
-}
+    public function bill()
+    {
+        return $this->belongsTo(Bill::class);
+    }
 
-   
     public function book(): BelongsTo
     {
         return $this->belongsTo(Book::class);
     }
 
-    
-    public function user()
+    public function user(): BelongsTo
     {
-        return $this->hasOneThrough(
-            User::class,
-            Bill::class,
-            'id', 
-            'id', 
-            'bill_id', 
-            'user_id' 
-        );
+        return $this->belongsTo(User::class);
+    }
+
+
+    public function customer()
+    {
+        return $this->hasOneThrough(Customer::class, User::class, 'id', 'user_id', 'user_id', 'id');
     }
 }

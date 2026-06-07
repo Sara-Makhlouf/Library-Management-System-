@@ -14,13 +14,13 @@ return new class extends Migration
             // الربط مع العميل
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
 
-            $table->integer('points_amount'); 
+            $table->integer('points_amount');
 
             // نوع العملية: مثلاً كسب من قراءة كتاب، أو خصم عند شراء
-            $table->enum('transaction_type', ['earn', 'redeem', 'refund']); 
+            $table->enum('transaction_type', ['earn', 'redeem', 'refund', 'deduct']);
             $table->string('reason')->nullable();
 
-            $table->timestamp('created_at')->useCurrent(); 
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 

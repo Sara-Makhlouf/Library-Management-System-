@@ -13,15 +13,20 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('bill_id')->constrained();
+            $table->foreignId('bill_id')->constrained()->cascadeOnDelete();
             $table->foreignId('book_id')->constrained();
+            $table->foreignId('user_id')->constrained();
+
             $table->decimal('price', 10, 2);
-            $table->decimal('extra_price', 10, 2)->default(0);
+            $table->decimal('extra_price', 10, 2)->default(0)->comment('الغرامات فقط');
+
             $table->enum('type', ['buy', 'borrow'])->default('borrow');
-            $table->timestamp('delivered_at');
+            $table->enum('status', ['reserved', 'received', 'returned', 'expired', 'sold', 'damaged'])->default('reserved');
+
+            $table->timestamp('delivered_at')->nullable();
             $table->timestamp('due_date')->nullable();
             $table->timestamp('returned_at')->nullable();
-            $table->enum('status', ['reserved', 'received', 'returned', 'expired', 'sold'])->default('reserved');
+
             $table->timestamps();
         });
     }

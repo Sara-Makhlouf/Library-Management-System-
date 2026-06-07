@@ -1,71 +1,93 @@
 <?php
 
-namespace App\Http\Controllers; // توحيد الـ namespace مع بقية المشروع ✅
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\JsonResponse;
 
 class SettingController extends Controller
 {
     /**
-     * عرض جميع الإعدادات
+     * 1 جلب كل الإعدادات
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        $settings = Setting::all();
+        $settings = Cache::rememberForever('app_settings', function () {
+            return Setting::pluck('value', 'name');
+        });
 
         return response()->json([
             'status' => 'success',
-            'message' => 'جميع الإعدادات',
             'data' => $settings
         ]);
     }
 
     /**
-     * تحديث إعداد معين عبر اسمه (name)
+     * 2. تحديث الإعدادات
      */
-    public function update(Request $request)
+    public function update(Request $request): JsonResponse
     {
         $request->validate([
-            'name'  => ['required', 'exists:settings,name'],
-            'value' => ['required', 'string'],
+            'settings' => ['required', 'array'],
+            'settings.*.name' => ['required', 'exists:settings,name'],
+            'settings.*.value' => ['required'],
         ]);
 
-        // تحديث القيمة بناءً على اسم الإعداد
-        Setting::where('name', $request->name)
-            ->update(['value' => $request->value]);
+        foreach ($request->settings as $setting) {
+            Setting::where('name', $setting['name'])
+                ->update(['value' => $setting['value']]);
+        }
 
-        $settings = Setting::all();
+        Cache::forget('app_settings');
 
         return response()->json([
             'status' => 'success',
-            'message' => 'تم تعديل الإعدادات بنجاح',
-            'data' => $settings
+            'message' => 'تم تحديث جميع الإعدادات بنجاح',
+            'data' => Setting::pluck('value', 'name')
         ]);
     }
 
-    /**
-     * إعدادات الـ Footer
-     */
-    public function footer()
+
+    public function footer(): JsonResponse
     {
-        $keys = [
+        $footerKeys = [
             'site_name',
-            'site_description',
             'contact_phone',
             'contact_email',
             'facebook_url',
             'instagram_url',
-            'footer_copyright',
+            'footer_copyright'
         ];
 
-        $settings = Setting::whereIn('name', $keys)
-            ->pluck('value', 'name');
+        $settings = Setting::whereIn('name', $footerKeys)->pluck('value', 'name');
 
         return response()->json([
             'status' => 'success',
-            'message' => 'إعدادات الـ Footer',
+            'data' => $settings
+        ]);
+    }
+
+    /**
+     * 4  دالة إضافية لجلب أي مجموعة إعدادات مخصصة
+     */
+    public function getByGroup(Request $request): JsonResponse
+    {
+        $keys = $request->input('keys', []);
+
+        if (empty($keys)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'يرجى تمرير مصفوفة المفاتيح المطلوب جلبها keys'
+            ], 400);
+        }
+
+        $settings = Setting::whereIn('name', (array)$keys)->pluck('value', 'name');
+
+        return response()->json([
+            'status' => 'success',
             'data' => $settings
         ]);
     }

@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('complaints', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('transactions_id')->constrained();
             $table->foreignId('user_id')->constrained();
-            $table->string('reasone');
-            $table->decimal('total_fine',8,2);
-            $table->enum('status',['pending','resolved'])->default('pending');
+            $table->foreignId('transaction_id')->constrained('transactions');
+            $table->string('reason');
+            $table->decimal('total_fine', 8, 2);
+            $table->enum('status', ['pending', 'resolved'])->default('pending');
             $table->timestamps();
         });
     }

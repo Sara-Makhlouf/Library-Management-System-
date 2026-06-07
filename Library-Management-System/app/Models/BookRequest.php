@@ -6,24 +6,25 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PointsTransaction extends Model
+class BookRequest extends Model
 {
     use HasFactory;
 
-
-    public $timestamps = false;
-    protected $dates = ['created_at'];
-
     protected $fillable = [
+        'book_title',
+        'author_name',
+        'status',
+        'notes',
+        'admin_note',
         'customer_id',
-        'points_amount',
-        'transaction_type',
-        'reason',
     ];
 
-    /**
-     * العلاقة مع العميل
-     */
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);

@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Enums\BookStockOperationType;
 
 class BookStockOperation extends Model
 {
@@ -16,7 +15,7 @@ class BookStockOperation extends Model
     ];
 
     protected $casts = [
-        'type' => BookStockOperationType::class,
+        'type' => 'string',
         'remove_from_remaining' => 'boolean',
     ];
 

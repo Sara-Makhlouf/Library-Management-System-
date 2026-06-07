@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('type' , ['admin', 'customer'])->default('customer');
+            $table->enum('type', ['admin', 'customer'])->default('customer');
             $table->boolean('is_active')->default(true);
-            $table->integer('max_borrowing_limit')->default(3);
             $table->rememberToken();
             $table->timestamps();
         });

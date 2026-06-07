@@ -5,23 +5,25 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\User;
-use App\Models\Notification; // استدعاء الموديل الموحد هنا ✅
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class UserController extends Controller
 {
-    // عرض قائمة العملاء مع البحث
+    /**
+     * عرض قائمة العملاء مع البحث والفلترة
+     */
     public function index(Request $request): JsonResponse
     {
         $users = User::has('customer')
             ->with('customer')
             ->when($request->search, function ($query, $search) {
                 $query->where('email', 'like', "%{$search}%")
-                      ->orWhereHas('customer', function ($q) use ($search) {
-                          $q->where('name', 'like', "%{$search}%")
+                    ->orWhereHas('customer', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%")
                             ->orWhere('phone', 'like', "%{$search}%");
-                      });
+                    });
             })
             ->latest()
             ->paginate(10);
@@ -32,10 +34,14 @@ class UserController extends Controller
         ]);
     }
 
-    // عرض تفاصيل عميل واحد
+    /**
+     * عرض تفاصيل حساب مستخدم واحد
+     */
     public function show($id): JsonResponse
     {
-        $user = User::with('customer')->findOrFail($id);
+        $user = User::with(['customer' => function ($q) {
+            $q->withCount(['bills', 'transactions']);
+        }])->findOrFail($id);
 
         return response()->json([
             'status' => 'success',
@@ -43,64 +49,67 @@ class UserController extends Controller
         ]);
     }
 
-    // حذف حساب عميل
+    /**
+     * حذف حساب مستخدم (إدارة الأدمن)
+     */
     public function destroy(Request $request, $id): JsonResponse
     {
-        $user = User::findOrFail($id);
-        $customerName = $user->customer->name ?? 'غير معروف';
-        
+        $user = User::with('customer')->findOrFail($id);
+        $customerName = $user->customer->name ?? 'مستخدم غير معروف';
+
         $user->delete();
 
-        // 🔔 إرسال إشعار موحد عند حذف الحساب
         try {
             Notification::send(
                 $request->user()->id,
                 'user_deleted',
                 'حذف حساب مستخدم ⚠️',
-                "تم حذف حساب المستخدم ({$customerName}) وبياناته الشخصية نهائياً من النظام.",
+                "تم حذف حساب المستخدم ({$customerName}) وجميع بياناته بنجاح.",
                 [
                     'icon' => 'user_delete',
                     'target_screen' => 'users_dashboard'
                 ]
             );
         } catch (\Exception $e) {
-            // تجاوز الخطأ لضمان استقرار العملية
         }
 
         return response()->json([
             'status' => 'success',
-            'message' => 'تم حذف المستخدم وبياناته الشخصية بنجاح'
+            'message' => 'تم حذف المستخدم بنجاح'
         ]);
     }
 
-    // جلب التفاصيل المالية والنشاطات الشاملة للمستخدم
+    /**
+     * التقرير المالي والنشاط التفصيلي للعميل
+     */
     public function getFullUserDetails(Request $request, $id)
     {
-        $customer = Customer::withCount('bills')->find($id);
+        $customer = Customer::find($id);
 
         if (!$customer) {
-            return response()->json(['message' => 'الزبون غير موجود'], 404);
+            return response()->json(['status' => 'error', 'message' => 'الزبون غير موجود'], 404);
         }
-        
+
         $borrowedBooksCount = $customer->transactions()
-            ->whereNotNull('due_date')
+            ->whereIn('transactions.status', ['borrowed', 'returned'])
             ->count();
 
-        $purchasedBooksCount = $customer->purchasedItems()->sum('quantity');
-        $totalMortgageAmount = $customer->transactions()->sum('mortgage');
+        $purchasedBooksCount = \App\Models\BillDetail::whereHas('bill', function ($q) use ($id) {
+            $q->where('customer_id', $id)->where('status', 'paid');
+        })->sum('quantity');
+
         $totalExtraFines = $customer->transactions()->sum('extra_price');
 
         $totalPayments = $customer->bills()
             ->where('status', 'paid')
             ->sum('total_price');
 
-        // 🔔 إرسال إشعار موحد عند طلب تقرير نشاطات مستخدم معين
         try {
             Notification::send(
                 $request->user()->id,
                 'user_report_viewed',
                 'استعراض ملف العميل المالي 👤',
-                "تم استخراج تقرير النشاط والملف المالي الشامل للعميل ({$customer->name}).",
+                "تم جلب التقرير المالي الشامل للعميل ({$customer->name}).",
                 [
                     'icon' => 'user_analytics',
                     'target_screen' => 'user_details',
@@ -108,7 +117,6 @@ class UserController extends Controller
                 ]
             );
         } catch (\Exception $e) {
-            // تجاوز الخطأ
         }
 
         return response()->json([
@@ -116,48 +124,34 @@ class UserController extends Controller
             'data' => [
                 'profile' => [
                     'name' => $customer->name,
+                    'phone' => $customer->phone,
                     'points' => $customer->points_balance,
-                    'app_status' => $customer->points_balance >= 25 ? 'عضو نشط' : 'عضو عادي',
+                    'member_type' => $customer->points_balance >= 50 ? 'عميل ذهبي' : 'عميل عادي',
                 ],
-                'activity_report' => [
-                    'borrowed_books' => $borrowedBooksCount,
-                    'purchased_books' => (int)$purchasedBooksCount,
-                    'total_mortgage_paid' => number_format($totalMortgageAmount, 2),
-                    'total_fines' => number_format($totalExtraFines, 2),
-                    'total_paid_on_app' => number_format($totalPayments, 2),
+                'financial_summary' => [
+                    'borrowed_count'     => $borrowedBooksCount,
+                    'purchased_count'    => (int)$purchasedBooksCount,
+                    'total_fines_paid'   => number_format($totalExtraFines, 0) . ' ل.س',
+                    'total_spend'        => number_format($totalPayments, 0) . ' ل.س',
                 ]
             ]
         ]);
     }
 
-    // جلب إحصائيات الطلبات المدفوعة والأرباح الكلية
+    /**
+     * إحصائيات عامة للوحة تحكم الأدمن
+     */
     public function getTotalPaidOrdersCount(Request $request)
     {
         $totalPaidOrders = \App\Models\Bill::where('status', 'paid')->count();
         $totalRevenue = \App\Models\Bill::where('status', 'paid')->sum('total_price');
 
-        // 🔔 إرسال إشعار موحد عند طلب تقرير الطلبات الإجمالي في النظام
-        try {
-            Notification::send(
-                $request->user()->id,
-                'orders_report_viewed',
-                'تقرير الفواتير الإجمالي 🧾',
-                "تم جلب عدد الطلبات المدفوعة وإجمالي الأرباح الكلية المحققة في التطبيق.",
-                [
-                    'icon' => 'orders_analytics',
-                    'target_screen' => 'reports_dashboard'
-                ]
-            );
-        } catch (\Exception $e) {
-            // تجاوز الخطأ
-        }
-
         return response()->json([
             'status' => 'success',
             'data' => [
-                'total_paid_orders_count' => $totalPaidOrders,
-                'total_revenue' => number_format($totalRevenue, 2) . ' SYP',
-                'last_updated' => now()->toDateTimeString()
+                'total_paid_orders' => $totalPaidOrders,
+                'total_revenue'     => number_format($totalRevenue, 0) . ' ل.س',
+                'report_date'       => now()->format('Y-m-d H:i')
             ]
         ]);
     }

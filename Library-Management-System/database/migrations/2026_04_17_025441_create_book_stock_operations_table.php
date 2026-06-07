@@ -17,6 +17,7 @@ return new class extends Migration
             $table->enum('type', ['add', 'destroy']); // إضافة أو اتلاف
             $table->boolean('remove_from_remaining')->default(false);
             $table->foreignId('book_id')->constrained();
+            $table->string('note')->nullable();
             $table->timestamps();
         });
     }

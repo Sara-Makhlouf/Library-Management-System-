@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Customer extends Model
 {
-    /** @use HasFactory<\Database\Factories\CustomerFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -22,32 +22,30 @@ class Customer extends Model
         'lang',
         'address',
         'user_id',
-        'points_balance'
+        'points_balance',
+        'max_borrowing_limit',
+        'fcm_token',
     ];
 
     protected $casts = [
         'DOB' => 'date',
         'points_balance' => 'integer',
+        'max_borrowing_limit' => 'integer',
     ];
 
 
 
-    /**
-     * العلاقة مع حساب المستخدم الأساسي (Auth).
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
     /**
-     * علاقة الكتب المفضلة (Favorites).
-     *
+     * علاقة الكتب المفضلة.
      */
-    public function favorites(): BelongsToMany
+    public function favorites()
     {
-        return $this->belongsToMany(Book::class, 'favorites')
-                    ->withTimestamps();
+        return $this->belongsToMany(Book::class, 'favorites', 'customer_id', 'book_id')->withTimestamps();
     }
 
     /**
@@ -56,16 +54,24 @@ class Customer extends Model
     public function ratings(): BelongsToMany
     {
         return $this->belongsToMany(Book::class, 'ratings')
-                    ->withPivot('rate')
-                    ->withTimestamps();
+            ->withPivot('rate')
+            ->withTimestamps();
     }
 
     /**
-     * العلاقة مع الإشعارات.
+     * العلاقة مع الفواتير.
      */
-    public function notifications(): HasMany
+    public function bills(): HasMany
     {
-        return $this->hasMany(Notification::class);
+        return $this->hasMany(Bill::class);
+    }
+
+    /**
+     * الوصول للعمليات (استعارة/بيع) المرتبطة بفواتير هذا الزبون.
+     */
+    public function transactions(): HasManyThrough
+    {
+        return $this->hasManyThrough(Transaction::class, Bill::class);
     }
 
     /**
@@ -75,18 +81,12 @@ class Customer extends Model
     {
         return $this->hasMany(WaitingList::class);
     }
-    // app/Models/Customer.php
 
-public function bills() {
-    return $this->hasMany(Bill::class);
-}
-
-// علاقة غير مباشرة للوصول للكتب المشتراة
-public function purchasedItems() {
-    return $this->hasManyThrough(BillDetail::class, Bill::class);
-}
-
-public function transactions() {
-    return $this->hasManyThrough(Transaction::class, Bill::class);
-}
+    /**
+     * العلاقة مع الإشعارات.
+     */
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
 }

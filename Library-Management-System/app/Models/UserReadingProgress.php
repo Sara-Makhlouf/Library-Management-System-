@@ -10,7 +10,7 @@ class UserReadingProgress extends Model
 {
     use HasFactory;
 
-    
+
     protected $table = 'user_reading_progress';
 
     protected $fillable = [
@@ -38,9 +38,8 @@ class UserReadingProgress extends Model
 
     public function getPercentageAttribute()
     {
-        if ($this->book && $this->book->total_pages > 0) {
+        if ($this->book && $this->book->total_pages > 0)
             return ($this->last_page_read / $this->book->total_pages) * 100;
-        }
         return 0;
     }
 }

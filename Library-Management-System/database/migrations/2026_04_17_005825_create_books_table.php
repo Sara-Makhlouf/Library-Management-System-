@@ -15,23 +15,20 @@ return new class extends Migration
             $table->id();
             $table->char('ISBN', 13)->unique();
             $table->string('title', 150)->index();
-            $table->decimal('price', 8, 2)->default(0);
-            $table->decimal('mortgage', 8, 2)->nullable()->comment('restored when returned'); // decimal mortgage
+            $table->decimal('price', 8, 2)->default(0)->comment('سعر الإعارة');
+            $table->decimal('sale_price', 8, 2)->default(0)->comment('سعر البيع');
             $table->string('cover')->nullable();
-            $table->integer('pages')->nullable();
-            $table->integer('borrow_duration')->nullable();
+            $table->integer('total_pages')->nullable();
+
+            $table->integer('borrow_duration')->default(7);
             $table->integer('total_copies')->default(0);
             $table->integer('stock')->default(0);
             $table->date('authorship_date')->nullable();
-
-            // Foreign Key
-            $table->foreignId('category_id')->constrained()->cascadeOnDelete(); // bigint category_id FK
-
+            $table->foreignId('category_id')->constrained()->cascadeOnDelete();
 
             $table->string('file_path')->nullable();
             $table->boolean('is_digital')->default(false);
-            $table->integer('total_pages')->nullable();
-
+            $table->softDeletes();
             $table->timestamps();
         });
     }

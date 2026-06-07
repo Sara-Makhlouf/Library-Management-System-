@@ -14,19 +14,17 @@ return new class extends Migration
         Schema::create('favorites', function (Blueprint $table) {
             $table->id();
 
-            
-            $table->foreignId('customer_id')
-                  ->constrained('customers')
-                  ->onDelete('cascade');
 
-            // ربط المفضلة بالكتاب
+            $table->foreignId('customer_id')
+                ->constrained('customers')
+                ->onDelete('cascade');
+
             $table->foreignId('book_id')
-                  ->constrained('books')
-                  ->onDelete('cascade');
+                ->constrained('books')
+                ->onDelete('cascade');
 
             $table->timestamps();
 
-            // منع تكرار إضافة نفس الكتاب لنفس العميل مرتين
             $table->unique(['customer_id', 'book_id']);
         });
     }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Facades\Log;
 
 class Notification extends Model
 {
@@ -47,7 +48,6 @@ class Notification extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    // علاقة الـ Morph القياسية لربط الإشعار بأي موديل آخر في المشروع
     public function related(): MorphTo
     {
         return $this->morphTo();
@@ -69,19 +69,39 @@ class Notification extends Model
         string $title,
         string $body,
         ?array $data = null,
-        ?model $relatedModel = null
+        ?Model $relatedModel = null
     ): self {
-        return self::create([
-
+        $notification = self::create([
             'customer_id'  => $customerId,
-            'type' => $type,
-            'title' => $title,
-            'body' => $body,
-            'data' => $data,
+            'type'         => $type,
+            'title'        => $title,
+            'body'         => $body,
+            'data'         => $data,
             'related_id'   => $relatedModel ? $relatedModel->getKey() : null,
             'related_type' => $relatedModel ? $relatedModel->getMorphClass() : null,
-            'sent_at' => now(),
-            'created_at' => now(),
+            'sent_at'      => now(),
+            'created_at'   => now(),
         ]);
+
+        try {
+            $customer = \App\Models\Customer::find($customerId);
+
+            if ($customer && $customer->fcm_token) {
+                app(\App\Services\FCMService::class)->sendToDevice(
+                    $customer->fcm_token,
+                    $title,
+                    $body,
+                    [
+                        'type'            => $type,
+                        'notification_id' => (string) $notification->id,
+                        'target_screen'   => $data['target_screen'] ?? 'home',
+                    ]
+                );
+            }
+        } catch (\Exception $e) {
+            Log::error('Push Notification Failed: ' . $e->getMessage());
+        }
+
+        return $notification;
     }
 }

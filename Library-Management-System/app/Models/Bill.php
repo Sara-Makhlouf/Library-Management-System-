@@ -39,8 +39,7 @@ class Bill extends Model
         return $this->belongsTo(Customer::class);
     }
 
-
-    public function details(): HasMany
+    public function billDetails(): HasMany
     {
         return $this->hasMany(BillDetail::class);
     }
@@ -49,7 +48,18 @@ class Bill extends Model
     public function books(): BelongsToMany
     {
         return $this->belongsToMany(Book::class, 'bill_details')
-            ->withPivot('quantity', 'unit_price') // لجلب بيانات الجدول الوسيط
+            ->withPivot('quantity', 'unit_price')
             ->withTimestamps();
+    }
+
+
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

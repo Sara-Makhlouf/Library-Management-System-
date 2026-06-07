@@ -11,11 +11,12 @@ use Illuminate\Support\Facades\Storage;
 class CustomerController extends Controller
 {
     /**
-     * عرض بيانات العميل الحالي
+     * عرض بيانات الملف الشخصي للزبون الحالي
      */
     public function show(Request $request)
     {
-        $customer = $request->user()->customer;
+        $user = $request->user();
+        $customer = $user->customer;
 
         if (!$customer) {
             return response()->json([
@@ -26,14 +27,14 @@ class CustomerController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'بيانات العميل',
             'data' => [
-                'name'   => $customer->name,
+                'name'   => $user->name,
+                'email'  => $user->email,
                 'phone'  => $customer->phone,
                 'gender' => $customer->gender,
                 'DOB'    => $customer->DOB,
                 'lang'   => $customer->lang,
-                'avatar' => $customer->avatar,
+                'avatar' => $customer->avatar ? asset('storage/' . $customer->avatar) : null,
                 'points' => $customer->points_balance,
             ]
         ]);
@@ -41,17 +42,14 @@ class CustomerController extends Controller
 
     /**
      * تحديث البيانات الشخصية
-     * (الجنس - الهاتف - الصورة - الميلاد)
      */
     public function update(Request $request)
     {
-        $customer = $request->user()->customer;
+        $user = $request->user();
+        $customer = $user->customer;
 
         if (!$customer) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'عذراً، لا يمكن تحديث البيانات لهذا الحساب'
-            ], 403);
+            return response()->json(['status' => 'error', 'message' => 'غير مسموح بالتحديث'], 403);
         }
 
         $validated = $request->validate([
@@ -63,43 +61,56 @@ class CustomerController extends Controller
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
-        // رفع الصورة الجديدة وحذف القديمة من قرص الـ public بأمان
-        if ($request->hasFile('avatar')) {
-            if ($customer->avatar) {
-                Storage::disk('public')->delete($customer->avatar);
-            }
-            $validated['avatar'] = $request->file('avatar')->store('customer-avatars', 'public');
-        }
-
-        $customer->update($validated);
-
-        // 🔔 استخدام الدالة الموحدة لإرسال إشعار بتحديث الملف الشخصي بنجاح
+        DB::beginTransaction();
         try {
-            Notification::send(
-                $request->user()->id,
-                'profile_updated',
-                'تم تحديث حسابك بنجاح ✨',
-                'لقد قمت بتحديث بيانات ملفك الشخصي في التطبيق بنجاح لمواكبة تغييراتك الأخيرة.',
-                [
-                    'icon' => 'user_edit_success',
-                    'target_screen' => 'profile_settings'
-                ]
-            );
-        } catch (\Exception $e) {
-            // تجاوز أي خطأ طارئ لضمان عدم توقف العملية
-        }
+            if ($request->has('name')) {
+                $user->update(['name' => $validated['name']]);
+            }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم تحديث البيانات بنجاح',
-            'data' => [
-                'name'   => $customer->name,
-                'phone'  => $customer->phone,
-                'gender' => $customer->gender,
-                'DOB'    => $customer->DOB,
-                'lang'   => $customer->lang,
-                'avatar' => $customer->avatar,
-            ]
-        ]);
+            if ($request->hasFile('avatar')) {
+                if ($customer->avatar) {
+                    Storage::disk('public')->delete($customer->avatar);
+                }
+                $validated['avatar'] = $request->file('avatar')->store('customer-avatars', 'public');
+            }
+
+            $customer->update(collect($validated)->except('name')->toArray());
+
+            DB::commit();
+            $customer->refresh();
+            $user->refresh();
+
+            // 🔔 إرسال إشعار التحديث
+            try {
+                Notification::send(
+                    $user->customer->id,
+                    'profile_updated',
+                    'تم تحديث حسابك بنجاح ✨',
+                    'لقد قمت بتحديث بيانات ملفك الشخصي بنجاح.',
+                    ['icon' => 'user_edit_success', 'target_screen' => 'profile_settings']
+                );
+            } catch (\Exception $e) {
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'تم تحديث البيانات بنجاح',
+                'data' => [
+                    'name'           => $user->name,
+                    'phone'          => $customer->phone,
+                    'gender'         => $customer->gender,
+                    'DOB'            => $customer->DOB,
+                    'lang'           => $customer->lang,
+                    'avatar'         => $customer->avatar ? asset('storage/' . $customer->avatar) : null,
+                    'points_balance' => $customer->points_balance ?? 0,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'حدث خطأ أثناء التحديث، يرجى المحاولة لاحقاً'
+            ], 500);
+        }
     }
 }

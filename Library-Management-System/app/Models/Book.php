@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,15 +12,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Book extends Model
 {
     /** @use HasFactory<\Database\Factories\BookFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'ISBN',
         'title',
         'price',
-        'mortgage',
+        'sale_price',
         'cover',
-        'pages',
         'borrow_duration',
         'total_copies',
         'stock',
@@ -34,7 +34,7 @@ class Book extends Model
         'is_digital' => 'boolean',
         'authorship_date' => 'date',
         'price' => 'decimal:2',
-        'mortgage' => 'decimal:2',
+        'sale_price' => 'decimal:2',
     ];
 
 
@@ -61,18 +61,20 @@ class Book extends Model
      */
     public function favoritedBy(): BelongsToMany
     {
-        return $this->belongsToMany(Customer::class, 'favorites')
-                    ->withTimestamps();
+        return $this->belongsToMany(Customer::class, 'favorites', 'book_id', 'customer_id')
+            ->withTimestamps();
     }
 
-    /**
-     * تقييمات الزبائن لهذا الكتاب.
-     */
-    public function ratings(): BelongsToMany
+
+    public function ratings(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->belongsToMany(Customer::class, 'ratings')
-                    ->withPivot('rate')
-                    ->withTimestamps();
+        return $this->hasMany(Rating::class);
+    }
+
+
+    public function getAverageRateAttribute()
+    {
+        return round($this->ratings()->avg('rate') ?: 0, 1);
     }
 
     /**
@@ -91,12 +93,15 @@ class Book extends Model
         return $this->hasMany(WaitingList::class);
     }
     /**
- * سجل عمليات المخزون الخاصة بهذا الكتاب.
- */
-public function stockOperations(): HasMany
-{
-    return $this->hasMany(BookStockOperation::class);
-}
+     * سجل عمليات المخزون الخاصة بهذا الكتاب.
+     */
+    public function stockOperations(): HasMany
+    {
+        return $this->hasMany(BookStockOperation::class);
+    }
+
+
+
 
     // --- أدوات البحث والفلترة
 

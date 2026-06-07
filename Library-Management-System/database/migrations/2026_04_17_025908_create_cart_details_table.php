@@ -17,11 +17,7 @@ return new class extends Migration
             $table->foreignId('book_id')->constrained()->onDelete('cascade');
 
             $table->decimal('price', 10, 2);
-            
-            // إضافة حقل النوع (buy أو borrow)
             $table->enum('type', ['buy', 'borrow'])->default('borrow');
-            
-            // جعل تاريخ الاستحقاق اختيارياً (nullable)
             $table->timestamp('due_at')->nullable();
 
             $table->timestamps();

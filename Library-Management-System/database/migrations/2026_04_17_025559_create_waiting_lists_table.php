@@ -1,4 +1,5 @@
 <?php
+
 use App\Models\WaitingList;
 use App\Models\Transaction;
 use Illuminate\Database\Migrations\Migration;
@@ -14,9 +15,9 @@ return new class extends Migration
     {
         Schema::create('waiting_lists', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_id')->constrained();
-            $table->foreignId('book_id')->constrained();
-            $table->unique(['book_id' , 'customer_id']);
+            $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('book_id')->constrained()->cascadeOnDelete();
+            $table->unique(['book_id', 'customer_id']);
             $table->timestamps();
         });
     }

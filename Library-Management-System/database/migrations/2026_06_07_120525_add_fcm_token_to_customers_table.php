@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('points_transactions', function (Blueprint $table) {
-            //
+        Schema::table('customers', function (Blueprint $table) {
+            $table->string('fcm_token')->nullable()->after('lang');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('points_transactions', function (Blueprint $table) {
-            //
+        Schema::table('customers', function (Blueprint $table) {
+            $table->dropColumn('fcm_token');
         });
     }
 };
