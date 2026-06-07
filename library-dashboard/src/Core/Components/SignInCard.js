@@ -18,21 +18,24 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import{ COLORS} from "../Constants/ColorsUse";
 import ForgotPassword from "./ForgetPassword";
-import { useAuth } from "../Context/AuthContext";
+import { useDispatch, useSelector } from "react-redux";
+import loginAdmin from "../Redux/Thunks/AuthThunk";
 import { useNavigate } from "react-router-dom";
 import { GoogleIcon, FacebookIcon } from "./Cunstom";
 
 export default function SignInCard() {
-  const { login } = useAuth();
   const navigate = useNavigate();
+const dispatch = useDispatch();
 
+const { loading, error } = useSelector(
+  (state) => state.auth
+);
   const [form, setForm] = React.useState({
-    phone: "",
+    email: "",
     password: "",
   });
 
   const [errors, setErrors] = React.useState({});
-  const [loading, setLoading] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
 
@@ -46,9 +49,9 @@ export default function SignInCard() {
   const validate = () => {
     let temp = {};
 
-    if (!/^\d{10}$/.test(form.phone)) {
-      temp.phone = "Invalid phone number";
-    }
+    if (!/\S+@\S+\.\S+/.test(form.email)) {
+  temp.email = "Invalid email";
+}
 
     if (form.password.length < 6) {
       temp.password = "Min 6 characters";
@@ -59,24 +62,21 @@ export default function SignInCard() {
   };
 
 const handleSubmit = async (e) => {
-e.preventDefault();
+  e.preventDefault();
 
-if (!validate()) return;
+  if (!validate()) return;
 
-    try {
-      setLoading(true);
-
-      await login(form.phone, form.password);
-
-      navigate("/dashboard");
-    } catch (err) {
-      setErrors({
-        password: err.response?.data?.message || "Login failed",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const result = await dispatch(
+    loginAdmin({
+      email: form.email,
+      password: form.password,
+    })
+  );
+console.log("LOGIN RESULT:", result);
+  if (loginAdmin.fulfilled.match(result)) {
+    navigate("/dashboard");
+  }
+};
 
   return (
     <Box
@@ -111,12 +111,12 @@ if (!validate()) return;
           sx={{ display: "flex", flexDirection: "column", gap: 2 }}
         >
           <TextField
-            label="Phone"
-            name="phone"
-            value={form.phone}
+            label="email"
+            name="email"
+            value={form.email}
             onChange={handleChange}
-            error={!!errors.phone}
-            helperText={errors.phone}
+            error={!!errors.email}
+            helperText={errors.email}
             fullWidth
              sx={{
       
@@ -181,7 +181,14 @@ if (!validate()) return;
               ),
             }}
           />
-
+{error && (
+  <Typography
+    color="error"
+    sx={{ textAlign: "center" }}
+  >
+    {error}
+  </Typography>
+)}
           <Link
             component="button"
             onClick={() => setOpen(true)}
@@ -204,7 +211,6 @@ if (!validate()) return;
             variant="contained"
             color="white"
           onClick={()=>{
-              navigate("/dashboard")
 
           }}
             disabled={loading}

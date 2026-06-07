@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 
 import authReducer from "../Slice/AuthSlice";
-import authorReducer from "./slices/authorSlice";
-import categoryReducer from "./slices/categorySlice";
-import bookReducer from "./slices/bookSlice";
-import dashboardReducer from "./slices/dashboardSlice";
-import waitingListReducer from "./slices/waitingListSlice";
+import authorReducer from "../Slice/AuthorSlice";
+import categoryReducer from "../Slice/CategoriesSlice";
+import bookReducer from "../Slice/BooksSlice";
+import dashboardReducer from "../Slice/DashbordSlice";
+import waitingListReducer from "../Slice/WatingListSlice";
 
 export const store = configureStore({
   reducer: {

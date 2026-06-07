@@ -5,9 +5,12 @@ export const loginAdmin = createAsyncThunk(
   async (loginData, thunkAPI) => {
     try {
       const response = await api.post(
-        "/admin/login",
-        loginData
-      );
+  "/login",
+  {
+    email: loginData.email,
+    password: loginData.password,
+  }
+);
 
       return response.data;
     } catch (error) {

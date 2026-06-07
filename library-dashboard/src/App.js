@@ -1,9 +1,9 @@
-import React from 'react';
+import React from "react";
 import { Toaster } from "react-hot-toast";
-import AppRouter from './Core/Constants/AppRouter.jsx';
-import Sidebar from './Core/Components/SideBar.jsx';
+import AppRouter from "./Core/Constants/AppRouter.jsx";
+import Sidebar from "./Core/Components/SideBar.jsx";
 import { useLocation } from "react-router-dom";
-import store from "./Core/Redux/Store/Store.jsx";
+import { store } from "./Core/Redux/Store/Store.jsx";
 import { Provider } from "react-redux";
 
 function App() {
@@ -12,22 +12,25 @@ function App() {
   const hideSidebar = location.pathname === "/";
 
   return (
-    <>
-      {!hideSidebar && <Sidebar />}
+    <Provider store={store}>
+      <>
+        {!hideSidebar && <Sidebar />}
 
-      <main style={{ minHeight: "100vh", display: "block" }}>
-    <Provider ider store={store}>
-     <AppRouter />
-     </Provider>
-                 
-           
+        <main
+          style={{
+            minHeight: "100vh",
+            display: "block",
+            marginLeft: hideSidebar ? 0 : 250, 
+            transition: "0.3s",
+          }}
+        >
+          <AppRouter />
+        </main>
 
-      </main>
-
-      <Toaster position="top-right" />
-    </>
+        <Toaster position="top-right" />
+      </>
+    </Provider>
   );
 }
 
 export default App;
-
