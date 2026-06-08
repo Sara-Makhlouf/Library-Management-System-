@@ -19,13 +19,14 @@ export default function AppRouter() {
 return (
     
     <Routes>
-        <Route path="/" element={<AdminLoginPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/users" element={<UsersPage />} />
+        <Route path="/" element={<AdminLoginPage />} />
         <Route path="/actions" element={<ActionsPage />} />
         <Route path="/add-book" element={<AddBookPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/archives" element={<ArchivesPage />} />
+        <Route path="/" element={<AdminLoginPage />} />
         <Route path="/circulation" element={<CirculationPage />} />
         <Route path="/finance" element={<FinancePage />} />
         <Route path="/inventory" element={<LibraryInventoryPage />} />

@@ -32,7 +32,7 @@ export const deletUsers = createAsyncThunk(
         }}
 
 );
-export default deletUsers;
+
 
 
 
@@ -51,7 +51,6 @@ export const fetchUserWithDetails = createAsyncThunk(
         }}
 
 );
-export default fetchUserWithDetails;
 
 
 export const getAllOperationForUser = createAsyncThunk(
@@ -69,5 +68,4 @@ export const getAllOperationForUser = createAsyncThunk(
         }}
 
 );
-export default getAllOperationForUser;
 
