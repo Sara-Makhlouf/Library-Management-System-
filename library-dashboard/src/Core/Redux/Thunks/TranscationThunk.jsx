@@ -1,23 +1,14 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-
-
-const getAuthConfig = () => ({
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
-    Accept: "application/json",
-  },
-});
+import axiosClient from "../../Api/aixos";
 
 // Get All Transactions
 export const getAllTransactions = createAsyncThunk(
   "adminTransactions/getAllTransactions",
   async (status = null, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        `/admin/transactions`,
+      const response = await axiosClient.get(
+        "/transactions",
         {
-          ...getAuthConfig(),
           params: status ? { status } : {},
         }
       );
@@ -31,16 +22,14 @@ export const getAllTransactions = createAsyncThunk(
     }
   }
 );
-;
 
 export const checkoutTransaction = createAsyncThunk(
   "adminTransactions/checkoutTransaction",
   async (checkoutData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `/admin/transactions/checkout`,
-        checkoutData,
-        getAuthConfig()
+      const response = await axiosClient.post(
+        "/transactions/checkout",
+        checkoutData
       );
 
       return response.data;

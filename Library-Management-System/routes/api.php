@@ -29,9 +29,11 @@ use App\Http\Controllers\Api\Admin\WaitingListController;
 */
 
 // --- المصادقة ---
-Route::post('/register',     [AuthController::class, 'register']);     // تسجيل زبون جديد
-Route::post('/login',        [AuthController::class, 'login']);        // تسجيل دخول زبون (برقم الهاتف)
-Route::post('/admin/login',  [AuthController::class, 'adminLogin']);   // تسجيل دخول أدمن (بالإيميل)
+Route::middleware('throttle:5,1')->group(function () {
+    Route::post('/register',     [AuthController::class, 'register']);     // تسجيل زبون جديد
+    Route::post('/login',        [AuthController::class, 'login']);        // تسجيل دخول زبون (برقم الهاتف)
+    Route::post('/admin/login',  [AuthController::class, 'adminLogin']);   // تسجيل دخول أدمن (بالإيميل)
+});
 
 // --- الكتب (عامة — بدون توكن) ---
 Route::get('/books',              [BookController::class, 'index']);       // عرض كل الكتب مع دعم البحث والفلترة

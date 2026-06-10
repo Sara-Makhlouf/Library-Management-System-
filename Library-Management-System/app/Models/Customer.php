@@ -22,8 +22,6 @@ class Customer extends Model
         'lang',
         'address',
         'user_id',
-        'points_balance',
-        'max_borrowing_limit',
         'fcm_token',
     ];
 

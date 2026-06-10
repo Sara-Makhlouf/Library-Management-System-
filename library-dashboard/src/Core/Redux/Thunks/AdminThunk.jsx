@@ -1,22 +1,11 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-
-
-const getAuthConfig = () => ({
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
-    Accept: "application/json",
-  },
-});
+import axiosClient from "../../Api/aixos";
 
 export const getAllSettings = createAsyncThunk(
   "adminSettings/getAllSettings",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        `/admin/settings`,
-        getAuthConfig()
-      );
+      const response = await axiosClient.get("/settings");
 
       return response.data;
     } catch (error) {
@@ -31,10 +20,9 @@ export const updateSettings = createAsyncThunk(
   "adminSettings/updateSettings",
   async (settings, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `/admin/settings/update`,
-        { settings },
-        getAuthConfig()
+      const response = await axiosClient.post(
+        "/settings/update",
+        { settings }
       );
 
       return response.data;
@@ -50,10 +38,9 @@ export const sendGlobalNotification = createAsyncThunk(
   "adminSettings/sendGlobalNotification",
   async (payload, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `/admin/notifications/global`,
-        payload,
-        getAuthConfig()
+      const response = await axiosClient.post(
+        "/notifications/global",
+        payload
       );
 
       return response.data;

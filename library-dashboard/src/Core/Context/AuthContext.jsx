@@ -5,7 +5,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("empty"));
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
   const login = async (email, password) => {
     const { data } = await axiosClient.post("/login", {
