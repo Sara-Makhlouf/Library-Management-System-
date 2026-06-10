@@ -7,6 +7,7 @@ use App\Models\BookRequest;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 
 class BookRequestController extends Controller
@@ -162,6 +163,7 @@ class BookRequestController extends Controller
                 ['target_screen' => 'my_requests']
             );
         } catch (\Exception $e) {
+            Log::warning('Book request notification failed: ' . $e->getMessage());
         }
 
         return response()->json([

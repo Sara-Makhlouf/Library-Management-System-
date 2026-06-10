@@ -2,14 +2,14 @@ import api from "../../Api/aixos";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 export const getCategory = createAsyncThunk(
     "category/getcategory",
-  async ( thunkAPI) => {
+  async (_, thunkAPI) => {
     try{
         const response = await api.get("/categories");
         return response.data;
     }
 catch(error){
     return thunkAPI.rejectWithValue(
-        error.response.data
+        error.response?.data || error.message
     );
 }
   }  
@@ -23,7 +23,7 @@ export const createCategory = createAsyncThunk(
     }
 catch(error){
     return thunkAPI.rejectWithValue(
-        error.response.data
+        error.response?.data || error.message
     );
 }
   }  

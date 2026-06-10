@@ -10,14 +10,16 @@ export const DashboardProvider = ({ children }) => {
   const [totalRevenue, setTotalRevenue] = useState(null);
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const dashboardStatsApi = async () => {
     try {
       const { data } = await axiosClient.get("/dashboard-stats");
 
       setDashboardStats(data);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error("Dashboard stats error:", err);
+      throw err;
     }
   };
 
@@ -28,8 +30,9 @@ export const DashboardProvider = ({ children }) => {
       );
 
       setTopBorrowedBooks(data);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error("Top borrowed books error:", err);
+      throw err;
     }
   };
 
@@ -38,8 +41,9 @@ export const DashboardProvider = ({ children }) => {
       const { data } = await axiosClient.get("/waiting-list");
 
       setWaitingList(data);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error("Waiting list error:", err);
+      throw err;
     }
   };
 
@@ -50,36 +54,38 @@ export const DashboardProvider = ({ children }) => {
       );
 
       setTotalRevenue(data);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error("Total revenue error:", err);
+      throw err;
     }
   };
 
  const fetchDashboardData = async () => {
   setLoading(true);
+  setError(null);
 
   try {
     await dashboardStatsApi();
   } catch (e) {
-    console.error("dashboardStatsApi", e);
+    setError(e.response?.data?.message || e.message);
   }
 
   try {
     await topBorrowedBooksApi();
   } catch (e) {
-    console.error("topBorrowedBooksApi", e);
+    setError(e.response?.data?.message || e.message);
   }
 
   try {
     await waitingListApi();
   } catch (e) {
-    console.error("waitingListApi", e);
+    setError(e.response?.data?.message || e.message);
   }
 
   try {
     await totalRevenueApi();
   } catch (e) {
-    console.error("totalRevenueApi", e);
+    setError(e.response?.data?.message || e.message);
   }
 
   setLoading(false);
@@ -96,6 +102,7 @@ export const DashboardProvider = ({ children }) => {
         waitingList,
         totalRevenue,
         loading,
+        error,
 
         dashboardStatsApi,
         topBorrowedBooksApi,

@@ -11,6 +11,7 @@ use App\Services\TransactionService;
 use App\Services\PointsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class TransactionController extends Controller
 {
@@ -83,7 +84,7 @@ class TransactionController extends Controller
                             ['icon' => 'bag_success', 'target_screen' => 'my_library', 'book_id' => $item['book_id']]
                         );
                     } catch (\Exception $e) {
-                        // لتفادي توقف الـ Loop في حال فشل إشعار مستخدم معين
+                        Log::warning('Purchase notification failed for book ' . $item['book_id'] . ': ' . $e->getMessage());
                     }
                 }
             }
@@ -122,7 +123,7 @@ class TransactionController extends Controller
                     ['target_screen' => 'my_borrows']
                 );
             } catch (\Exception $e) {
-                // لتفادي توقف الـ Loop في حال فشل إشعار مستخدم معين
+                Log::warning('Return book notification failed: ' . $e->getMessage());
             }
         }
 
@@ -156,7 +157,7 @@ class TransactionController extends Controller
                     ['icon' => 'danger_alert', 'target_screen' => 'my_borrows', 'transaction_id' => $late->id]
                 );
             } catch (\Exception $e) {
-                // لتفادي توقف الـ Loop في حال فشل إشعار مستخدم معين
+                Log::warning('Late transaction notification failed for transaction ' . $late->id . ': ' . $e->getMessage());
             }
         }
 

@@ -9,6 +9,7 @@ use App\Models\Book;
 use App\Models\Notification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TransactionService
 {
@@ -76,6 +77,7 @@ class TransactionService
                             ]
                         );
                     } catch (\Exception $e) {
+                        Log::warning('Waiting list notification failed: ' . $e->getMessage());
                     }
                 }
             }
@@ -110,6 +112,7 @@ class TransactionService
                         ['icon' => 'account_freeze', 'target_screen' => 'my_borrows']
                     );
                 } catch (\Exception $e) {
+                    Log::warning('Account frozen notification failed: ' . $e->getMessage());
                 }
             }
 

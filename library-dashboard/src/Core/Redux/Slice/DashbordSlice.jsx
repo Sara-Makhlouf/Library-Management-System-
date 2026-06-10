@@ -34,7 +34,7 @@ export const dashboardSlice = createSlice({
       })
       .addCase(getDashboardStats.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload;
       })
 
       //Top Borrowed Books 
@@ -48,7 +48,7 @@ export const dashboardSlice = createSlice({
       })
       .addCase(getTopBorrowed.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload;
       })
 
       // Weekly Sales 
@@ -62,7 +62,7 @@ export const dashboardSlice = createSlice({
       })
       .addCase(getWeeklySales.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload;
       })
 
       //Top Selling Books 
@@ -76,7 +76,7 @@ export const dashboardSlice = createSlice({
       })
       .addCase(getTopSellingBooks.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload;
       })
 
       // Weekly Borrows 
@@ -90,7 +90,7 @@ export const dashboardSlice = createSlice({
       })
       .addCase(getWeeklyBorrows.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload;
       });
   },
 });

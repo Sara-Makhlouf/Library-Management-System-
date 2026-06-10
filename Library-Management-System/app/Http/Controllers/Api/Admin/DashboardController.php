@@ -12,6 +12,7 @@ use App\Models\Transaction;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -90,7 +91,7 @@ class DashboardController extends Controller
                 ['icon' => 'dashboard_overview', 'target_screen' => 'admin_dashboard']
             );
         } catch (\Exception $e) {
-            // تجاهل الخطأ في حال تعطل خدمة الإشعارات لكي لا يتوقف الداشبورد
+            Log::warning('Dashboard notification failed: ' . $e->getMessage());
         }
     }
 }

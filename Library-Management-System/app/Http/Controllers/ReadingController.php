@@ -8,6 +8,7 @@ use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use App\Models\Notification;
 
 class ReadingController extends Controller
@@ -42,13 +43,17 @@ class ReadingController extends Controller
             ['last_page_read' => $page]
         );
         if ($totalPages > 0 && $progress->last_page_read == $totalPages) {
-            Notification::send(
-                $customer->id,
-                'book_completed',
-                'أكملت قراءة الكتاب! 🎉',
-                "مبروك! أنهيت قراءة كتاب ({$book->title}) بالكامل.",
-                ['target_screen' => 'my_library', 'book_id' => $book->id]
-            );
+            try {
+                Notification::send(
+                    $customer->id,
+                    'book_completed',
+                    'أكملت قراءة الكتاب! 🎉',
+                    "مبروك! أنهيت قراءة كتاب ({$book->title}) بالكامل.",
+                    ['target_screen' => 'my_library', 'book_id' => $book->id]
+                );
+            } catch (\Exception $e) {
+                Log::warning('Book completion notification failed: ' . $e->getMessage());
+            }
         }
 
         return response()->json([

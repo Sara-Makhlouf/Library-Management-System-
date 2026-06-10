@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Book;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class PointsService
@@ -44,7 +45,7 @@ class PointsService
                     ]
                 );
             } catch (\Exception $e) {
-                // تجاوز الخطأ لضمان استقرار العملية المالية
+                Log::warning('Points earned notification failed: ' . $e->getMessage());
             }
 
             return $customer->points_balance;
@@ -120,6 +121,7 @@ class PointsService
                     ['icon' => 'points_minus', 'target_screen' => 'wallet']
                 );
             } catch (\Exception $e) {
+                Log::warning('Points deducted notification failed: ' . $e->getMessage());
             }
 
             return $customer->points_balance;

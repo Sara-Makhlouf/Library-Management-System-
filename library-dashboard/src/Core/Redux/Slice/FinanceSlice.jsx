@@ -3,13 +3,25 @@ import {getTotoalbillsRevenue} from '../Thunks/FinanceThunk'
 export const financeSlice = createSlice({
     name:"finance",
     initialState : {
-        totalRevenue:null,},
+        totalRevenue:null,
+        loading: false,
+        error: null,
+    },
         reducers:{},
         extraReducers: (builder) =>{
 builder
-.addCase(getTotoalbillsRevenue.pending, (state, action) => {})
-.addCase(getTotoalbillsRevenue.fulfilled, (state, action) => {})
-.addCase(getTotoalbillsRevenue.rejected, (state, action) => {})
+.addCase(getTotoalbillsRevenue.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+})
+.addCase(getTotoalbillsRevenue.fulfilled, (state, action) => {
+    state.loading = false;
+    state.totalRevenue = action.payload;
+})
+.addCase(getTotoalbillsRevenue.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+})
 
 
 

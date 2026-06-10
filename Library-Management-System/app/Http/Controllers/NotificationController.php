@@ -7,6 +7,7 @@ use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class NotificationController extends Controller
 {
@@ -76,16 +77,20 @@ class NotificationController extends Controller
         User::with('customer')->where('type', 'customer')->chunk(100, function ($users) use ($data) {
             foreach ($users as $user) {
                 if ($user->customer) {
-                    Notification::send(
-                        $user->customer->id,
-                        'global_admin_announcement',
-                        $data['title'],
-                        $data['body'],
-                        [
-                            'icon' => 'admin_alert',
-                            'target_screen' => $data['target_screen'] ?? 'home'
-                        ]
-                    );
+                    try {
+                        Notification::send(
+                            $user->customer->id,
+                            'global_admin_announcement',
+                            $data['title'],
+                            $data['body'],
+                            [
+                                'icon' => 'admin_alert',
+                                'target_screen' => $data['target_screen'] ?? 'home'
+                            ]
+                        );
+                    } catch (\Exception $e) {
+                        Log::warning('Global notification failed for customer ' . $user->customer->id . ': ' . $e->getMessage());
+                    }
                 }
             }
         });

@@ -6,19 +6,39 @@ const BillsContext = createContext();
 export const BillsProvider = ({ children }) => {
   const [bills, setBills] = useState([]);
   const [selectedBill, setSelectedBill] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const getBills = async () => {
-    const { data } = await axiosClient.get("/bills");
-    setBills(data);
+    try {
+      setLoading(true);
+      setError(null);
+      const { data } = await axiosClient.get("/bills");
+      setBills(data);
+    } catch (err) {
+      setError(err.response?.data?.message || err.message);
+      console.error("Get Bills Error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getBill = async (id) => {
-    const { data } = await axiosClient.get(`/bills/${id}`);
-    setSelectedBill(data);
+    try {
+      setLoading(true);
+      setError(null);
+      const { data } = await axiosClient.get(`/bills/${id}`);
+      setSelectedBill(data);
+    } catch (err) {
+      setError(err.response?.data?.message || err.message);
+      console.error("Get Bill Error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <BillsContext.Provider value={{ bills, selectedBill, getBills, getBill }}>
+    <BillsContext.Provider value={{ bills, selectedBill, loading, error, getBills, getBill }}>
       {children}
     </BillsContext.Provider>
   );

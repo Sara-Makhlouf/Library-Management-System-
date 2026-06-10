@@ -2,14 +2,14 @@ import api from "../../Api/aixos";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 export const fetchBills = createAsyncThunk(
     "bill/fetchbills",
-  async ( thunkAPI) => {
+  async (_, thunkAPI) => {
     try{
         const response = await api.get("/bills");
         return response.data;
     }
 catch(error){
     return thunkAPI.rejectWithValue(
-        error.response.data
+        error.response?.data || error.message
     );
 }
   }  
@@ -23,7 +23,7 @@ export const fetchBillsWithId = createAsyncThunk(
     }
 catch(error){
     return thunkAPI.rejectWithValue(
-        error.response.data
+        error.response?.data || error.message
     );
 }
   }  
@@ -37,7 +37,7 @@ export const fetchBillDelivery = createAsyncThunk(
     }
 catch(error){
     return thunkAPI.rejectWithValue(
-        error.response.data
+        error.response?.data || error.message
     );
 }
   }  

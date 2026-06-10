@@ -68,7 +68,7 @@ class AuthController extends Controller
                 try {
                     $this->pointsService->addPoints($customer->id, 50, 'earn', 'هدية ترحيبية بمناسبة الانضمام للتطبيق 🎉');
                 } catch (\Exception $e) {
-                    // تجاوز الخطأ لضمان استقرار التسجيل
+                    Log::warning('Welcome points failed: ' . $e->getMessage());
                 }
             }
 
@@ -137,6 +137,7 @@ class AuthController extends Controller
                 $this->pointsService->earnPointsForLogin($user->customer->id);
                 $customer->refresh();
             } catch (\Exception $e) {
+                Log::warning('Login points failed: ' . $e->getMessage());
             }
         }
 

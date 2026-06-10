@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class CustomerController extends Controller
@@ -90,6 +91,7 @@ class CustomerController extends Controller
                     ['icon' => 'user_edit_success', 'target_screen' => 'profile_settings']
                 );
             } catch (\Exception $e) {
+                Log::warning('Profile update notification failed: ' . $e->getMessage());
             }
 
             return response()->json([

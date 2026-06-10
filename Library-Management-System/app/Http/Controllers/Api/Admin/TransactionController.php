@@ -9,6 +9,7 @@ use App\Models\Bill;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class TransactionController extends Controller
@@ -62,6 +63,7 @@ class TransactionController extends Controller
                 );
             }
         } catch (\Exception $e) {
+            Log::warning('Top borrowed books notification failed: ' . $e->getMessage());
         }
 
         return response()->json([
@@ -125,6 +127,7 @@ class TransactionController extends Controller
                 );
             }
         } catch (\Exception $e) {
+            Log::warning('Borrows count notification failed: ' . $e->getMessage());
         }
 
         return response()->json([

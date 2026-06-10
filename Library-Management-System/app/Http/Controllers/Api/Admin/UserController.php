@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -71,6 +72,7 @@ class UserController extends Controller
                 ]
             );
         } catch (\Exception $e) {
+            Log::warning('User deletion notification failed: ' . $e->getMessage());
         }
 
         return response()->json([
@@ -117,6 +119,7 @@ class UserController extends Controller
                 ]
             );
         } catch (\Exception $e) {
+            Log::warning('User report notification failed: ' . $e->getMessage());
         }
 
         return response()->json([

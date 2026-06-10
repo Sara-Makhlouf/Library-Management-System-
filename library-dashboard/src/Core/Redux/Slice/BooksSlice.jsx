@@ -7,36 +7,88 @@ const bookSlice = createSlice({
     name:"book",
 initialState:{
 books: [],
+selectedBook: null,
 error: null,
 loading:false,
 
 },
     extraReducers : (builder) => {
         builder 
-    .addCase(fetchBooks.pending, (state) => {})
-    .addCase(fetchBooks.fulfilled, (state, action) => {})
-    .addCase(fetchBooks.rejected, (state, action) => {})
+    .addCase(fetchBooks.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+    })
+    .addCase(fetchBooks.fulfilled, (state, action) => {
+        state.loading = false;
+        state.books = action.payload;
+    })
+    .addCase(fetchBooks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+    })
     
 
-    .addCase(createBooks.pending, (state) => {})
-    .addCase(createBooks.fulfilled, (state, action) => {})
-    .addCase(createBooks.rejected, (state, action) => {})    
+    .addCase(createBooks.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+    })
+    .addCase(createBooks.fulfilled, (state, action) => {
+        state.loading = false;
+    })
+    .addCase(createBooks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+    })    
 
-    .addCase(deletBooks.pending, (state) => {})
-    .addCase(deletBooks.fulfilled, (state, action) => {})
-    .addCase(deletBooks.rejected, (state, action) => {})    
+    .addCase(deletBooks.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+    })
+    .addCase(deletBooks.fulfilled, (state, action) => {
+        state.loading = false;
+    })
+    .addCase(deletBooks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+    })    
 
-    .addCase(updateBooks.pending, (state) => {})
-    .addCase(updateBooks.fulfilled, (state, action) => {})
-    .addCase(updateBooks.rejected, (state, action) => {})    
+    .addCase(updateBooks.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+    })
+    .addCase(updateBooks.fulfilled, (state, action) => {
+        state.loading = false;
+    })
+    .addCase(updateBooks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+    })    
 
-    .addCase(getBook.pending, (state, action) => {})
-    .addCase(getBook.fulfilled, (state, action) => {})
-    .addCase(getBook.rejected, (state, action) => {})    
+    .addCase(getBook.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+    })
+    .addCase(getBook.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedBook = action.payload;
+    })
+    .addCase(getBook.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+    })    
  
-    .addCase(getBooksWithDetails.pending, (state) => {})
-    .addCase(getBooksWithDetails.fulfilled, (state, action) => {})
-    .addCase(getBooksWithDetails.rejected, (state, action) => {})
+    .addCase(getBooksWithDetails.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+    })
+    .addCase(getBooksWithDetails.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedBook = action.payload;
+    })
+    .addCase(getBooksWithDetails.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+    })
     }});
 
 export default bookSlice.reducer;

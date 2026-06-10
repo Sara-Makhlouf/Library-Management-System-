@@ -11,6 +11,7 @@ use App\Models\Notification;
 use App\Services\PointsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 
 class CartController extends Controller
@@ -174,7 +175,7 @@ class CartController extends Controller
                     ['icon' => 'shopping_bag', 'target_screen' => 'order_details']
                 );
             } catch (\Exception $e) {
-                // تخطي خطأ سيرفر الإشعارات
+                Log::warning('Checkout notification failed: ' . $e->getMessage());
             }
 
             return response()->json([

@@ -7,14 +7,17 @@ export const UsersProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // GET ALL USERS
   const getUsers = async () => {
     try {
       setLoading(true);
+      setError(null);
       const { data } = await axiosClient.get("/users");
       setUsers(data);
     } catch (err) {
+      setError(err.response?.data?.message || err.message);
       console.error(err);
     } finally {
       setLoading(false);
@@ -25,9 +28,11 @@ export const UsersProvider = ({ children }) => {
   const getUser = async (id) => {
     try {
       setLoading(true);
+      setError(null);
       const { data } = await axiosClient.get(`/users/${id}`);
       setSelectedUser(data);
     } catch (err) {
+      setError(err.response?.data?.message || err.message);
       console.error(err);
     } finally {
       setLoading(false);
@@ -40,6 +45,7 @@ export const UsersProvider = ({ children }) => {
         users,
         selectedUser,
         loading,
+        error,
         getUsers,
         getUser,
       }}

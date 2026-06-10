@@ -8,6 +8,7 @@ use App\Models\WaitingList;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class WaitingListController extends Controller
 {
@@ -62,7 +63,7 @@ class WaitingListController extends Controller
                 ]
             );
         } catch (\Exception $e) {
-            // تخطي أي مشكلة في سيرفر الإشعارات لضمان نجاح الحذف
+            Log::warning('Waiting list removal notification failed: ' . $e->getMessage());
         }
 
         return response()->json([
@@ -97,6 +98,7 @@ class WaitingListController extends Controller
                 ]
             );
         } catch (\Exception $e) {
+            Log::warning('Top waiting books notification failed: ' . $e->getMessage());
         }
 
         return response()->json([
