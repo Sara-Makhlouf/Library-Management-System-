@@ -8,4 +8,11 @@ const axiosClient = axios.create({
   },
 });
 
+export const getAuthConfig = () => ({
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
+    Accept: "application/json",
+  },
+});
+
 export default axiosClient;

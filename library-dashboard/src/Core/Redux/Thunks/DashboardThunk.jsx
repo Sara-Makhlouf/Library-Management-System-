@@ -1,76 +1,42 @@
 import api from "../../Api/aixos";
-import { createAsyncThunk } from "@reduxjs/toolkit";
+import { createApiThunk } from "../utils/reduxHelpers";
 
-export const getDashboardStats = createAsyncThunk(
+export const getDashboardStats = createApiThunk(
   "dashboard/getDashboardStats",
-  async (thunkAPI) => {
-    try {
-      const response = await api.get(`/dashboard-stats`);
-      return response.data;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data || error.message
-      );
-    }
+  async () => {
+    const response = await api.get(`/dashboard-stats`);
+    return response.data;
   }
 );
 
-export const getTopBorrowed = createAsyncThunk(
+export const getTopBorrowed = createApiThunk(
   "dashboard/getTopBorrowed",
-  async (thunkAPI) => {
-    try {
-      const response = await api.post("/transactions/top-borrowed");
-      return response.data;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data || error.message
-      );
-    }
+  async () => {
+    const response = await api.post("/transactions/top-borrowed");
+    return response.data;
   }
 );
 
-
-export const getWeeklySales = createAsyncThunk(
+export const getWeeklySales = createApiThunk(
   "dashboard/getWeeklySales",
-  async ( thunkAPI) => {
-    try {
-      const response = await api.post("/statistics/weekly-sales");
-      return response.data;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data || error.message
-      );
-    }
+  async () => {
+    const response = await api.post("/statistics/weekly-sales");
+    return response.data;
   }
 );
 
-
-
-export const getTopSellingBooks = createAsyncThunk(
+export const getTopSellingBooks = createApiThunk(
   "dashboard/getTopSellingBooks",
-  async ( thunkAPI) => {
-    try {
-      const response = await api.post("/statistics/top-selling-books");
-      return response.data;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data || error.message
-      );
-    }
+  async () => {
+    const response = await api.post("/statistics/top-selling-books");
+    return response.data;
   }
 );
 
-
-export const getWeeklyBorrows = createAsyncThunk(
+export const getWeeklyBorrows = createApiThunk(
   "dashboard/getWeeklyBorrows",
-  async ( thunkAPI) => {
-    try {
-      const response = await api.post("/statistics/weekly-borrows");
-      return response.data;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data || error.message
-      );
-    }
+  async () => {
+    const response = await api.post("/statistics/weekly-borrows");
+    return response.data;
   }
 );

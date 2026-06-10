@@ -3,25 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Traits\ApiResponse;
+use App\Traits\ResolvesCustomer;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class FavoriteController extends Controller
 {
-    // عرض قائمة الكتب المفضلة للزبون الحالي
-    public function index()
+    use ApiResponse, ResolvesCustomer;
+
+    public function index(): JsonResponse
     {
         $customer = Auth::user()->customer;
         $favorites = $customer->favorites()->with('category')->get();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $favorites
-        ]);
+        return $this->successResponse($favorites);
     }
 
-    // إضافة أو حذف كتاب من المفضلة
-    public function toggle(Request $request)
+    public function toggle(Request $request): JsonResponse
     {
         $request->validate(['book_id' => 'required|exists:books,id']);
 
@@ -31,10 +31,9 @@ class FavoriteController extends Controller
 
         $status = count($result['attached']) > 0 ? 'added' : 'removed';
 
-        return response()->json([
-            'status' => 'success',
-            'message' => $status == 'added' ? 'تمت الإضافة للمفضلة' : 'تم الحذف من المفضلة',
-            'action' => $status
-        ]);
+        return $this->successResponse(
+            ['action' => $status],
+            $status == 'added' ? 'تمت الإضافة للمفضلة' : 'تم الحذف من المفضلة'
+        );
     }
 }

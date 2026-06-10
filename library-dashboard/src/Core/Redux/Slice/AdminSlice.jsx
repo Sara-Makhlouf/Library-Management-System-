@@ -4,6 +4,7 @@ import {
   updateSettings,
   sendGlobalNotification,
 } from "../Thunks/AdminThunk";
+import { addAsyncCases } from "../utils/reduxHelpers";
 
 const initialState = {
   settings: [],
@@ -28,48 +29,23 @@ const adminSettingsSlice = createSlice({
   },
 
   extraReducers: (builder) => {
-    builder
+    addAsyncCases(builder, getAllSettings, { dataKey: "settings" });
 
-      .addCase(getAllSettings.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getAllSettings.fulfilled, (state, action) => {
-        state.loading = false;
-        state.settings = action.payload.data || action.payload;
-      })
-      .addCase(getAllSettings.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      .addCase(updateSettings.pending, (state) => {
-        state.updateLoading = true;
-        state.error = null;
-      })
-      .addCase(updateSettings.fulfilled, (state, action) => {
-        state.updateLoading = false;
+    addAsyncCases(builder, updateSettings, {
+      loadingKey: "updateLoading",
+      onFulfilled: (state, action) => {
         state.successMessage =
           action.payload.message || "Settings updated successfully";
-      })
-      .addCase(updateSettings.rejected, (state, action) => {
-        state.updateLoading = false;
-        state.error = action.payload;
-      })
+      },
+    });
 
-      .addCase(sendGlobalNotification.pending, (state) => {
-        state.notificationLoading = true;
-        state.error = null;
-      })
-      .addCase(sendGlobalNotification.fulfilled, (state, action) => {
-        state.notificationLoading = false;
+    addAsyncCases(builder, sendGlobalNotification, {
+      loadingKey: "notificationLoading",
+      onFulfilled: (state, action) => {
         state.successMessage =
           action.payload.message || "Notification sent successfully";
-      })
-      .addCase(sendGlobalNotification.rejected, (state, action) => {
-        state.notificationLoading = false;
-        state.error = action.payload;
-      });
+      },
+    });
   },
 });
 

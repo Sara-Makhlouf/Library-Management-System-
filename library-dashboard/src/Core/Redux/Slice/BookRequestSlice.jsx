@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { updateBookRequestStatus } from "../Thunks/BookRequestThunk";
+import { addAsyncCases } from "../utils/reduxHelpers";
 
 const initialState = {
   loading: false,
@@ -21,32 +22,13 @@ const adminBookRequestsSlice = createSlice({
   },
 
   extraReducers: (builder) => {
-    builder
-
-      .addCase(updateBookRequestStatus.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-
-      .addCase(
-        updateBookRequestStatus.fulfilled,
-        (state, action) => {
-          state.loading = false;
-          state.updatedRequest = action.payload;
-
-          state.successMessage =
-            action.payload?.message ||
-            "Book request updated successfully";
-        }
-      )
-
-      .addCase(
-        updateBookRequestStatus.rejected,
-        (state, action) => {
-          state.loading = false;
-          state.error = action.payload;
-        }
-      );
+    addAsyncCases(builder, updateBookRequestStatus, {
+      onFulfilled: (state, action) => {
+        state.updatedRequest = action.payload;
+        state.successMessage =
+          action.payload?.message || "Book request updated successfully";
+      },
+    });
   },
 });
 

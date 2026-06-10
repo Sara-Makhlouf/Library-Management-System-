@@ -9,12 +9,15 @@ use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Bill;
 use App\Models\Transaction;
-use App\Models\Notification;
+use App\Traits\ApiResponse;
+use App\Traits\NotifiesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class DashboardController extends Controller
 {
+    use ApiResponse, NotifiesUsers;
+
     public function index(Request $request): JsonResponse
     {
         $activeThreshold = 25;
@@ -64,33 +67,19 @@ class DashboardController extends Controller
                 'authors'      => $book->authors->pluck('name')
             ]);
 
-        // 🔔 إرسال إشعار الدخول للوحة التحكم بشكل آمن
-        $this->sendDashboardNotification($request->user()->id, $stats);
+        $this->notifySafe(
+            $request->user()->id,
+            'dashboard_viewed',
+            'استعراض لوحة التحكم 📊',
+            "تم استعراض إحصائيات النظام. المجموع الحالي للكتب: ({$stats['total_books']}) والإيرادات الإجمالية: (" . number_format($stats['total_revenue'], 2) . " ل.س).",
+            ['icon' => 'dashboard_overview', 'target_screen' => 'admin_dashboard']
+        );
 
-        return response()->json([
-            'status' => 'success',
-            'data'   => [
-                'counts'             => $stats,
-                'books_per_category' => $booksPerCategory,
-                'recent_users'       => $recentUsers,
-                'latest_books'       => $latestBooks,
-            ]
+        return $this->successResponse([
+            'counts'             => $stats,
+            'books_per_category' => $booksPerCategory,
+            'recent_users'       => $recentUsers,
+            'latest_books'       => $latestBooks,
         ]);
-    }
-
-
-    private function sendDashboardNotification(int $userId, array $stats): void
-    {
-        try {
-            Notification::send(
-                $userId,
-                'dashboard_viewed',
-                'استعراض لوحة التحكم 📊',
-                "تم استعراض إحصائيات النظام. المجموع الحالي للكتب: ({$stats['total_books']}) والإيرادات الإجمالية: (" . number_format($stats['total_revenue'], 2) . " ل.س).",
-                ['icon' => 'dashboard_overview', 'target_screen' => 'admin_dashboard']
-            );
-        } catch (\Exception $e) {
-            // تجاهل الخطأ في حال تعطل خدمة الإشعارات لكي لا يتوقف الداشبورد
-        }
     }
 }

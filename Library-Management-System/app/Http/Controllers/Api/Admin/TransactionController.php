@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Transaction;
-use App\Models\Notification;
 use App\Models\Bill;
+use App\Traits\ApiResponse;
+use App\Traits\NotifiesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -13,9 +14,8 @@ use Carbon\Carbon;
 
 class TransactionController extends Controller
 {
-    /**
-     * 1. عرض كل العمليات مع فلترة حسب الحالة (مع جلب بيانات المستخدم والعميل والكتاب المتوفى منطقياً)
-     */
+    use ApiResponse, NotifiesUsers;
+
     public function index(Request $request): JsonResponse
     {
         $transactions = Transaction::with([
@@ -30,15 +30,9 @@ class TransactionController extends Controller
             ->latest()
             ->paginate(15);
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $transactions
-        ]);
+        return $this->successResponse($transactions);
     }
 
-    /**
-     * 2. تقرير: الكتب الخمسة الأكثر استعارة (تاريخياً)
-     */
     public function topBorrowedBooks(Request $request): JsonResponse
     {
         $report = Transaction::whereIn('status', ['received', 'returned', 'expired', 'damaged'])
@@ -51,28 +45,19 @@ class TransactionController extends Controller
             ->take(5)
             ->get();
 
-        try {
-            if ($request->user()) {
-                Notification::send(
-                    $request->user()->id,
-                    'report_top_borrowed',
-                    'تقرير الكتب الأكثر استعارة 📚📊',
-                    "تم استخراج تقرير يوضح الكتب الخمسة الأكثر طلباً في النظام.",
-                    ['icon' => 'trending_up', 'target_screen' => 'reports_dashboard']
-                );
-            }
-        } catch (\Exception $e) {
+        if ($request->user()) {
+            $this->notifySafe(
+                $request->user()->id,
+                'report_top_borrowed',
+                'تقرير الكتب الأكثر استعارة 📚📊',
+                "تم استخراج تقرير يوضح الكتب الخمسة الأكثر طلباً في النظام.",
+                ['icon' => 'trending_up', 'target_screen' => 'reports_dashboard']
+            );
         }
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $report
-        ]);
+        return $this->successResponse($report);
     }
 
-    /**
-     * 3. إحصائيات عامة مقسمة ومفلترة للحالات الثلاث الأساسية
-     */
     public function getTotalBorrowsCount(Request $request): JsonResponse
     {
         $allTransactions = Transaction::with(['book', 'user'])->latest()->get();
@@ -113,29 +98,19 @@ class TransactionController extends Controller
             ],
         ];
 
-        // 5. إرسال الإشعار
-        try {
-            if ($request->user()) {
-                Notification::send(
-                    $request->user()->id,
-                    'report_borrows_count',
-                    'إحصائيات الاستعارات النظيفة 🔄',
-                    "تم جلب البيانات وتنسيقها بنجاح.",
-                    ['icon' => 'analytics_borrows', 'target_screen' => 'reports_dashboard']
-                );
-            }
-        } catch (\Exception $e) {
+        if ($request->user()) {
+            $this->notifySafe(
+                $request->user()->id,
+                'report_borrows_count',
+                'إحصائيات الاستعارات النظيفة 🔄',
+                "تم جلب البيانات وتنسيقها بنجاح.",
+                ['icon' => 'analytics_borrows', 'target_screen' => 'reports_dashboard']
+            );
         }
 
-        return response()->json([
-            'status' => 'success',
-            'data'   => $stats
-        ]);
+        return $this->successResponse($stats);
     }
 
-    /**
-     * 4. تقرير المبيعات الأسبوعي (عدد الفواتير المدفوعة)
-     */
     public function getWeeklySalesCount(Request $request): JsonResponse
     {
         $startOfWeek = Carbon::now()->startOfWeek();
@@ -160,9 +135,6 @@ class TransactionController extends Controller
         ]);
     }
 
-    /**
-     * 5. تقرير الاستعارات الأسبوعي
-     */
     public function getWeeklyBorrowsCount(Request $request): JsonResponse
     {
         $startOfWeek = Carbon::now()->startOfWeek();

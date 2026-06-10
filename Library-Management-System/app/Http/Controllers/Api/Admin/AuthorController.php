@@ -4,16 +4,15 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Author;
-use App\Models\Notification;
+use App\Traits\ApiResponse;
+use App\Traits\NotifiesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 
 class AuthorController extends Controller
 {
-    /**
-     * عرض قائمة المؤلفين مع عدد كتبهم والبحث
-     */
+    use ApiResponse, NotifiesUsers;
+
     public function index(Request $request): JsonResponse
     {
         $authors = Author::select('id', 'name', 'birth_date', 'country')
@@ -24,15 +23,9 @@ class AuthorController extends Controller
             })
             ->get();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $authors
-        ]);
+        return $this->successResponse($authors);
     }
 
-    /**
-     * إضافة مؤلف جديد
-     */
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -43,46 +36,26 @@ class AuthorController extends Controller
 
         $author = Author::create($validated);
 
-        try {
-            Notification::send(
-                $request->user()->id,
-                'author_added',
-                'إضافة مؤلف جديد ✍️',
-                "تم إضافة المؤلف ({$author->name}) بنجاح إلى قاعدة البيانات.",
-                [
-                    'icon' => 'author_success',
-                    'target_screen' => 'authors_list',
-                    'author_id' => $author->id
-                ]
-            );
-        } catch (\Exception $e) {
-        }
+        $this->notifySafe(
+            $request->user()->id,
+            'author_added',
+            'إضافة مؤلف جديد ✍️',
+            "تم إضافة المؤلف ({$author->name}) بنجاح إلى قاعدة البيانات.",
+            ['icon' => 'author_success', 'target_screen' => 'authors_list', 'author_id' => $author->id]
+        );
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم إضافة المؤلف بنجاح',
-            'data' => $author
-        ], 201);
+        return $this->successResponse($author, 'تم إضافة المؤلف بنجاح', 201);
     }
 
-    /**
-     * عرض تفاصيل مؤلف مع قائمة كتبه
-     */
     public function show($id): JsonResponse
     {
         $author = Author::with(['books' => function ($q) {
             $q->withTrashed()->select('books.id', 'title', 'price', 'sale_price');
         }])->findOrFail($id);
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $author
-        ]);
+        return $this->successResponse($author);
     }
 
-    /**
-     * تحديث بيانات مؤلف
-     */
     public function update(Request $request, $id): JsonResponse
     {
         $author = Author::findOrFail($id);
@@ -95,32 +68,19 @@ class AuthorController extends Controller
 
         $author->update($validated);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم تحديث بيانات المؤلف بنجاح',
-            'data' => $author
-        ]);
+        return $this->successResponse($author, 'تم تحديث بيانات المؤلف بنجاح');
     }
 
-    /**
-     * حذف مؤلف
-     */
     public function destroy($id): JsonResponse
     {
         $author = Author::findOrFail($id);
 
         if ($author->books()->withTrashed()->exists()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'لا يمكن حذف هذا المؤلف لوجود كتب مرتبطة به في النظام.'
-            ], 422);
+            return $this->errorResponse('لا يمكن حذف هذا المؤلف لوجود كتب مرتبطة به في النظام.', 422);
         }
 
         $author->delete();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم حذف المؤلف بنجاح'
-        ]);
+        return $this->successResponse(message: 'تم حذف المؤلف بنجاح');
     }
 }

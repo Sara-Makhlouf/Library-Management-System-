@@ -5,35 +5,31 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\UserReadingProgress;
 use App\Models\Book;
+use App\Traits\ApiResponse;
+use App\Traits\NotifiesUsers;
+use App\Traits\ResolvesCustomer;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Notification;
 
 class ReadingController extends Controller
 {
+    use ApiResponse, NotifiesUsers, ResolvesCustomer;
 
-    /**
-     * تحديث تقدم القراءة لكتاب معين
-     */
-
-    public function updateProgress(Request $request)
+    public function updateProgress(Request $request): JsonResponse
     {
         $request->validate([
             'book_id'      => 'required|exists:books,id',
             'current_page' => 'required|integer|min:1',
         ]);
 
-        $user = Auth::user();
-        $customer = $user->customer;
-
-        if (!$customer) {
-            return response()->json(['status' => 'error', 'message' => 'بيانات العميل غير مكتملة'], 403);
-        }
+        $customer = $this->resolveCustomer();
+        if ($customer instanceof JsonResponse) return $customer;
 
         $book = Book::findOrFail($request->book_id);
 
-        $totalPages = $book->total_pages  ?? 0;
+        $totalPages = $book->total_pages ?? 0;
 
         $page = ($request->current_page > $totalPages && $totalPages > 0) ? $totalPages : $request->current_page;
 
@@ -41,8 +37,9 @@ class ReadingController extends Controller
             ['customer_id' => $customer->id, 'book_id' => $request->book_id],
             ['last_page_read' => $page]
         );
+
         if ($totalPages > 0 && $progress->last_page_read == $totalPages) {
-            Notification::send(
+            $this->notifySafe(
                 $customer->id,
                 'book_completed',
                 'أكملت قراءة الكتاب! 🎉',
@@ -51,27 +48,17 @@ class ReadingController extends Controller
             );
         }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم تحديث تقدم القراءة بنجاح',
-            'data' => [
-                'current_page' => $progress->last_page_read,
-                'total_pages'  => $totalPages,
-                'is_completed' => ($totalPages > 0) ? ($progress->last_page_read == $totalPages) : false,
-            ]
-        ]);
+        return $this->successResponse([
+            'current_page' => $progress->last_page_read,
+            'total_pages'  => $totalPages,
+            'is_completed' => ($totalPages > 0) ? ($progress->last_page_read == $totalPages) : false,
+        ], 'تم تحديث تقدم القراءة بنجاح');
     }
-    /**
-     * جلب قائمة الكتب التي يقرأها المستخدم حالياً (التي لم تنتهِ)
-     */
-    public function currentReading(Request $request)
-    {
-        $user = Auth::user();
-        $customer = $user->customer;
 
-        if (!$customer) {
-            return response()->json(['status' => 'error', 'message' => 'بيانات العميل غير موجودة'], 403);
-        }
+    public function currentReading(Request $request): JsonResponse
+    {
+        $customer = $this->resolveCustomer();
+        if ($customer instanceof JsonResponse) return $customer;
 
         $readingList = UserReadingProgress::where('customer_id', $customer->id)
             ->with(['book' => function ($q) {
@@ -81,9 +68,6 @@ class ReadingController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $readingList
-        ]);
+        return $this->successResponse($readingList);
     }
 }

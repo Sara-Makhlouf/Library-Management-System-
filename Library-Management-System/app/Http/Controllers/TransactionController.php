@@ -3,17 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Notification;
 use App\Models\Transaction;
 use App\Models\Book;
 use App\Models\Customer;
 use App\Services\TransactionService;
 use App\Services\PointsService;
+use App\Traits\ApiResponse;
+use App\Traits\NotifiesUsers;
+use App\Traits\ResolvesCustomer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class TransactionController extends Controller
 {
+    use ApiResponse, NotifiesUsers, ResolvesCustomer;
+
     protected $transactionService;
     protected $pointsService;
 
@@ -23,10 +27,6 @@ class TransactionController extends Controller
         $this->pointsService = $pointsService;
     }
 
-    /**
-     * 1. إنشاء حركة بيع أو استعارة
-     *
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -66,7 +66,7 @@ class TransactionController extends Controller
 
         foreach ($results as $result) {
             if (isset($result['error'])) {
-                return response()->json(['message' => $result['error']], 400);
+                return $this->errorResponse($result['error'], 400);
             }
         }
 
@@ -74,71 +74,48 @@ class TransactionController extends Controller
             if ($item['action_type'] === 'buy') {
                 $book = Book::find($item['book_id']);
                 if ($book) {
-                    try {
-                        Notification::send(
-                            $user->id,
-                            'purchase_success',
-                            'مبارك شراء الكتاب! 🛍️',
-                            "تمت عملية شراء كتاب ({$book->title}) بنجاح.",
-                            ['icon' => 'bag_success', 'target_screen' => 'my_library', 'book_id' => $item['book_id']]
-                        );
-                    } catch (\Exception $e) {
-                        // لتفادي توقف الـ Loop في حال فشل إشعار مستخدم معين
-                    }
+                    $this->notifySafe(
+                        $user->id,
+                        'purchase_success',
+                        'مبارك شراء الكتاب! 🛍️',
+                        "تمت عملية شراء كتاب ({$book->title}) بنجاح.",
+                        ['icon' => 'bag_success', 'target_screen' => 'my_library', 'book_id' => $item['book_id']]
+                    );
                 }
             }
         }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تمت العمليات بنجاح',
-            'data' => $results
-        ]);
+        return $this->successResponse($results, 'تمت العمليات بنجاح');
     }
 
-    /**
-     * 2. إرجاع كتاب مستعار (مع معالجة الأضرار أو التأخير)
-     */
     public function returnBook(Request $request, $id)
     {
         $transaction = Transaction::with('book')->findOrFail($id);
 
         if ($transaction->status === 'returned') {
-            return response()->json(['message' => 'هذا الكتاب تم إرجاعه مسبقاً'], 400);
+            return $this->errorResponse('هذا الكتاب تم إرجاعه مسبقاً', 400);
         }
 
         $isDamaged = $request->input('is_damaged', false);
         $updatedTransaction = $this->transactionService->processReturn($transaction, $isDamaged);
 
         if (isset($updatedTransaction->next_user_id)) {
-            try {
-                // بعد processReturn
-                Notification::send(
-                    $transaction->user->customer->id,
-                    'book_returned',
-                    'تم استلام الكتاب ✅',
-                    "تم تسجيل إرجاع كتاب ({$transaction->book->title}) بنجاح." .
-                        ($updatedTransaction->extra_price > 0 ? " غرامة التأخير: {$updatedTransaction->extra_price} ل.س" : ''),
-                    ['target_screen' => 'my_borrows']
-                );
-            } catch (\Exception $e) {
-                // لتفادي توقف الـ Loop في حال فشل إشعار مستخدم معين
-            }
+            $this->notifySafe(
+                $transaction->user->customer->id,
+                'book_returned',
+                'تم استلام الكتاب ✅',
+                "تم تسجيل إرجاع كتاب ({$transaction->book->title}) بنجاح." .
+                    ($updatedTransaction->extra_price > 0 ? " غرامة التأخير: {$updatedTransaction->extra_price} ل.س" : ''),
+                ['target_screen' => 'my_borrows']
+            );
         }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم إرجاع الكتاب بنجاح',
-            'data' => [
-                'fine_amount' => $updatedTransaction->extra_price,
-                'status' => $updatedTransaction->status
-            ]
-        ]);
+        return $this->successResponse([
+            'fine_amount' => $updatedTransaction->extra_price,
+            'status' => $updatedTransaction->status
+        ], 'تم إرجاع الكتاب بنجاح');
     }
 
-    /**
-     * 3. فحص وجلب الكتب المتأخرة وإرسال تنبيهات تلقائية للمستعجلين
-     */
     public function getLateTransactions()
     {
         $lateTransactions = Transaction::where('status', 'received')
@@ -147,37 +124,22 @@ class TransactionController extends Controller
             ->get();
 
         foreach ($lateTransactions as $late) {
-            try {
-                Notification::send(
-                    $late->user->customer->id,
-                    'overdue_return',
-                    'تنبيه: تأخرت في إعادة الكتاب! ⚠️',
-                    "لقد تجاوزت المدة المسموحة لإعادة كتاب ({$late->book->title}). يرجى إعادته للمكتبة فوراً لتجنب الغرامات.",
-                    ['icon' => 'danger_alert', 'target_screen' => 'my_borrows', 'transaction_id' => $late->id]
-                );
-            } catch (\Exception $e) {
-                // لتفادي توقف الـ Loop في حال فشل إشعار مستخدم معين
-            }
+            $this->notifySafe(
+                $late->user->customer->id,
+                'overdue_return',
+                'تنبيه: تأخرت في إعادة الكتاب! ⚠️',
+                "لقد تجاوزت المدة المسموحة لإعادة كتاب ({$late->book->title}). يرجى إعادته للمكتبة فوراً لتجنب الغرامات.",
+                ['icon' => 'danger_alert', 'target_screen' => 'my_borrows', 'transaction_id' => $late->id]
+            );
         }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم فحص وإرسال التنبيهات بنجاح',
-            'count' => $lateTransactions->count(),
-            'data' => $lateTransactions
-        ]);
+        return $this->successResponse($lateTransactions, 'تم فحص وإرسال التنبيهات بنجاح');
     }
 
-    /**
-     * 4. جلب سجل العمليات للزبون الحالي
-     */
     public function userHistory()
     {
-        $customer = Auth::user()->customer;
-
-        if (!$customer) {
-            return response()->json(['message' => 'الزبون غير موجود'], 404);
-        }
+        $customer = $this->resolveCustomer();
+        if ($customer instanceof \Illuminate\Http\JsonResponse) return $customer;
 
         $transactions = Transaction::whereHas('bill', function ($q) use ($customer) {
             $q->where('customer_id', $customer->id);

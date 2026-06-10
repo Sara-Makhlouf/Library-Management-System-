@@ -5,15 +5,15 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\User;
-use App\Models\Notification;
+use App\Traits\ApiResponse;
+use App\Traits\NotifiesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class UserController extends Controller
 {
-    /**
-     * عرض قائمة العملاء مع البحث والفلترة
-     */
+    use ApiResponse, NotifiesUsers;
+
     public function index(Request $request): JsonResponse
     {
         $users = User::has('customer')
@@ -28,30 +28,18 @@ class UserController extends Controller
             ->latest()
             ->paginate(10);
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $users
-        ]);
+        return $this->successResponse($users);
     }
 
-    /**
-     * عرض تفاصيل حساب مستخدم واحد
-     */
     public function show($id): JsonResponse
     {
         $user = User::with(['customer' => function ($q) {
             $q->withCount(['bills', 'transactions']);
         }])->findOrFail($id);
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $user
-        ]);
+        return $this->successResponse($user);
     }
 
-    /**
-     * حذف حساب مستخدم (إدارة الأدمن)
-     */
     public function destroy(Request $request, $id): JsonResponse
     {
         $user = User::with('customer')->findOrFail($id);
@@ -59,35 +47,23 @@ class UserController extends Controller
 
         $user->delete();
 
-        try {
-            Notification::send(
-                $request->user()->id,
-                'user_deleted',
-                'حذف حساب مستخدم ⚠️',
-                "تم حذف حساب المستخدم ({$customerName}) وجميع بياناته بنجاح.",
-                [
-                    'icon' => 'user_delete',
-                    'target_screen' => 'users_dashboard'
-                ]
-            );
-        } catch (\Exception $e) {
-        }
+        $this->notifySafe(
+            $request->user()->id,
+            'user_deleted',
+            'حذف حساب مستخدم ⚠️',
+            "تم حذف حساب المستخدم ({$customerName}) وجميع بياناته بنجاح.",
+            ['icon' => 'user_delete', 'target_screen' => 'users_dashboard']
+        );
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم حذف المستخدم بنجاح'
-        ]);
+        return $this->successResponse(message: 'تم حذف المستخدم بنجاح');
     }
 
-    /**
-     * التقرير المالي والنشاط التفصيلي للعميل
-     */
     public function getFullUserDetails(Request $request, $id)
     {
         $customer = Customer::find($id);
 
         if (!$customer) {
-            return response()->json(['status' => 'error', 'message' => 'الزبون غير موجود'], 404);
+            return $this->errorResponse('الزبون غير موجود', 404);
         }
 
         $borrowedBooksCount = $customer->transactions()
@@ -104,55 +80,39 @@ class UserController extends Controller
             ->where('status', 'paid')
             ->sum('total_price');
 
-        try {
-            Notification::send(
-                $request->user()->id,
-                'user_report_viewed',
-                'استعراض ملف العميل المالي 👤',
-                "تم جلب التقرير المالي الشامل للعميل ({$customer->name}).",
-                [
-                    'icon' => 'user_analytics',
-                    'target_screen' => 'user_details',
-                    'customer_id' => $customer->id
-                ]
-            );
-        } catch (\Exception $e) {
-        }
+        $this->notifySafe(
+            $request->user()->id,
+            'user_report_viewed',
+            'استعراض ملف العميل المالي 👤',
+            "تم جلب التقرير المالي الشامل للعميل ({$customer->name}).",
+            ['icon' => 'user_analytics', 'target_screen' => 'user_details', 'customer_id' => $customer->id]
+        );
 
-        return response()->json([
-            'status' => 'success',
-            'data' => [
-                'profile' => [
-                    'name' => $customer->name,
-                    'phone' => $customer->phone,
-                    'points' => $customer->points_balance,
-                    'member_type' => $customer->points_balance >= 50 ? 'عميل ذهبي' : 'عميل عادي',
-                ],
-                'financial_summary' => [
-                    'borrowed_count'     => $borrowedBooksCount,
-                    'purchased_count'    => (int)$purchasedBooksCount,
-                    'total_fines_paid'   => number_format($totalExtraFines, 0) . ' ل.س',
-                    'total_spend'        => number_format($totalPayments, 0) . ' ل.س',
-                ]
+        return $this->successResponse([
+            'profile' => [
+                'name' => $customer->name,
+                'phone' => $customer->phone,
+                'points' => $customer->points_balance,
+                'member_type' => $customer->points_balance >= 50 ? 'عميل ذهبي' : 'عميل عادي',
+            ],
+            'financial_summary' => [
+                'borrowed_count'     => $borrowedBooksCount,
+                'purchased_count'    => (int)$purchasedBooksCount,
+                'total_fines_paid'   => number_format($totalExtraFines, 0) . ' ل.س',
+                'total_spend'        => number_format($totalPayments, 0) . ' ل.س',
             ]
         ]);
     }
 
-    /**
-     * إحصائيات عامة للوحة تحكم الأدمن
-     */
     public function getTotalPaidOrdersCount(Request $request)
     {
         $totalPaidOrders = \App\Models\Bill::where('status', 'paid')->count();
         $totalRevenue = \App\Models\Bill::where('status', 'paid')->sum('total_price');
 
-        return response()->json([
-            'status' => 'success',
-            'data' => [
-                'total_paid_orders' => $totalPaidOrders,
-                'total_revenue'     => number_format($totalRevenue, 0) . ' ل.س',
-                'report_date'       => now()->format('Y-m-d H:i')
-            ]
+        return $this->successResponse([
+            'total_paid_orders' => $totalPaidOrders,
+            'total_revenue'     => number_format($totalRevenue, 0) . ' ل.س',
+            'report_date'       => now()->format('Y-m-d H:i')
         ]);
     }
 }

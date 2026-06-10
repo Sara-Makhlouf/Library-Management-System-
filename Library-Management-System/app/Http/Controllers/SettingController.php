@@ -4,30 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\JsonResponse;
 
 class SettingController extends Controller
 {
-    /**
-     * 1 جلب كل الإعدادات
-     */
+    use ApiResponse;
+
     public function index(): JsonResponse
     {
         $settings = Cache::rememberForever('app_settings', function () {
             return Setting::pluck('value', 'name');
         });
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $settings
-        ]);
+        return $this->successResponse($settings);
     }
 
-    /**
-     * 2. تحديث الإعدادات
-     */
     public function update(Request $request): JsonResponse
     {
         $request->validate([
@@ -43,13 +37,8 @@ class SettingController extends Controller
 
         Cache::forget('app_settings');
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم تحديث جميع الإعدادات بنجاح',
-            'data' => Setting::pluck('value', 'name')
-        ]);
+        return $this->successResponse(Setting::pluck('value', 'name'), 'تم تحديث جميع الإعدادات بنجاح');
     }
-
 
     public function footer(): JsonResponse
     {
@@ -64,31 +53,19 @@ class SettingController extends Controller
 
         $settings = Setting::whereIn('name', $footerKeys)->pluck('value', 'name');
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $settings
-        ]);
+        return $this->successResponse($settings);
     }
 
-    /**
-     * 4  دالة إضافية لجلب أي مجموعة إعدادات مخصصة
-     */
     public function getByGroup(Request $request): JsonResponse
     {
         $keys = $request->input('keys', []);
 
         if (empty($keys)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'يرجى تمرير مصفوفة المفاتيح المطلوب جلبها keys'
-            ], 400);
+            return $this->errorResponse('يرجى تمرير مصفوفة المفاتيح المطلوب جلبها keys', 400);
         }
 
         $settings = Setting::whereIn('name', (array)$keys)->pluck('value', 'name');
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $settings
-        ]);
+        return $this->successResponse($settings);
     }
 }

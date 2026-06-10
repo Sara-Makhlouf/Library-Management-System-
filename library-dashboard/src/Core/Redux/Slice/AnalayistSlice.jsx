@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getTotalPaidOrder , getTotalBorrows } from "../Thunks/AnalayistThunk";
+import { getTotalPaidOrder, getTotalBorrows } from "../Thunks/AnalayistThunk";
+import { addAsyncCases } from "../utils/reduxHelpers";
 
 const initialState = {
   analyst: null,
@@ -11,35 +12,9 @@ const analystSlice = createSlice({
   name: "analyst",
   initialState,
   reducers: {},
-
-extraReducers: (builder) => {
-    builder
-
-    .addCase(getTotalPaidOrder.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getTotalPaidOrder.fulfilled, (state, action) => {
-        state.loading = false;
-        state.author = action.payload;
-      })
-      .addCase(getTotalPaidOrder.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      .addCase(getTotalBorrows.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getTotalBorrows.fulfilled, (state, action) => {
-        state.loading = false;
-        state.author = action.payload;
-      })
-      .addCase(getTotalBorrows.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
+  extraReducers: (builder) => {
+    addAsyncCases(builder, getTotalPaidOrder, { dataKey: "analyst" });
+    addAsyncCases(builder, getTotalBorrows, { dataKey: "analyst" });
   },
 });
 

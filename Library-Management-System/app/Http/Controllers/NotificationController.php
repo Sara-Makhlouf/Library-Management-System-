@@ -5,14 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Models\User;
+use App\Traits\ApiResponse;
+use App\Traits\NotifiesUsers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
-    /**
-     * عرض قائمة إشعارات الزبون الحالي
-     */
+    use ApiResponse, NotifiesUsers;
+
     public function index(Request $request): JsonResponse
     {
         $customer = $request->user()->customer;
@@ -20,15 +21,9 @@ class NotificationController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        return response()->json([
-            'success' => true,
-            'data' => $notifications
-        ]);
+        return $this->successResponse($notifications);
     }
 
-    /**
-     * جلب عدد الإشعارات غير المقروءة فقط
-     */
     public function unreadCount(Request $request): JsonResponse
     {
         $customer = $request->user()->customer;
@@ -37,15 +32,9 @@ class NotificationController extends Controller
             ->where('is_read', false)
             ->count();
 
-        return response()->json([
-            'success' => true,
-            'data' => $count
-        ]);
+        return $this->successResponse($count);
     }
 
-    /**
-     * تعيين إشعار معين كمقروء
-     */
     public function markAsRead(int $id, Request $request): JsonResponse
     {
         $customer = $request->user()->customer;
@@ -56,15 +45,9 @@ class NotificationController extends Controller
 
         $notification->update(['is_read' => true]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'تم تعيين الإشعار كمقروء بنجاح'
-        ]);
+        return $this->successResponse(message: 'تم تعيين الإشعار كمقروء بنجاح');
     }
 
-    /**
-     * إرسال إشعار جماعي (للأدمن فقط)
-     */
     public function sendGlobalNotification(Request $request)
     {
         $data = $request->validate([
@@ -76,7 +59,7 @@ class NotificationController extends Controller
         User::with('customer')->where('type', 'customer')->chunk(100, function ($users) use ($data) {
             foreach ($users as $user) {
                 if ($user->customer) {
-                    Notification::send(
+                    $this->notifySafe(
                         $user->customer->id,
                         'global_admin_announcement',
                         $data['title'],
@@ -90,9 +73,6 @@ class NotificationController extends Controller
             }
         });
 
-        return response()->json([
-            'success' => true,
-            'message' => 'تمت جدولة إرسال الإشعار الجماعي لجميع المستخدمين'
-        ], 200);
+        return $this->successResponse(message: 'تمت جدولة إرسال الإشعار الجماعي لجميع المستخدمين');
     }
 }

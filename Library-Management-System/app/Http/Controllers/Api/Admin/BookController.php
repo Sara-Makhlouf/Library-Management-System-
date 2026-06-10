@@ -6,15 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\Transaction;
 use App\Models\Notification;
+use App\Traits\ApiResponse;
+use App\Traits\NotifiesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class BookController extends Controller
 {
-    /**
-     * عرض كل الكتب مع دعم البحث المتقدم
-     */
+    use ApiResponse, NotifiesUsers;
+
     public function index(Request $request)
     {
         $filters = $request->only([
@@ -70,14 +71,9 @@ class BookController extends Controller
 
         $books = $query->latest()->paginate(12);
 
-        return response()->json([
-            'status' => 'success',
-            'data'   => $books
-        ], 200);
+        return $this->successResponse($books);
     }
-    /**
-     * إضافة كتاب جديد
-     */
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -121,34 +117,18 @@ class BookController extends Controller
                 'quantity' => $validated['stock'],
             ]);
 
-            // 7. 🔔 إشعار الأدمن بنجاح العملية
-            try {
-                Notification::send(
-                    $request->user()->id,
-                    'book_added',
-                    'إضافة كتاب جديد 📚',
-                    "تم إضافة الكتاب الجديد ({$book->title}) بنجاح بسعر إعارة {$book->price} وسعر بيع {$book->sale_price}.",
-                    [
-                        'icon' => 'book_success',
-                        'target_screen' => 'book_details',
-                        'book_id' => $book->id
-                    ]
-                );
-            } catch (\Exception $e) {
-                // تجاهل خطأ الإشعار لضمان إتمام العملية الأساسية
-            }
+            $this->notifySafe(
+                $request->user()->id,
+                'book_added',
+                'إضافة كتاب جديد 📚',
+                "تم إضافة الكتاب الجديد ({$book->title}) بنجاح بسعر إعارة {$book->price} وسعر بيع {$book->sale_price}.",
+                ['icon' => 'book_success', 'target_screen' => 'book_details', 'book_id' => $book->id]
+            );
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'تم إضافة الكتاب بنجاح وتحديث المخزون',
-                'data' => $book->load('authors', 'category')
-            ], 201);
+            return $this->successResponse($book->load('authors', 'category'), 'تم إضافة الكتاب بنجاح وتحديث المخزون', 201);
         });
     }
 
-    /**
-     * عرض تفاصيل كتاب محدد
-     */
     public function show($id)
     {
         $book = Book::with(['authors', 'category'])
@@ -164,14 +144,10 @@ class BookController extends Controller
         if ($book->is_digital && (!request()->user() || request()->user()->type !== 'admin')) {
             $book->makeHidden('file_path');
         }
-        return response()->json([
-            'status' => 'success',
-            'data' => $book
-        ]);
+
+        return $this->successResponse($book);
     }
-    /**
-     * تعديل كتاب
-     */
+
     public function update(Request $request, Book $book)
     {
         $validated = $request->validate([
@@ -216,34 +192,18 @@ class BookController extends Controller
             $updateData = collect($validated)->except(['authors'])->toArray();
             $book->update($updateData);
 
-            // . 🔔 إرسال إشعار تحديث ناجح
-            try {
-                Notification::send(
-                    $request->user()->id,
-                    'book_updated',
-                    'تحديث بيانات كتاب 📝',
-                    "تم تحديث بيانات كتاب ({$book->title}) والأسعار الجديدة بنجاح.",
-                    [
-                        'icon' => 'book_edit',
-                        'target_screen' => 'book_details',
-                        'book_id' => $book->id
-                    ]
-                );
-            } catch (\Exception $e) {
-                // تجاوز خطأ الإشعار
-            }
+            $this->notifySafe(
+                $request->user()->id,
+                'book_updated',
+                'تحديث بيانات كتاب 📝',
+                "تم تحديث بيانات كتاب ({$book->title}) والأسعار الجديدة بنجاح.",
+                ['icon' => 'book_edit', 'target_screen' => 'book_details', 'book_id' => $book->id]
+            );
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'تم تحديث بيانات الكتاب بنجاح',
-                'data' => $book->load('authors', 'category')
-            ]);
+            return $this->successResponse($book->load('authors', 'category'), 'تم تحديث بيانات الكتاب بنجاح');
         });
     }
 
-    /**
-     * حذف كتاب
-     */
     public function destroy(Request $request, Book $book)
     {
         try {
@@ -256,7 +216,6 @@ class BookController extends Controller
                     $book->delete();
 
                     $message = 'تم إخفاء الكتاب من المتجر بنجاح للحفاظ على سجلات الفواتير المرتبطة به.';
-                    $type = 'book_hidden';
                 } else {
 
                     $book->authors()->detach();
@@ -268,36 +227,23 @@ class BookController extends Controller
                     $book->forceDelete();
 
                     $message = 'تم حذف الكتاب وملفاته نهائياً من النظام لعدم وجود فواتير مرتبطة به.';
-                    $type = 'book_deleted_permanently';
                 }
 
-                // 2. 🔔 إرسال الإشعار الموحد
-                try {
-                    Notification::send(
-                        $request->user()->id,
-                        'book_removal',
-                        'تحديث حالة كتاب ⚠️',
-                        "الإجراء: {$message} اسم الكتاب: ({$book->title})",
-                        ['icon' => 'book_delete', 'target_screen' => 'books_dashboard']
-                    );
-                } catch (\Exception $e) {
-                }
+                $this->notifySafe(
+                    $request->user()->id,
+                    'book_removal',
+                    'تحديث حالة كتاب ⚠️',
+                    "الإجراء: {$message} اسم الكتاب: ({$book->title})",
+                    ['icon' => 'book_delete', 'target_screen' => 'books_dashboard']
+                );
 
-                return response()->json([
-                    'status' => 'success',
-                    'message' => $message
-                ]);
+                return $this->successResponse(message: $message);
             });
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'حدث خطأ غير متوقع أثناء معالجة الحذف: ' . $e->getMessage()
-            ], 500);
+            return $this->errorResponse('حدث خطأ غير متوقع أثناء معالجة الحذف: ' . $e->getMessage(), 500);
         }
     }
-    /**
-     * الإحصائيات: الكتب الأكثر مبيعاً)
-     */
+
     public function getTopSellingBooks()
     {
         $topBooks = \App\Models\BillDetail::query()
@@ -310,24 +256,16 @@ class BookController extends Controller
             ->take(5)
             ->get();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'قائمة الكتب الأكثر مبيعاً بناءً على تفاصيل الفواتير',
-            'data' => $topBooks->map(function ($item) {
-                return [
-                    'book_id'    => $item->book_id,
-                    'book_title' => $item->book->title ?? 'كتاب غير مدرج حالياً',
-                    'units_sold' => (int) $item->total_sold,
-                    'is_active'  => $item->book ? !$item->book->trashed() : false
-                ];
-            })
-        ]);
+        return $this->successResponse($topBooks->map(function ($item) {
+            return [
+                'book_id'    => $item->book_id,
+                'book_title' => $item->book->title ?? 'كتاب غير مدرج حالياً',
+                'units_sold' => (int) $item->total_sold,
+                'is_active'  => $item->book ? !$item->book->trashed() : false
+            ];
+        }), 'قائمة الكتب الأكثر مبيعاً بناءً على تفاصيل الفواتير');
     }
 
-
-    /**
-     * الإحصائيات: الكتب الأكثر استعارة
-     */
     public function topBorrowed(Request $request)
     {
         $count = min($request->integer('count', 10), 50);
@@ -339,24 +277,17 @@ class BookController extends Controller
             ->take($count)
             ->get();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'قائمة الكتب الأكثر استعارة وطلباً',
-            'data' => $books->map(function ($book) {
-                return [
-                    'id' => $book->id,
-                    'title' => $book->title,
-                    'borrow_count' => $book->transactions_count,
-                    'is_active' => !$book->trashed(),
-                    'current_stock' => $book->stock,
-                ];
-            })
-        ]);
+        return $this->successResponse($books->map(function ($book) {
+            return [
+                'id' => $book->id,
+                'title' => $book->title,
+                'borrow_count' => $book->transactions_count,
+                'is_active' => !$book->trashed(),
+                'current_stock' => $book->stock,
+            ];
+        }), 'قائمة الكتب الأكثر استعارة وطلباً');
     }
 
-    /**
-     * إضافة أو تحديث تقييم كتاب بشرط الاستعارة المسبقة والإرجاع)
-     */
     public function rateBook(Request $request)
     {
         $request->validate([
@@ -367,10 +298,7 @@ class BookController extends Controller
         $user = $request->user();
 
         if (!$user->customer) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'عذراً، يجب أن يكون لديك حساب عميل فعال لتتمكن من التقييم'
-            ], 403);
+            return $this->errorResponse('عذراً، يجب أن يكون لديك حساب عميل فعال لتتمكن من التقييم', 403);
         }
 
         $customerId = $user->customer->id;
@@ -389,44 +317,28 @@ class BookController extends Controller
             ->exists();
 
         if (!$hasPurchased && !$hasReturned) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'يمكنك تقييم الكتب التي قمت بشرائها أو استعارتها وإعادتها فقط.'
-            ], 403);
+            return $this->errorResponse('يمكنك تقييم الكتب التي قمت بشرائها أو استعارتها وإعادتها فقط.', 403);
         }
 
-
-        \Illuminate\Support\Facades\DB::table('ratings')->updateOrInsert(
+        DB::table('ratings')->updateOrInsert(
             ['book_id' => $bookId, 'customer_id' => $customerId],
             [
                 'rate' => $request->rate,
                 'updated_at' => now(),
-                'created_at' => \Illuminate\Support\Facades\DB::raw('IFNULL(created_at, NOW())')
+                'created_at' => DB::raw('IFNULL(created_at, NOW())')
             ]
         );
 
         $book = Book::withTrashed()->find($bookId);
 
-        // 🔔 إرسال إشعار النجاح للمستخدم
-        try {
-            Notification::send(
-                $user->id,
-                'book_rated',
-                'شكراً لتقييمك المتميز ⭐',
-                "تم حفظ تقييمك ({$request->rate} نجوم) لكتاب ({$book->title}) بنجاح.",
-                [
-                    'icon' => 'rate_success',
-                    'target_screen' => 'book_details',
-                    'book_id' => $bookId
-                ]
-            );
-        } catch (\Exception $e) {
-            // تخطي خطأ الإشعارات حتى لا تتوقف العملية الأساسية
-        }
+        $this->notifySafe(
+            $user->id,
+            'book_rated',
+            'شكراً لتقييمك المتميز ⭐',
+            "تم حفظ تقييمك ({$request->rate} نجوم) لكتاب ({$book->title}) بنجاح.",
+            ['icon' => 'rate_success', 'target_screen' => 'book_details', 'book_id' => $bookId]
+        );
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم تسجيل تقييمك بنجاح، شكراً لمساهمتك!'
-        ]);
+        return $this->successResponse(message: 'تم تسجيل تقييمك بنجاح، شكراً لمساهمتك!');
     }
 }

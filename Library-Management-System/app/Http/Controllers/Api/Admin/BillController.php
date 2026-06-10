@@ -4,62 +4,44 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bill;
-use App\Models\Notification;
+use App\Traits\ApiResponse;
+use App\Traits\NotifiesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class BillController extends Controller
 {
-    /**
-     * عرض كل الفواتير مع اسم الزبون والإجمالي
-     */
+    use ApiResponse, NotifiesUsers;
+
     public function index(): JsonResponse
     {
         $bills = Bill::with('customer')
             ->latest()
             ->paginate(15);
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $bills
-        ]);
+        return $this->successResponse($bills);
     }
 
-    /**
-     * عرض تفاصيل فاتورة محددة
-     */
     public function show($id): JsonResponse
     {
         $bill = Bill::with(['customer', 'billDetails.book' => function ($q) {
             $q->withTrashed();
         }])->findOrFail($id);
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $bill
-        ]);
+        return $this->successResponse($bill);
     }
 
-    /**
-     * حساب إجمالي الإيرادات
-     */
     public function totalRevenue(Request $request): JsonResponse
     {
         $total = Bill::where('status', 'paid')->sum('total_price');
 
-        try {
-            Notification::send(
-                $request->user()->id,
-                'revenue_checked',
-                'استعلام عن الإيرادات 💰',
-                "تم طلب تقرير الإيرادات. المجموع الكلي للمبيعات والإعارات المدفوعة: {$total} ل.س.",
-                [
-                    'icon' => 'revenue_chart',
-                    'target_screen' => 'admin_dashboard'
-                ]
-            );
-        } catch (\Exception $e) {
-        }
+        $this->notifySafe(
+            $request->user()->id,
+            'revenue_checked',
+            'استعلام عن الإيرادات 💰',
+            "تم طلب تقرير الإيرادات. المجموع الكلي للمبيعات والإعارات المدفوعة: {$total} ل.س.",
+            ['icon' => 'revenue_chart', 'target_screen' => 'admin_dashboard']
+        );
 
         return response()->json([
             'status' => 'success',
@@ -67,9 +49,6 @@ class BillController extends Controller
         ]);
     }
 
-    /**
-     * جلب طلبات التوصيل مع بيانات التواصل
-     */
     public function deliveryRequests(Request $request)
     {
         $bills = Bill::with(['customer.user'])
@@ -80,15 +59,9 @@ class BillController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $bills
-        ]);
+        return $this->successResponse($bills);
     }
 
-    /**
-     * تحديث حالة التوصيل وإشعار العميل فوراً
-     */
     public function updateDeliveryStatus(Request $request, int $id)
     {
         $request->validate([
@@ -98,34 +71,22 @@ class BillController extends Controller
         $bill = Bill::with('customer.user')->findOrFail($id);
 
         if (!$bill->is_delivery) {
-            return response()->json(['status' => 'error', 'message' => 'هذه الفاتورة ليست طلب توصيل'], 422);
+            return $this->errorResponse('هذه الفاتورة ليست طلب توصيل', 422);
         }
 
         $bill->update([
             'delivery_status' => $request->delivery_status
         ]);
 
-        // إشعار العميل بالتحديث (يوصل للموبايل الخاص بالزبون)
-        try {
-            Notification::send(
-                $bill->customer->user_id,
-                'delivery_update',
-                'تحديث حالة الطلب 🚚',
-                "تم تحديث حالة توصيل طلبك رقم (#{$bill->id}) لتصبح الآن: " . $this->translateStatus($request->delivery_status),
-                [
-                    'icon' => 'delivery_truck',
-                    'target_screen' => 'order_details',
-                    'bill_id' => $bill->id
-                ]
-            );
-        } catch (\Exception $e) {
-        }
+        $this->notifySafe(
+            $bill->customer->user_id,
+            'delivery_update',
+            'تحديث حالة الطلب 🚚',
+            "تم تحديث حالة توصيل طلبك رقم (#{$bill->id}) لتصبح الآن: " . $this->translateStatus($request->delivery_status),
+            ['icon' => 'delivery_truck', 'target_screen' => 'order_details', 'bill_id' => $bill->id]
+        );
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم تحديث حالة التوصيل بنجاح',
-            'data' => $bill
-        ]);
+        return $this->successResponse($bill, 'تم تحديث حالة التوصيل بنجاح');
     }
 
     private function translateStatus($status)

@@ -1,54 +1,26 @@
-import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { getAuthConfig } from "../../Api/aixos";
+import { createApiThunk } from "../utils/reduxHelpers";
 
-
-const getAuthConfig = () => ({
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
-    Accept: "application/json",
-  },
-});
-
-// Get All Transactions
-export const getAllTransactions = createAsyncThunk(
+export const getAllTransactions = createApiThunk(
   "adminTransactions/getAllTransactions",
-  async (status = null, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(
-        `/admin/transactions`,
-        {
-          ...getAuthConfig(),
-          params: status ? { status } : {},
-        }
-      );
-
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data ||
-          "Failed to fetch transactions"
-      );
-    }
+  async (status = null) => {
+    const response = await axios.get(`/admin/transactions`, {
+      ...getAuthConfig(),
+      params: status ? { status } : {},
+    });
+    return response.data;
   }
 );
-;
 
-export const checkoutTransaction = createAsyncThunk(
+export const checkoutTransaction = createApiThunk(
   "adminTransactions/checkoutTransaction",
-  async (checkoutData, { rejectWithValue }) => {
-    try {
-      const response = await axios.post(
-        `/admin/transactions/checkout`,
-        checkoutData,
-        getAuthConfig()
-      );
-
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data ||
-          "Failed to create transaction"
-      );
-    }
+  async (checkoutData) => {
+    const response = await axios.post(
+      `/admin/transactions/checkout`,
+      checkoutData,
+      getAuthConfig()
+    );
+    return response.data;
   }
 );

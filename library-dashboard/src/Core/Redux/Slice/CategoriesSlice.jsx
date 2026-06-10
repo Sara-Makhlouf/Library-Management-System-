@@ -1,20 +1,17 @@
-import {createSlice} from "@reduxjs/toolkit";
-import {getCategory , createCategory} from '../Thunks/CategoriesThunk'
+import { createSlice } from "@reduxjs/toolkit";
+import { getCategory, createCategory } from "../Thunks/CategoriesThunk";
+import { addAsyncCases } from "../utils/reduxHelpers";
+
 export const categorySlice = createSlice({
-    name:"category",
-    initialState : {
-        title:null,},
-        reducers:{},
-        extraReducers: (builder) =>{
-builder
-.addCase(getCategory.pending, (state, action) => {})
-.addCase(getCategory.fulfilled, (state, action) => {})
-.addCase(getCategory.rejected, (state, action) => {})
-
-.addCase(createCategory.pending, (state, action) => {})
-.addCase(createCategory.fulfilled, (state, action) => {})
-.addCase(createCategory.rejected, (state, action) => {})
-
-        },
+  name: "category",
+  initialState: {
+    title: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    addAsyncCases(builder, getCategory);
+    addAsyncCases(builder, createCategory);
+  },
 });
+
 export default categorySlice.reducer;

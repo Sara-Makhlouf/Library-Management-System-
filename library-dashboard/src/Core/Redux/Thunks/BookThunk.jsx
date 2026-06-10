@@ -1,74 +1,47 @@
-import {  createAsyncThunk, } from "@reduxjs/toolkit";
 import api from "../../Api/aixos";
+import { createApiThunk } from "../utils/reduxHelpers";
 
-
-export const fetchBooks = createAsyncThunk(
-    "books/fetchBooks", 
-async () => {
-try {
-    const response = await api.get("/books");
-    return response.data;
-}
-catch(error) {
-    return error.response.data;
-}
-}
-);
-
-export const createBooks = createAsyncThunk(
-    "books/createBooks",
-    async (bookData) => {
-        try {
-            const response = await api.post("/books", bookData);
-            return response.data;
-        }
-        catch (error) {
-            return error.response.data;
-        }
-    }
-);
-
-export const deletBooks = createAsyncThunk(
-    "books/deleteBooks", 
-    async (bookId) => {
-        try {
-            const response = await api.delete("/books/"+bookId);
-            return response.data;
-        } 
-        catch (error) {
-            return error.response.data;
-        } 
-    }
-);
-
- export const updateBooks = createAsyncThunk(
-    "books/updateBooks", 
-        async (bookData,bookId) =>{
-            try{
-                const response = await api.put("/books/"+bookId,bookData);
-                return response.data;
-            }
-            catch(error){
-         return error.response.data;
-            }
-        } 
- );
- 
- export const getBook = createAsyncThunk("books/getBookById",async (bookId) => {
-try {
-const response = await api.get("/books/"+bookId);
-return response.data;
-}
-catch(error){
-    return error.response.data;
-}
- });
-export const getBooksWithDetails = createAsyncThunk("books/getBooksWithDetails",async (bookId,thunkApi) =>{
-    try {
-        const response = await api.get("/books/"+bookId);
-        return response.data;
-    }
-    catch (error) {
-        return thunkApi.rejectWithValue(error.response.data);
-    }
+export const fetchBooks = createApiThunk("books/fetchBooks", async () => {
+  const response = await api.get("/books");
+  return response.data;
 });
+
+export const createBooks = createApiThunk(
+  "books/createBooks",
+  async (bookData) => {
+    const response = await api.post("/books", bookData);
+    return response.data;
+  }
+);
+
+export const deletBooks = createApiThunk(
+  "books/deleteBooks",
+  async (bookId) => {
+    const response = await api.delete("/books/" + bookId);
+    return response.data;
+  }
+);
+
+export const updateBooks = createApiThunk(
+  "books/updateBooks",
+  async (bookData, bookId) => {
+    const response = await api.put("/books/" + bookId, bookData);
+    return response.data;
+  }
+);
+
+export const getBook = createApiThunk(
+  "books/getBookById",
+  async (bookId) => {
+    const response = await api.get("/books/" + bookId);
+    return response.data;
+  }
+);
+
+export const getBooksWithDetails = createApiThunk(
+  "books/getBooksWithDetails",
+  async (bookId) => {
+    const response = await api.get("/books/" + bookId);
+    return response.data;
+  }
+);

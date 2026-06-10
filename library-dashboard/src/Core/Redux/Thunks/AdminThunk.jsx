@@ -1,66 +1,35 @@
-import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { getAuthConfig } from "../../Api/aixos";
+import { createApiThunk } from "../utils/reduxHelpers";
 
-
-const getAuthConfig = () => ({
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
-    Accept: "application/json",
-  },
-});
-
-export const getAllSettings = createAsyncThunk(
+export const getAllSettings = createApiThunk(
   "adminSettings/getAllSettings",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(
-        `/admin/settings`,
-        getAuthConfig()
-      );
-
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data || "Failed to fetch settings"
-      );
-    }
+  async () => {
+    const response = await axios.get(`/admin/settings`, getAuthConfig());
+    return response.data;
   }
 );
 
-export const updateSettings = createAsyncThunk(
+export const updateSettings = createApiThunk(
   "adminSettings/updateSettings",
-  async (settings, { rejectWithValue }) => {
-    try {
-      const response = await axios.post(
-        `/admin/settings/update`,
-        { settings },
-        getAuthConfig()
-      );
-
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data || "Failed to update settings"
-      );
-    }
+  async (settings) => {
+    const response = await axios.post(
+      `/admin/settings/update`,
+      { settings },
+      getAuthConfig()
+    );
+    return response.data;
   }
 );
 
-export const sendGlobalNotification = createAsyncThunk(
+export const sendGlobalNotification = createApiThunk(
   "adminSettings/sendGlobalNotification",
-  async (payload, { rejectWithValue }) => {
-    try {
-      const response = await axios.post(
-        `/admin/notifications/global`,
-        payload,
-        getAuthConfig()
-      );
-
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data || "Failed to send notification"
-      );
-    }
+  async (payload) => {
+    const response = await axios.post(
+      `/admin/notifications/global`,
+      payload,
+      getAuthConfig()
+    );
+    return response.data;
   }
 );

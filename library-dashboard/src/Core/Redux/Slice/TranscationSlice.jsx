@@ -3,6 +3,7 @@ import {
   getAllTransactions,
   checkoutTransaction,
 } from "../Thunks/TranscationThunk";
+import { addAsyncCases } from "../utils/reduxHelpers";
 
 const initialState = {
   transactions: [],
@@ -30,45 +31,20 @@ const adminTransactionsSlice = createSlice({
   },
 
   extraReducers: (builder) => {
-    builder
+    addAsyncCases(builder, getAllTransactions, { dataKey: "transactions" });
 
-      .addCase(getAllTransactions.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getAllTransactions.fulfilled, (state, action) => {
-        state.loading = false;
-        state.transactions =
-          action.payload.data || action.payload;
-      })
-      .addCase(getAllTransactions.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-     
-
-      .addCase(checkoutTransaction.pending, (state) => {
-        state.checkoutLoading = true;
-        state.error = null;
-      })
-      .addCase(checkoutTransaction.fulfilled, (state, action) => {
-        state.checkoutLoading = false;
+    addAsyncCases(builder, checkoutTransaction, {
+      loadingKey: "checkoutLoading",
+      onFulfilled: (state, action) => {
         state.checkoutResult = action.payload;
-
         state.successMessage =
-          action.payload?.message ||
-          "Transaction created successfully";
-      })
-      .addCase(checkoutTransaction.rejected, (state, action) => {
-        state.checkoutLoading = false;
-        state.error = action.payload;
-      });
+          action.payload?.message || "Transaction created successfully";
+      },
+    });
   },
 });
 
-export const {
-  clearAdminTransactionsState,
-} = adminTransactionsSlice.actions;
+export const { clearAdminTransactionsState } =
+  adminTransactionsSlice.actions;
 
 export default adminTransactionsSlice.reducer;

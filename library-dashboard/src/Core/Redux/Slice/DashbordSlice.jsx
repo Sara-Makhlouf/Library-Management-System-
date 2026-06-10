@@ -1,11 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { 
+import {
   getDashboardStats,
   getTopBorrowed,
   getWeeklySales,
   getTopSellingBooks,
-  getWeeklyBorrows 
+  getWeeklyBorrows,
 } from "../Thunks/DashboardThunk";
+import { addAsyncCases } from "../utils/reduxHelpers";
 
 const initialState = {
   dashboardStats: null,
@@ -22,76 +23,11 @@ export const dashboardSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder
-      //Dashboard Stats
-      .addCase(getDashboardStats.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getDashboardStats.fulfilled, (state, action) => {
-        state.loading = false;
-        state.dashboardStats = action.payload;
-      })
-      .addCase(getDashboardStats.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      })
-
-      //Top Borrowed Books 
-      .addCase(getTopBorrowed.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getTopBorrowed.fulfilled, (state, action) => {
-        state.loading = false;
-        state.topBorrowedBooks = action.payload;
-      })
-      .addCase(getTopBorrowed.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      })
-
-      // Weekly Sales 
-      .addCase(getWeeklySales.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getWeeklySales.fulfilled, (state, action) => {
-        state.loading = false;
-        state.weeklySales = action.payload;
-      })
-      .addCase(getWeeklySales.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      })
-
-      //Top Selling Books 
-      .addCase(getTopSellingBooks.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getTopSellingBooks.fulfilled, (state, action) => {
-        state.loading = false;
-        state.topSellingBooks = action.payload;
-      })
-      .addCase(getTopSellingBooks.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      })
-
-      // Weekly Borrows 
-      .addCase(getWeeklyBorrows.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getWeeklyBorrows.fulfilled, (state, action) => {
-        state.loading = false;
-        state.weeklyBorrows = action.payload;
-      })
-      .addCase(getWeeklyBorrows.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      });
+    addAsyncCases(builder, getDashboardStats, { dataKey: "dashboardStats" });
+    addAsyncCases(builder, getTopBorrowed, { dataKey: "topBorrowedBooks" });
+    addAsyncCases(builder, getWeeklySales, { dataKey: "weeklySales" });
+    addAsyncCases(builder, getTopSellingBooks, { dataKey: "topSellingBooks" });
+    addAsyncCases(builder, getWeeklyBorrows, { dataKey: "weeklyBorrows" });
   },
 });
 

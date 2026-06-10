@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\User;
-use App\Models\Notification;
 use App\Services\PointsService;
+use App\Traits\ApiResponse;
+use App\Traits\NotifiesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,8 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    use ApiResponse, NotifiesUsers;
+
     protected $pointsService;
 
     public function __construct(PointsService $pointsService)
@@ -23,9 +26,6 @@ class AuthController extends Controller
         $this->pointsService = $pointsService;
     }
 
-    /**
-     * تسجيل زبون جديد
-     */
     public function register(Request $request)
     {
         $validated = $request->validate([
@@ -68,22 +68,16 @@ class AuthController extends Controller
                 try {
                     $this->pointsService->addPoints($customer->id, 50, 'earn', 'هدية ترحيبية بمناسبة الانضمام للتطبيق 🎉');
                 } catch (\Exception $e) {
-                    // تجاوز الخطأ لضمان استقرار التسجيل
                 }
             }
 
-            // إرسال إشعار الترحيب
-            try {
-                Notification::send(
-                    $customer->id,
-                    'welcome_notification',
-                    'أهلاً بك يا ' . $validated['name'] . '! 🎉',
-                    'تم إنشاء حسابك بنجاح. استمتع برحلتك الثقافية معنا.',
-                    ['icon' => 'welcome_user', 'target_screen' => 'home_dashboard']
-                );
-            } catch (\Exception $e) {
-                Log::error('Notification Error: ' . $e->getMessage());
-            }
+            $this->notifySafe(
+                $customer->id,
+                'welcome_notification',
+                'أهلاً بك يا ' . $validated['name'] . '! 🎉',
+                'تم إنشاء حسابك بنجاح. استمتع برحلتك الثقافية معنا.',
+                ['icon' => 'welcome_user', 'target_screen' => 'home_dashboard']
+            );
 
             return $user;
         });
@@ -92,15 +86,12 @@ class AuthController extends Controller
 
         $customer = $user->customer;
 
-        return response()->json([
-            'status' => 'success',
-            'data' => [
-                'token'          => $token,
-                'name'           => $validated['name'],
-                'type'           => $user->type,
-                'points_balance' => $customer ? ($customer->points_balance ?? 0) : 0,
-            ]
-        ], 201);
+        return $this->successResponse([
+            'token'          => $token,
+            'name'           => $validated['name'],
+            'type'           => $user->type,
+            'points_balance' => $customer ? ($customer->points_balance ?? 0) : 0,
+        ], null, 201);
     }
 
     public function login(Request $request)
@@ -114,19 +105,13 @@ class AuthController extends Controller
         $customer = Customer::where('phone', $validated['phone'])->first();
 
         if (!$customer || !$customer->user) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'رقم الهاتف أو كلمة المرور غير صحيحة.'
-            ], 401);
+            return $this->errorResponse('رقم الهاتف أو كلمة المرور غير صحيحة.', 401);
         }
 
         $user = $customer->user;
 
         if (!Hash::check($validated['password'], $user->password)) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'رقم الهاتف أو كلمة المرور غير صحيحة.'
-            ], 401);
+            return $this->errorResponse('رقم الهاتف أو كلمة المرور غير صحيحة.', 401);
         }
         if ($request->fcm_token) {
             $customer->update(['fcm_token' => $request->fcm_token]);
@@ -143,19 +128,14 @@ class AuthController extends Controller
         $user->tokens()->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'status' => 'success',
-            'data'   => [
-                'token'          => $token,
-                'name'           => $customer->name,
-                'type'           => $user->type,
-                'points_balance' => $customer->points_balance ?? 0,
-            ]
-        ], 200);
+        return $this->successResponse([
+            'token'          => $token,
+            'name'           => $customer->name,
+            'type'           => $user->type,
+            'points_balance' => $customer->points_balance ?? 0,
+        ]);
     }
-    /**
-     * تسجيل دخول الإدمن
-     */
+
     public function adminLogin(Request $request)
     {
         $request->validate([
@@ -166,11 +146,11 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['status' => 'error', 'message' => 'بيانات الاعتماد غير صحيحة'], 401);
+            return $this->errorResponse('بيانات الاعتماد غير صحيحة', 401);
         }
 
         if ($user->type !== 'admin') {
-            return response()->json(['status' => 'error', 'message' => 'غير مخول بالوصول'], 403);
+            return $this->errorResponse('غير مخول بالوصول', 403);
         }
 
         $token = $user->createToken('admin_token')->plainTextToken;
@@ -185,18 +165,13 @@ class AuthController extends Controller
             ]
         ]);
     }
-    /**
-     * تسجيل الخروج
-     */
+
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-        return response()->json(['status' => 'success', 'message' => 'تم تسجيل الخروج بنجاح']);
+        return $this->successResponse(message: 'تم تسجيل الخروج بنجاح');
     }
 
-    /**
-     * تغيير كلمة المرور
-     */
     public function changePassword(Request $request)
     {
         $validated = $request->validate([
@@ -210,22 +185,17 @@ class AuthController extends Controller
         $user->tokens()->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        try {
-            Notification::send(
-                $user->customer->id,
-                'security_alert',
-                'تنبيه أمني: تغيير كلمة المرور 🔐',
-                'تم تحديث كلمة المرور الخاصة بحسابك بنجاح.',
-                ['icon' => 'security_shield', 'target_screen' => 'profile_settings']
-            );
-        } catch (\Exception $e) {
-            Log::error('Notification Error: ' . $e->getMessage());
-        }
+        $this->notifySafe(
+            $user->customer->id,
+            'security_alert',
+            'تنبيه أمني: تغيير كلمة المرور 🔐',
+            'تم تحديث كلمة المرور الخاصة بحسابك بنجاح.',
+            ['icon' => 'security_shield', 'target_screen' => 'profile_settings']
+        );
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تم تغيير كلمة السر بنجاح',
-            'data' => ['token' => $token, 'token_type' => 'Bearer']
-        ]);
+        return $this->successResponse([
+            'token' => $token,
+            'token_type' => 'Bearer'
+        ], 'تم تغيير كلمة السر بنجاح');
     }
 }

@@ -7,14 +7,17 @@ use App\Models\Book;
 use App\Models\Cart;
 use App\Models\Bill;
 use App\Models\Transaction;
-use App\Models\Notification;
 use App\Services\PointsService;
+use App\Traits\ApiResponse;
+use App\Traits\NotifiesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 
 class CartController extends Controller
 {
+    use ApiResponse, NotifiesUsers;
+
     protected $pointsService;
 
     public function __construct(PointsService $pointsService)
@@ -22,9 +25,6 @@ class CartController extends Controller
         $this->pointsService = $pointsService;
     }
 
-    /**
-     * 1. عرض السلة الحالية للزبون
-     */
     public function index(Request $request): JsonResponse
     {
         $customer = $request->user()->customer;
@@ -32,15 +32,9 @@ class CartController extends Controller
             $q->select('id', 'title', 'price', 'sale_price', 'cover');
         }])->where('customer_id', $customer->id)->first();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => $cart ?? ['details' => [], 'total_price' => 0]
-        ]);
+        return $this->successResponse($cart ?? ['details' => [], 'total_price' => 0]);
     }
 
-    /**
-     * 2. إضافة كتاب للسلة (شراء أو استعارة)
-     */
     public function addBook(Request $request): JsonResponse
     {
         $request->validate([
@@ -52,13 +46,13 @@ class CartController extends Controller
         $book = Book::findOrFail($request->book_id);
 
         if ($book->stock <= 0) {
-            return response()->json(['status' => 'error', 'message' => 'عذراً، هذا الكتاب غير متوفر حالياً'], 422);
+            return $this->errorResponse('عذراً، هذا الكتاب غير متوفر حالياً', 422);
         }
 
         $cart = Cart::firstOrCreate(['customer_id' => $customer->id]);
 
         if ($cart->details()->where('book_id', $book->id)->exists()) {
-            return response()->json(['status' => 'error', 'message' => 'هذا الكتاب موجود بالفعل في سلتك'], 422);
+            return $this->errorResponse('هذا الكتاب موجود بالفعل في سلتك', 422);
         }
 
         $price = ($request->type === 'buy') ? $book->sale_price : $book->price;
@@ -72,16 +66,9 @@ class CartController extends Controller
 
         $cart->update(['total_price' => $cart->details()->sum('price')]);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'تمت إضافة الكتاب للسلة بنجاح',
-            'data' => $cart->load('details.book')
-        ]);
+        return $this->successResponse($cart->load('details.book'), 'تمت إضافة الكتاب للسلة بنجاح');
     }
 
-    /**
-     * 3. إتمام عملية الطلب والـ Checkout وتحويل السلة لفاتورة وعمليات
-     */
     public function checkout(Request $request): JsonResponse
     {
         $request->validate([
@@ -93,25 +80,19 @@ class CartController extends Controller
         $customer = $user->customer;
 
         if (!$customer) {
-            return response()->json(['status' => 'error', 'message' => 'المستخدم المتصل ليس لديه حساب عميل مرتبط به!']);
+            return $this->errorResponse('المستخدم المتصل ليس لديه حساب عميل مرتبط به!');
         }
 
         $cart = Cart::where('customer_id', $customer->id)->first();
 
         if (!$cart) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'عذراً، لا توجد سلة مشتريات لهذا المستخدم.'
-            ], 422);
+            return $this->errorResponse('عذراً، لا توجد سلة مشتريات لهذا المستخدم.', 422);
         }
 
         $cartDetails = \App\Models\CartDetail::where('cart_id', $cart->id)->get();
 
         if ($cartDetails->isEmpty()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'عذراً، سلة المشتريات فارغة تماماً، لا يمكن إتمام الطلب.'
-            ], 422);
+            return $this->errorResponse('عذراً، سلة المشتريات فارغة تماماً، لا يمكن إتمام الطلب.', 422);
         }
 
         try {
@@ -165,35 +146,22 @@ class CartController extends Controller
             $cart->update(['total_price' => 0]);
 
             DB::commit();
-            try {
-                Notification::send(
-                    $user->id,
-                    'order_success',
-                    'تم تأكيد طلبك بنجاح! 📖',
-                    "شكراً لثقتك. تم تسجيل طلبك بمبلغ {$finalTotal} ل.س وحصلت على {$earnedPoints} نقطة مكافأة.",
-                    ['icon' => 'shopping_bag', 'target_screen' => 'order_details']
-                );
-            } catch (\Exception $e) {
-                // تخطي خطأ سيرفر الإشعارات
-            }
 
-            return response()->json([
-                'status'  => 'success',
-                'message' => 'تمت العملية بنجاح، وتم تسجيل الفاتورة والمعاملات في قاعدة البيانات!',
-                'bill_id' => $bill->id
-            ]);
+            $this->notifySafe(
+                $user->id,
+                'order_success',
+                'تم تأكيد طلبك بنجاح! 📖',
+                "شكراً لثقتك. تم تسجيل طلبك بمبلغ {$finalTotal} ل.س وحصلت على {$earnedPoints} نقطة مكافأة.",
+                ['icon' => 'shopping_bag', 'target_screen' => 'order_details']
+            );
+
+            return $this->successResponse(['bill_id' => $bill->id], 'تمت العملية بنجاح، وتم تسجيل الفاتورة والمعاملات في قاعدة البيانات!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'حدث خطأ غير متوقع وتم التراجع عن البيانات: ' . $e->getMessage()
-            ], 500);
+            return $this->errorResponse('حدث خطأ غير متوقع وتم التراجع عن البيانات: ' . $e->getMessage(), 500);
         }
     }
 
-    /**
-     * 4. حذف كتاب واحد من السلة
-     */
     public function removeBook(Request $request, $bookId): JsonResponse
     {
         $customer = $request->user()->customer;
@@ -202,14 +170,11 @@ class CartController extends Controller
         if ($cart) {
             $cart->details()->where('book_id', $bookId)->delete();
             $cart->update(['total_price' => $cart->details()->sum('price')]);
-            return response()->json(['status' => 'success', 'message' => 'تم إزالة الكتاب من السلة']);
+            return $this->successResponse(message: 'تم إزالة الكتاب من السلة');
         }
-        return response()->json(['status' => 'error', 'message' => 'السلة غير موجودة'], 404);
+        return $this->errorResponse('السلة غير موجودة', 404);
     }
 
-    /**
-     * 5. تفريغ السلة بالكامل
-     */
     public function clear(Request $request): JsonResponse
     {
         $customer = $request->user()->customer;
@@ -218,8 +183,8 @@ class CartController extends Controller
         if ($cart) {
             $cart->details()->delete();
             $cart->update(['total_price' => 0]);
-            return response()->json(['status' => 'success', 'message' => 'تم تفريغ سلة المشتريات بالكامل']);
+            return $this->successResponse(message: 'تم تفريغ سلة المشتريات بالكامل');
         }
-        return response()->json(['status' => 'error', 'message' => 'السلة غير موجودة'], 404);
+        return $this->errorResponse('السلة غير موجودة', 404);
     }
 }

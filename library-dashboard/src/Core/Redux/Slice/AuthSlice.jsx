@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import loginAdmin from "../Thunks/AuthThunk";
+import { addAsyncCases } from "../utils/reduxHelpers";
 
 const authSlice = createSlice({
   name: "auth",
@@ -15,39 +16,17 @@ const authSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.token = null;
-
       localStorage.removeItem("token");
     },
   },
 
   extraReducers: (builder) => {
-    builder
-
-      .addCase(loginAdmin.pending, (state) => {
-        state.loading = true;
-      })
-.addCase(loginAdmin.fulfilled, (state, action) => {
-  state.loading = false;
-  state.error = null;
-
-  state.token = action.payload.token;
-
-  localStorage.setItem(
-    "token",
-    action.payload.token
-  );
-})
-
-      .addCase(loginAdmin.rejected, (state, action) => {
-  state.loading = false;
-
-  state.error =
-    action.payload?.message ||
-    action.payload?.error ||
-    "Login failed";
-})
-
-    
+    addAsyncCases(builder, loginAdmin, {
+      onFulfilled: (state, action) => {
+        state.token = action.payload.token;
+        localStorage.setItem("token", action.payload.token);
+      },
+    });
   },
 });
 

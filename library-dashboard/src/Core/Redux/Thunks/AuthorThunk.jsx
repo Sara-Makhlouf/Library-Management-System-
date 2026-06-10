@@ -1,30 +1,10 @@
 import api from "../../Api/aixos";
-import { createAsyncThunk } from "@reduxjs/toolkit";
+import { createApiThunk } from "../utils/reduxHelpers";
 
-export const getauthor = createAsyncThunk(
+export const getauthor = createApiThunk(
   "author/getauthor",
-  async (authorId, thunkAPI) => {
-    try {
-      const response = await api.get(`/authors/${authorId}`);
-      return response.data;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data || error.message
-      );
-    }
-  }
-);
-
-export const createauthor = createAsyncThunk(
-  "author/createauthor",
-  async (authorData, thunkAPI) => {
-    try {
-      const response = await api.post("/authors", authorData);
-      return response.data;
-    } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data || error.message
-      );
-    }
+  async (authorId) => {
+    const response = await api.get(`/authors/${authorId}`);
+    return response.data;
   }
 );
