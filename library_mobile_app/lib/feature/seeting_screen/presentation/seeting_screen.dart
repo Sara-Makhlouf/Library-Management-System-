@@ -12,16 +12,14 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // قراءة اللغة الحالية الفعّالة في التطبيق
+
     final currentLocale = Localizations.localeOf(context);
 
     return Scaffold(
-      // ─── تكييف خلفية الشاشة بالكامل مع الثيمين ───
       backgroundColor: isDark
           ? AppColors.backgroundDark
           : const Color(0xFFEFE3D3),
       appBar: AppBar(
-        // تعديل: تحويل العنوان ليكون مترجماً ديناميكياً
         title: Text(
           AppLocalizations.of(context)!.settings,
           style: const TextStyle(
@@ -29,7 +27,7 @@ class SettingsScreen extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        // ─── تكييف الـ AppBar مع درجات الهيدر المتناسقة ───
+
         backgroundColor: isDark
             ? AppColors.darkCard
             : const Color.fromARGB(255, 189, 170, 127),
@@ -44,7 +42,6 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // 1️⃣ بطاقة خيار تفعيل الوضع الليلي/النهاري
           Card(
             elevation: isDark ? 1 : 3,
             color: isDark ? AppColors.darkCard : Colors.white,
@@ -89,8 +86,8 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 12), // مسافة فاصلة بين البطاقتين
-          // 2️⃣ بطاقة خيار تغيير لغة التطبيق (العربية / الإنجليزية)
+          const SizedBox(height: 12),
+
           Card(
             elevation: isDark ? 1 : 3,
             color: isDark ? AppColors.darkCard : Colors.white,
@@ -117,7 +114,7 @@ class SettingsScreen extends StatelessWidget {
                   color: isDark ? AppColors.textDark : Colors.black87,
                 ),
               ),
-              // عرض اسم اللغة الحالية تحت العنوان الرئيسي للبطاقة
+
               subtitle: Text(
                 currentLocale.languageCode == 'ar' ? 'العربية' : 'English',
                 style: TextStyle(
@@ -128,7 +125,7 @@ class SettingsScreen extends StatelessWidget {
                       : Colors.black54,
                 ),
               ),
-              // القائمة المنسدلة لاختيار وتغيير اللغة
+
               trailing: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: currentLocale.languageCode,
@@ -149,7 +146,6 @@ class SettingsScreen extends StatelessWidget {
                   ],
                   onChanged: (String? newValue) {
                     if (newValue != null) {
-                      // استدعاء دالة تغيير اللغة داخل الـ LocaleCubit لتحديث واجهة التطبيق فوراً
                       context.read<LocaleCubit>().changeLanguage(newValue);
                     }
                   },

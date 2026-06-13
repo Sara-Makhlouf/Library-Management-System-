@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import 'package:flutter_animate/flutter_animate.dart'; // استيراد حزمة الأنميشن
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:library_mobile_app/core/theme.dart';
+import 'package:library_mobile_app/l10n/app_localizations.dart';
 
 class PointsStickyNote extends StatelessWidget {
   final int points;
@@ -11,6 +12,8 @@ class PointsStickyNote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final localizations = AppLocalizations.of(context)!;
 
     return Stack(
           alignment: Alignment.topCenter,
@@ -36,16 +39,12 @@ class PointsStickyNote extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Text(
-                        'نقاطي: $points',
-                        style: TextStyle(
+                        localizations.myPoints(points),
+                        style: const TextStyle(
                           fontFamily: 'Cairo',
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: isDark
-                              ? AppColors.textDark
-                              : const Color(0xFF3E2D1C),
                         ),
-                        textDirection: TextDirection.rtl,
                       ),
                       const SizedBox(height: 8),
                       Stack(
@@ -136,20 +135,24 @@ class RealisticCurledPaperPainter extends CustomPainter {
     );
     path.quadraticBezierTo(1, size.height * 0.5, 4, 4);
     path.close();
+
     final shadowPaint = Paint()
       ..color = Colors.black.withOpacity(0.12)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
 
     canvas.drawPath(path.shift(const Offset(2, 5)), shadowPaint);
+
     final bodyPaint = Paint()
       ..color = paperColor
       ..style = PaintingStyle.fill;
     canvas.drawPath(path, bodyPaint);
+
     final borderPaint = Paint()
       ..color = borderColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
     canvas.drawPath(path, borderPaint);
+
     final curlPath = Path();
     curlPath.moveTo(size.width, size.height - 20);
     curlPath.lineTo(size.width - 20, size.height);
@@ -165,6 +168,7 @@ class RealisticCurledPaperPainter extends CustomPainter {
       ..color = Color.lerp(paperColor, Colors.black, 0.15)!
       ..style = PaintingStyle.fill;
     canvas.drawPath(curlPath, curlPaint);
+
     final curlBorderPaint = Paint()
       ..color = borderColor.withOpacity(0.7)
       ..style = PaintingStyle.stroke

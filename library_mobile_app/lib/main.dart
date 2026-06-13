@@ -4,9 +4,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:library_mobile_app/core/locale_cubit.dart';
+import 'package:library_mobile_app/feature/homepage/bloc/app_bloc_observer.dart';
 import 'package:library_mobile_app/l10n/app_localizations.dart';
-
-// الاستدعاءات المباشرة الصحيحة 100% حسب مكان الـ main 👇
 import '../../core/constant.dart';
 import '../../core/theme.dart';
 import '../../core/theme_cubit.dart';
@@ -20,6 +19,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 void main() async {
+  Bloc.observer = AppBlocObserver();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 

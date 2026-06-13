@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:library_mobile_app/core/theme.dart'; // للتأكد من الوصول إلى AppColors
+import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/cart/bloc/cart_bloc.dart';
 import 'package:library_mobile_app/feature/cart/bloc/cart_event.dart';
 import 'package:library_mobile_app/feature/cart/data/model/book_model.dart';
+import 'package:library_mobile_app/l10n/app_localizations.dart';
 
 class CartItemCard extends StatelessWidget {
   final CartBookModel item;
@@ -14,6 +15,9 @@ class CartItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isBorrowItem = item.isBorrow ?? false;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // 2️⃣ استدعاء كلاس الترجمة
+    final localizations = AppLocalizations.of(context)!;
 
     return Card(
       color: isDark ? AppColors.darkCard : const Color(0xFFD8C8A8),
@@ -33,7 +37,6 @@ class CartItemCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,16 +45,16 @@ class CartItemCard extends StatelessWidget {
                     item.title,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-
                       color: isDark ? AppColors.textDark : Colors.black87,
                       fontSize: 15,
                     ),
                   ),
                   const SizedBox(height: 5),
                   Text(
+                    // 3️⃣ استبدال النصوص الثابتة والمدمجة بمفاتيح مترجمة وتمرير السعر كمعامل
                     isBorrowItem
-                        ? "رسم استعارة: ${item.price} ل.س"
-                        : "سعر الشراء: ${item.price} ل.س",
+                        ? localizations.borrowPrice(item.price.toString())
+                        : localizations.purchasePrice(item.price.toString()),
                     style: TextStyle(
                       color: isDark
                           ? AppColors.primary
@@ -64,14 +67,12 @@ class CartItemCard extends StatelessWidget {
                 ],
               ),
             ),
-
             if (!isBorrowItem)
               Row(
                 children: [
                   IconButton(
                     icon: Icon(
                       Icons.remove_circle_outline,
-
                       color: isDark
                           ? AppColors.primary
                           : const Color.fromARGB(255, 96, 82, 50),
@@ -87,14 +88,12 @@ class CartItemCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-
                       color: isDark ? AppColors.textDark : Colors.black87,
                     ),
                   ),
                   IconButton(
                     icon: Icon(
                       Icons.add_circle_outline,
-
                       color: isDark
                           ? AppColors.primary
                           : const Color.fromARGB(255, 96, 82, 50),
@@ -107,11 +106,9 @@ class CartItemCard extends StatelessWidget {
                   ),
                 ],
               ),
-
             IconButton(
               icon: const Icon(
                 Icons.delete,
-
                 color: Color.fromARGB(255, 226, 105, 97),
               ),
               onPressed: () {

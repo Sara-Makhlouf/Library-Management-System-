@@ -6,6 +6,7 @@ import 'package:library_mobile_app/feature/cart/bloc/cart_bloc.dart';
 import 'package:library_mobile_app/feature/cart/bloc/cart_event.dart';
 import 'package:library_mobile_app/feature/cart/bloc/cart_state.dart';
 import 'package:library_mobile_app/feature/cart/presentation/widgets/cart_item.dart';
+import 'package:library_mobile_app/l10n/app_localizations.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -25,6 +26,9 @@ class _CartScreenState extends State<CartScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // 2️⃣ استدعاء كلاس الترجمة للوصول لجميع المفاتيح
+    final localizations = AppLocalizations.of(context)!;
+
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -36,7 +40,7 @@ class _CartScreenState extends State<CartScreen> {
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(25)),
           ),
           title: Text(
-            "Shopping Cart",
+            localizations.shoppingCart, // 🔄 تم استبدال "Shopping Cart"
             style: TextStyle(
               color: isDark ? AppColors.textDark : Colors.black87,
               fontWeight: FontWeight.bold,
@@ -44,7 +48,6 @@ class _CartScreenState extends State<CartScreen> {
           ),
           automaticallyImplyLeading: false,
           centerTitle: true,
-
           backgroundColor: isDark
               ? AppColors.darkCard
               : const Color.fromARGB(255, 189, 170, 127),
@@ -57,9 +60,11 @@ class _CartScreenState extends State<CartScreen> {
                 : const Color.fromARGB(255, 96, 82, 50),
             unselectedLabelColor: isDark ? AppColors.textGrey : Colors.white70,
             indicatorSize: TabBarIndicatorSize.label,
-            tabs: const [
-              Tab(text: "Buying"),
-              Tab(text: "Borrowing"),
+            tabs: [
+              Tab(text: localizations.buyingTab), // 🔄 تم استبدال "Buying"
+              Tab(
+                text: localizations.borrowingTab,
+              ), // 🔄 تم استبدال "Borrowing"
             ],
           ),
         ),
@@ -78,17 +83,18 @@ class _CartScreenState extends State<CartScreen> {
                               )
                               .toList(),
                           isDark,
+                          localizations, // مررنا متغير الترجمة هنا
                         ),
                         _buildCartList(
                           state.cartItems
                               .where((item) => (item.isBorrow ?? false) == true)
                               .toList(),
                           isDark,
+                          localizations, // مررنا متغير الترجمة هنا
                         ),
                       ],
                     ),
                   ),
-
                   Padding(
                     padding: const EdgeInsets.only(
                       bottom: 90,
@@ -109,7 +115,6 @@ class _CartScreenState extends State<CartScreen> {
                               : const Color.fromARGB(255, 96, 82, 50),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
-
                             side: isDark
                                 ? BorderSide(
                                     color: AppColors.primary.withOpacity(0.3),
@@ -125,9 +130,10 @@ class _CartScreenState extends State<CartScreen> {
                             arguments: context.read<CartBloc>(),
                           );
                         },
-                        child: const Text(
-                          "Confirm Order & Pay",
-                          style: TextStyle(
+                        child: Text(
+                          localizations
+                              .confirmOrderAndPay, // 🔄 تم استبدال "Confirm Order & Pay"
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -151,11 +157,17 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCartList(List<dynamic> items, bool isDark) {
+  // 💡 أضفنا AppLocalizations كمعامل فرعي لتحديث نص الحالة الفارغة تلقائياً
+  Widget _buildCartList(
+    List<dynamic> items,
+    bool isDark,
+    AppLocalizations localizations,
+  ) {
     if (items.isEmpty) {
       return Center(
         child: Text(
-          "No items in this section",
+          localizations
+              .noItemsInSection, // 🔄 تحويلها لديناميكية بدلاً من ثابتة
           style: TextStyle(
             color: isDark ? AppColors.textGrey : Colors.grey,
             fontSize: 16,

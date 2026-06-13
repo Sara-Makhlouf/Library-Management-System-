@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/cart/bloc/cart_bloc.dart';
 import 'package:library_mobile_app/feature/cart/bloc/cart_state.dart';
+import 'package:library_mobile_app/l10n/app_localizations.dart'; // ─── استيراد حزمة الترجمة ───
 
 import '../bloc/payment_bloc.dart';
 import '../bloc/payment_event.dart';
@@ -36,6 +37,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // ─── تعريف متغير الترجمة ───
+    final localizations = AppLocalizations.of(context)!;
+
     final cartState = context.read<CartBloc>().state;
     int buyingCount = 0;
     int borrowingCount = 0;
@@ -62,7 +66,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(25)),
           ),
           title: Text(
-            "Checkout & Payment",
+            localizations.checkoutAndPayment, // ─── ترجمة العنوان ───
             style: TextStyle(
               color: isDark
                   ? AppColors.primary
@@ -90,6 +94,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 buyingCount,
                 borrowingCount,
                 isDark,
+                localizations, // تمرير الترجمة للدايالوج
               );
             } else if (state is CheckoutFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -107,15 +112,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 children: [
                   // --- 1. Order Summary / Invoice ---
                   _buildSection(
-                    "Invoice Summary",
+                    localizations.invoiceSummary, // ─── ملخص الفاتورة ───
                     [
                       _buildSummaryRow(
-                        "Buying Books:",
+                        localizations.buyingBooks, // ─── كتب الشراء ───
                         "$buyingCount Items",
                         isDark,
                       ),
                       _buildSummaryRow(
-                        "Borrowing Books:",
+                        localizations.borrowingBooks, // ─── كتب الاستعارة ───
                         "$borrowingCount Items",
                         isDark,
                       ),
@@ -125,7 +130,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             : Colors.grey.withOpacity(0.5),
                       ),
                       _buildSummaryRow(
-                        "Total Price:",
+                        localizations.totalPrice, // ─── السعر الإجمالي ───
                         "${totalPrice.toStringAsFixed(0)} ل.س",
                         isDark,
                         isTotal: true,
@@ -133,44 +138,48 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ],
                     index: 0,
                     isDark: isDark,
+                    localizations: localizations,
                   ),
 
                   const SizedBox(height: 16),
 
                   // --- 2. Personal Information ---
                   _buildSection(
-                    "Personal Information",
+                    localizations.personalInformation, // ─── معلومات شخصية ───
                     [
                       _buildTextField(
-                        "Full Name",
+                        localizations.fullName, // ─── الاسم الكامل ───
                         _nameController,
                         isDark: isDark,
                       ),
                       _buildTextField(
-                        "Phone Number",
+                        localizations.phoneNumber, // ─── رقم الهاتف ───
                         _phoneController,
                         isPhone: true,
                         isDark: isDark,
                       ),
                       _buildTextField(
-                        "Detailed Address",
+                        localizations
+                            .detailedAddress, // ─── العنوان التفصيلي ───
                         _addressController,
                         isDark: isDark,
                       ),
                     ],
                     index: 1,
                     isDark: isDark,
+                    localizations: localizations,
                   ),
 
                   const SizedBox(height: 16),
 
                   // --- 3. Delivery Service ---
                   _buildSection(
-                    "Delivery Service",
+                    localizations.deliveryService, // ─── خدمة التوصيل ───
                     [
                       RadioListTile<bool>(
                         title: Text(
-                          "Yes, I want delivery",
+                          localizations
+                              .yesWantsDelivery, // ─── نعم، أريد التوصيل ───
                           style: TextStyle(
                             color: isDark ? AppColors.textDark : Colors.black87,
                           ),
@@ -190,7 +199,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                       RadioListTile<bool>(
                         title: Text(
-                          "No, I will pick it up",
+                          localizations
+                              .noStorePickup, // ─── لا، سأستلمها من المكتبة ───
                           style: TextStyle(
                             color: isDark ? AppColors.textDark : Colors.black87,
                           ),
@@ -211,17 +221,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ],
                     index: 2,
                     isDark: isDark,
+                    localizations: localizations,
                   ),
 
                   const SizedBox(height: 16),
 
                   // --- 4. Payment Method ---
                   _buildSection(
-                    "Payment Method",
+                    localizations.paymentMethod, // ─── طريقة الدفع ───
                     [
                       RadioListTile(
                         title: Text(
-                          "Credit Card",
+                          localizations.creditCard, // ─── بطاقة ائتمان ───
                           style: TextStyle(
                             color: isDark ? AppColors.textDark : Colors.black87,
                           ),
@@ -242,7 +253,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                       RadioListTile(
                         title: Text(
-                          "Cash on Delivery",
+                          localizations
+                              .cashOnDelivery, // ─── الدفع عند الاستلام ───
                           style: TextStyle(
                             color: isDark ? AppColors.textDark : Colors.black87,
                           ),
@@ -264,13 +276,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ],
                     index: 3,
                     isDark: isDark,
+                    localizations: localizations,
                   ),
 
                   const SizedBox(height: 16),
 
                   // --- 5. Borrowing Terms Note ---
                   _buildSection(
-                    "Borrowing Terms",
+                    localizations.borrowingTerms, // ─── شروط الاستعارة ───
                     [
                       ListTile(
                         contentPadding: EdgeInsets.zero,
@@ -280,7 +293,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           size: 28,
                         ),
                         title: Text(
-                          "Important Note for Borrowed Books",
+                          localizations
+                              .importantNoteBorrow, // ─── ملاحظة هامة للكتب المستعارة ───
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
@@ -288,7 +302,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           ),
                         ),
                         subtitle: Text(
-                          "The maximum borrowing period is 7 days only from the date of receiving the order. Please ensure timely returns.",
+                          localizations
+                              .borrowPeriodNotice, // ─── الحد الأقصى للاستعارة 7 أيام... ───
                           style: TextStyle(
                             fontSize: 13,
                             color: isDark ? AppColors.textGrey : Colors.black54,
@@ -298,6 +313,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ],
                     index: 4,
                     isDark: isDark,
+                    localizations: localizations,
                   ),
 
                   const SizedBox(height: 30),
@@ -315,7 +331,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(50),
                                 ),
-
                                 backgroundColor: isDark
                                     ? AppColors.inputDark
                                     : const Color.fromARGB(255, 189, 170, 127),
@@ -332,7 +347,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 );
                               },
                               child: Text(
-                                "Confirm Order Now",
+                                localizations
+                                    .confirmOrderAndPay, // ─── تأكيد الطلب والدفع ───
                                 style: TextStyle(
                                   color: isDark
                                       ? AppColors.primary
@@ -400,6 +416,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     int buyingCount,
     int borrowingCount,
     bool isDark,
+    AppLocalizations localizations, // تمرير الترجمة
   ) {
     showDialog(
       context: context,
@@ -408,7 +425,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         backgroundColor: isDark ? AppColors.darkCard : const Color(0xFFEFE3D3),
         icon: const Icon(Icons.check_circle, color: Colors.green, size: 60),
         title: Text(
-          "Order Received!",
+          localizations.orderReceived, // ─── تم استلام الطلب ───
           style: TextStyle(color: isDark ? AppColors.textDark : Colors.black87),
         ),
         content: Column(
@@ -416,32 +433,32 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Order ID: ${state.orderId}",
+              "${localizations.orderId}: ${state.orderId}", // ─── رقم الطلب ───
               style: TextStyle(
                 color: isDark ? AppColors.textDark : Colors.black87,
               ),
             ),
             Text(
-              "Date: ${state.date}",
+              "${localizations.date}: ${state.date}", // ─── التاريخ ───
               style: TextStyle(
                 color: isDark ? AppColors.textDark : Colors.black87,
               ),
             ),
             const SizedBox(height: 5),
             Text(
-              "Buying Items: $buyingCount",
+              "${localizations.buyingItems}: $buyingCount", // ─── عناصر الشراء ───
               style: TextStyle(
                 color: isDark ? AppColors.textDark : Colors.black87,
               ),
             ),
             Text(
-              "Borrowing Items: $borrowingCount",
+              "${localizations.borrowingItems}: $borrowingCount", // ─── عناصر الاستعارة ───
               style: TextStyle(
                 color: isDark ? AppColors.textDark : Colors.black87,
               ),
             ),
             Text(
-              "Delivery: ${_wantsDelivery ? 'Requested' : 'Store Pickup'}",
+              "${localizations.deliveryService}: ${_wantsDelivery ? localizations.requested : localizations.storePickup}",
               style: TextStyle(
                 color: isDark ? AppColors.textDark : Colors.black87,
               ),
@@ -462,7 +479,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               Navigator.pop(context);
               Navigator.pop(context);
             },
-            child: const Text("Back to Home"),
+            child: Text(localizations.backToHome), // ─── العودة للرئيسية ───
           ),
         ],
       ),
@@ -474,6 +491,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     List<Widget> children, {
     int index = 0,
     required bool isDark,
+    required AppLocalizations localizations,
   }) {
     return Card(
           color: isDark ? AppColors.darkCard : AppColors.accent,
@@ -541,7 +559,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
         decoration: InputDecoration(
           filled: true,
-          // ─── التعديل: تلوين حقول الإدخال لتتناسب مع الدارك مود ───
           fillColor: isDark ? AppColors.inputDark : const Color(0xFFEFE3D3),
           labelText: label,
           labelStyle: TextStyle(

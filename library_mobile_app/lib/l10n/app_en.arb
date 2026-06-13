@@ -4,25 +4,25 @@
   "darkMode": "Dark Mode",
   "lightMode": "Light Mode",
   "appLanguage": "App Language",
-  
+
   "home": "Home",
   "searchPlaceholder": "Search Your Book...",
   "points": "Points: {count}",
   "mostPopular": "Most popular",
   "bookCategories": "Book categories",
-  
+
   "philosophy": "Philosophy",
   "literatureAndNovels": "Literature & Novels",
   "history": "History",
   "science": "Science",
   "selfDevelopment": "Self-development",
-  
+
   "borrowingRecord": "Borrowing Record",
   "myOrdersAndDelivery": "My Orders & Delivery",
   "profile": "Profile",
   "contactUs": "Contact Us",
   "logout": "Log Out",
-  
+
   "shoppingCart": "Shopping Cart",
   "buyingTab": "Buying",
   "borrowingTab": "Borrowing",
@@ -68,5 +68,73 @@
   "sortDefault": "Default",
   "sortTitle": "Title",
   "sortPrice": "Price",
-  "free": "Free"
+  "free": "Free",
+  "favouritePage": "Favourite Page",
+  "orderHistory" : "OrderHistory",
+  "myPoints": "My Points: {points}",
+"@myPoints": {
+  "placeholders": {
+    "points": {
+      "type": "int"
+    }
+  }
+},
+
+"bookGhadrAlSalafiya": "Ghadr Al-Salafiya",
+"authorEzzElDin": "Ezz El-Din",
+"bookAncientLibrary": "Novel:\nThe Ancient Library",
+"authorGarmoush": "Garmoush",
+"bookTheSpider": "The Spider",
+"authorDawnWizard": "Dawn Wizard",
+"searchYourBook": "Search your book",
+"noItemsInSection": "NoItemsInSection",
+
+
+"borrowPrice": "Borrow Fee: {price} SYP",
+"@borrowPrice": {
+  "description": "The borrow fee of the book",
+  "placeholders": {
+    "price": {
+      "type": "String"
+    }
+  }
+},
+"purchasePrice": "Purchase Price: {price} SYP",
+"@purchasePrice": {
+  "description": "The purchase price of the book",
+  "placeholders": {
+    "price": {
+      "type": "String"
+    }
+  }
+},
+
+"checkoutAndPayment": "Checkout & Payment",
+  "invoiceSummary": "Invoice Summary",
+  "buyingBooks": "Books for Purchase",
+  "borrowingBooks": "Books for Borrowing",
+  "totalPrice": "Total Price",
+  "personalInformation": "Personal Information",
+  "fullName": "Full Name",
+  "phoneNumber": "Phone Number",
+  "detailedAddress": "Detailed Address",
+  "deliveryService": "Delivery Service",
+  "yesWantsDelivery": "Yes, I want home delivery",
+  "noStorePickup": "No, I will pick it up from the library",
+  "paymentMethod": "Payment Method",
+  "creditCard": "Credit Card / Electronic Payment",
+  "cashOnDelivery": "Cash on Delivery",
+  "borrowingTerms": "Borrowing Terms & Notes",
+  "importantNoteBorrow": "Important Note for Borrowed Books",
+  "borrowPeriodNotice": "The maximum borrowing period is 7 days. Please return the books on time to avoid fines.",
+  "confirmOrderAndPay": "Confirm Order & Pay",
+  "orderReceived": "Order Received Successfully!",
+  "orderId": "Order ID",
+  "date": "Date",
+  "buyingItems": "Purchase Items",
+  "borrowingItems": "Borrowing Items",
+  "requested": "Requested",
+  "storePickup": "Library Pickup",
+  "backToHome": "Back to Home"
+
 }

@@ -1,14 +1,19 @@
+// library_mobile_app/feature/presentation/books/book.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:library_mobile_app/core/constant.dart';
 import 'package:library_mobile_app/core/theme.dart';
+import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
+import 'package:library_mobile_app/feature/homepage/data/model.dart';
+import 'package:library_mobile_app/feature/homepage/data/repository.dart';
 
 class Book extends StatefulWidget {
-  final String categoryName;
+  final CategoryModel category;
 
-  // جعلنا المعامل مطلوباً (required) لاستقبال اسم الفئة القادمة من الـ Router
-  const Book({super.key, required this.categoryName});
+  const Book({super.key, required this.category});
 
   @override
   State<Book> createState() => _BookState();
@@ -16,86 +21,16 @@ class Book extends StatefulWidget {
 
 class _BookState extends State<Book> {
   String _sort = 'Default';
-
-  @override
-  void initState() {
-    super.initState();
-    // 💡 هنا المكان المثالي لاستدعاء الـ Bloc لجلب كتب الفئة المحددة عند فتح الشاشة:
-    // context.read<BooksBloc>().add(FetchBooksByCategoryEvent(categoryName: widget.categoryName));
-  }
-
-  // قائمة الكتب التجريبية (Static Data)
-  final List<Map<String, dynamic>> _books = [
-    {
-      'image': 'assets/images/bookHis.png',
-      'title': 'The Muqaddimah',
-      'author': 'Ibn Khaldun',
-      'price': '\$12',
-      'height': 200.0,
-    },
-    {
-      'image': 'assets/images/bookHis1.png',
-      'title': 'Sapiens',
-      'author': 'Yuval Harari',
-      'price': 'Free',
-      'height': 160.0,
-    },
-    {
-      'image': 'assets/images/bookHis2.png',
-      'title': 'The Silk Roads',
-      'author': 'Peter Frankopan',
-      'price': '\$9',
-      'height': 185.0,
-    },
-    {
-      'image': 'assets/images/bookHis3.png',
-      'title': 'Guns & Steel',
-      'author': 'Jared Diamond',
-      'price': '\$14',
-      'height': 175.0,
-    },
-    {
-      'image': 'assets/images/bookHis4.jpg',
-      'title': 'The Art of War',
-      'author': 'Sun Tzu',
-      'price': 'Free',
-      'height': 195.0,
-    },
-    {
-      'image': 'assets/images/bookHis1.png',
-      'title': 'Civilization',
-      'author': 'Niall Ferguson',
-      'price': '\$11',
-      'height': 165.0,
-    },
-    {
-      'image': 'assets/images/bookHis2.png',
-      'title': 'The Crusades',
-      'author': 'Thomas Asbridge',
-      'price': '\$8',
-      'height': 180.0,
-    },
-    {
-      'image': 'assets/images/bookHis3.png',
-      'title': 'A Short History',
-      'author': 'Bill Bryson',
-      'price': '\$10',
-      'height': 170.0,
-    },
-  ];
-
-  List<Map<String, dynamic>> get _sorted {
-    final list = List<Map<String, dynamic>>.from(_books);
+  List<BookModel> _getSortedBooks(List<BookModel> originalBooks) {
+    final list = List<BookModel>.from(originalBooks);
     if (_sort == 'Price') {
       list.sort((a, b) {
-        final aFree = a['price'] == 'Free';
-        final bFree = b['price'] == 'Free';
-        if (aFree && !bFree) return -1;
-        if (!aFree && bFree) return 1;
-        return a['price'].compareTo(b['price']);
+        final aPrice = a.price ?? '';
+        final bPrice = b.price ?? '';
+        return aPrice.compareTo(bPrice);
       });
     } else if (_sort == 'Title') {
-      list.sort((a, b) => a['title'].compareTo(b['title']));
+      list.sort((a, b) => a.title.compareTo(b.title));
     }
     return list;
   }
@@ -155,98 +90,144 @@ class _BookState extends State<Book> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final books = _sorted;
-
-    return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.backgroundDark
-          : AppColors.backgroundLight,
-      appBar: AppBar(
+    return BlocProvider(
+      create: (context) =>
+          HomeBloc(repository: HomeRepository())
+            ..add(FetchBooksByCategoryEvent(categoryId: widget.category.id)),
+      child: Scaffold(
         backgroundColor: isDark
             ? AppColors.backgroundDark
             : AppColors.backgroundLight,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_rounded,
-            size: 18,
-            color: isDark ? AppColors.textDark : AppColors.textLight,
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.categoryName, // يعرض الآن اسم الفئة الممررة بشكل ديناميكي
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isDark ? AppColors.textDark : AppColors.textLight,
-              ),
+        appBar: AppBar(
+          backgroundColor: isDark
+              ? AppColors.backgroundDark
+              : AppColors.backgroundLight,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_rounded,
+              size: 18,
+              color: isDark ? AppColors.textDark : AppColors.textLight,
             ),
-            Text(
-              '${books.length} books',
-              style: TextStyle(
-                fontSize: 11,
-                color: isDark
-                    ? AppColors.textDark.withOpacity(0.5)
-                    : AppColors.textLight.withOpacity(0.5),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          title: BlocBuilder<HomeBloc, HomeState>(
+            builder: (context, state) {
+              final booksCount = state.categoryBooks.length;
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.category.name,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? AppColors.textDark : AppColors.textLight,
+                    ),
+                  ),
+                  Text(
+                    '$booksCount books',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark
+                          ? AppColors.textDark.withOpacity(0.5)
+                          : AppColors.textLight.withOpacity(0.5),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          actions: [
+            GestureDetector(
+              onTap: _showSortSheet,
+              child: Container(
+                margin: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.inputDark : Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isDark ? Colors.white12 : Colors.black12,
+                    width: 0.5,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.sort_rounded,
+                      size: 14,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Sort',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
         ),
-        actions: [
-          GestureDetector(
-            onTap: _showSortSheet,
-            child: Container(
-              margin: const EdgeInsets.only(right: 16),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.inputDark : Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: isDark ? Colors.white12 : Colors.black12,
-                  width: 0.5,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.sort_rounded, size: 14, color: AppColors.primary),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Sort',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w500,
-                    ),
+        body: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+          child: BlocBuilder<HomeBloc, HomeState>(
+            builder: (context, state) {
+              if (state.booksStatus == HomeStatus.loading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state.booksStatus == HomeStatus.error) {
+                return Center(
+                  child: Text(
+                    '🚨 خطأ أثناء تحميل الكتب: ${state.errorMessage}',
+                    style: const TextStyle(color: Colors.red),
                   ),
-                ],
-              ),
-            ),
+                );
+              } else if (state.categoryBooks.isEmpty) {
+                return const Center(
+                  child: Text('لا توجد كتب متوفرة في هذه الفئة حالياً.'),
+                );
+              }
+              final sortedBooks = _getSortedBooks(state.categoryBooks);
+
+              return MasonryGridView.builder(
+                itemCount: sortedBooks.length,
+                gridDelegate:
+                    const SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                    ),
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                itemBuilder: (context, index) {
+                  final book = sortedBooks[index];
+
+                  final double calculatedHeight = (index % 3 == 0)
+                      ? 190.0
+                      : (index % 3 == 1 ? 165.0 : 175.0);
+
+                  return BookCard(
+                        book: book,
+                        isDark: isDark,
+                        cardHeight: calculatedHeight,
+                      )
+                      .animate()
+                      .fadeIn(
+                        delay: Duration(milliseconds: 60 * index),
+                        duration: 300.ms,
+                      )
+                      .slideY(begin: 0.2, end: 0, duration: 300.ms);
+                },
+              );
+            },
           ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-        child: MasonryGridView.builder(
-          itemCount: books.length,
-          gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-          ),
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          itemBuilder: (context, index) {
-            final book = books[index];
-            return BookCard(book: book, isDark: isDark)
-                .animate()
-                .fadeIn(
-                  delay: Duration(milliseconds: 60 * index),
-                  duration: 300.ms,
-                )
-                .slideY(begin: 0.2, end: 0, duration: 300.ms);
-          },
         ),
       ),
     );
@@ -255,17 +236,36 @@ class _BookState extends State<Book> {
 
 // ── Book card ─────────────────────────────────────────────────────────────
 class BookCard extends StatelessWidget {
-  final Map<String, dynamic> book;
+  final BookModel book;
   final bool isDark;
+  final double cardHeight;
 
-  const BookCard({super.key, required this.book, required this.isDark});
+  const BookCard({
+    super.key,
+    required this.book,
+    required this.isDark,
+    required this.cardHeight,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final String displayPrice =
+        (book.price == null || book.price == '0' || book.price!.isEmpty)
+        ? 'Free'
+        : '${book.price} ل.س';
+
+    final String baseUrl = "http://192.168.1.18:8000/storage/";
+
+    String? fullCoverUrl;
+    if (book.cover != null && book.cover!.isNotEmpty) {
+      fullCoverUrl = book.cover!.startsWith('http')
+          ? book.cover
+          : '$baseUrl${book.cover}';
+    }
     return GestureDetector(
       onTap: () => Navigator.of(
         context,
-      ).pushNamed(Routes.bookDetails, arguments: book['image']),
+      ).pushNamed(Routes.bookDetails, arguments: fullCoverUrl),
       child: Container(
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkCard : Colors.white,
@@ -286,26 +286,20 @@ class BookCard extends StatelessWidget {
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(12),
               ),
-              child: Image.asset(
-                book['image'],
-                height: book['height'],
-                width: double.infinity,
-                fit: BoxFit.cover,
-                cacheWidth: 300,
-                errorBuilder: (_, __, ___) => Container(
-                  height: book['height'],
-                  color: isDark
-                      ? AppColors.inputDark
-                      : AppColors.accentLight.withOpacity(0.4),
-                  child: Center(
-                    child: Icon(
-                      Icons.book_outlined,
-                      color: AppColors.primary,
-                      size: 28,
-                    ),
-                  ),
-                ),
-              ),
+              child: fullCoverUrl != null
+                  ? Image.network(
+                      fullCoverUrl,
+                      height: cardHeight,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) {
+                        print(
+                          "❌ لساته عم يفشل؟ اتأكدي إنو الملف موجود فعلياً بالمسار public/storage بالسيرفر",
+                        );
+                        return _buildPlaceholderIcon();
+                      },
+                    )
+                  : _buildPlaceholderIcon(),
             ),
             Padding(
               padding: const EdgeInsets.all(7),
@@ -313,7 +307,7 @@ class BookCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    book['title'],
+                    book.title,
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
@@ -324,7 +318,9 @@ class BookCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    book['author'],
+                    book.isbn != null
+                        ? 'ISBN: ${book.isbn}'
+                        : 'مكتبة دمشق ذكية',
                     style: TextStyle(
                       fontSize: 9,
                       color: isDark
@@ -341,17 +337,17 @@ class BookCard extends StatelessWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: book['price'] == 'Free'
+                      color: displayPrice == 'Free'
                           ? Colors.green.withOpacity(0.12)
                           : AppColors.primary.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(5),
                     ),
                     child: Text(
-                      book['price'],
+                      displayPrice,
                       style: TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.w600,
-                        color: book['price'] == 'Free'
+                        color: displayPrice == 'Free'
                             ? Colors.green
                             : AppColors.primary,
                       ),
@@ -362,6 +358,18 @@ class BookCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderIcon() {
+    return Container(
+      height: cardHeight,
+      color: isDark
+          ? AppColors.inputDark
+          : AppColors.accentLight.withOpacity(0.4),
+      child: Center(
+        child: Icon(Icons.book_outlined, color: AppColors.primary, size: 28),
       ),
     );
   }

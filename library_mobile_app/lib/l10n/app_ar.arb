@@ -7,8 +7,9 @@
   
   "home": "الرئيسية",
   "searchPlaceholder": "ابحث عن كتابك...",
-  "points": "نقاطي: {count}",
+    "points": "نقاطي: {count}",
   "mostPopular": "الأكثر شهرة",
+    
   "bookCategories": "تصنيفات الكتب",
   
   "philosophy": "فلسفة",
@@ -27,7 +28,7 @@
   "buyingTab": "الشراء",
   "borrowingTab": "الاستعارة",
   "borrowPrice": "رسم استعارة: {price} ل.س",
-  "buyPrice": "سعر الشراء: {price} ل.س",
+ "purchasePrice": "سعر الشراء: {price} ل.س",
   "confirmOrderAndPay": "تأكيد الطلب والدفع",
   
   "checkoutAndPayment": "الدفع والتشيك أوت",
@@ -68,5 +69,53 @@
   "sortDefault": "الافتراضي",
   "sortTitle": "العنوان",
   "sortPrice": "السعر",
-  "free": "مجاني"
+  "free": "مجاني",
+  "favouritePage": "الصفحة المفضلة",
+  "orderHistory" :"سجل الطلبات",
+  "myPoints": "نقاطي: {points}",
+"@myPoints": {
+  "placeholders": {
+    "points": {
+      "type": "int"
+    }
+  }
+},
+"mostPopular": "الأكثر شعبية",
+"bookGhadrAlSalafiya": "غدر السلفية",
+"authorEzzElDin": "عز الدين",
+"bookAncientLibrary": "رواية:\nالمكتبة العتيقة",
+"authorGarmoush": "غارمورش",
+"bookTheSpider": "العنكبوت",
+"authorDawnWizard": "ساحر الفجر",
+"searchYourBook": "ابحث عن كتابك",
+"noItemsInSection": "لا توجد عناصر في هذا القسم",
+
+
+"checkoutAndPayment": "الدفع وإتمام الطلب",
+  "invoiceSummary": "ملخص الفاتورة",
+  "buyingBooks": "كتب للشراء",
+  "borrowingBooks": "كتب للاستعارة",
+  "totalPrice": "السعر الإجمالي",
+  "personalInformation": "المعلومات الشخصية",
+  "fullName": "الاسم الكامل",
+  "phoneNumber": "رقم الهاتف",
+  "detailedAddress": "العنوان التفصيلي",
+  "deliveryService": "خدمة التوصيل",
+  "yesWantsDelivery": "نعم، أريد التوصيل إلى عنواني",
+  "noStorePickup": "لا، سأقوم باستلامها بنفسي من المكتبة",
+  "paymentMethod": "طريقة الدفع",
+  "creditCard": "بطاقة ائتمان / دفع إلكتروني",
+  "cashOnDelivery": "الدفع نقداً عند الاستلام",
+  "borrowingTerms": "شروط وملاحظات الاستعارة",
+  "importantNoteBorrow": "ملاحظة هامة بخصوص الكتب المستعارة",
+  "borrowPeriodNotice": "الحد الأقصى للاستعارة هو 7 أيام فقط. يرجى الالتزام بالموعد لتجنب الغرامات.",
+  "confirmOrderAndPay": "تأكيد الطلب والدفع",
+  "orderReceived": "تم استلام طلبكِ بنجاح!",
+  "orderId": "رقم الطلب",
+  "date": "التاريخ",
+  "buyingItems": "عدد كتب الشراء",
+  "borrowingItems": "عدد كتب الاستعارة",
+  "requested": "مطلوب",
+  "storePickup": "استلام من المكتبة",
+  "backToHome": "العودة للرئيسية"
 }

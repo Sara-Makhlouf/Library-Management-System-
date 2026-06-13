@@ -1,8 +1,12 @@
+// library_mobile_app/core/app_router.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:library_mobile_app/core/constant.dart';
 import 'package:library_mobile_app/feature/cart/bloc/cart_bloc.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
+import 'package:library_mobile_app/feature/homepage/data/model.dart';
+import 'package:library_mobile_app/feature/homepage/data/repository.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/screens/home_page.dart';
 import 'package:library_mobile_app/feature/notifications/notifications_screen.dart';
 import 'package:library_mobile_app/feature/presentation/books/book.dart';
@@ -23,7 +27,9 @@ class AppRouter {
           builder: (_) => MultiBlocProvider(
             providers: [
               BlocProvider(
-                create: (context) => HomeBloc()..add(GetPopularBooksEvent()),
+                create: (context) => HomeBloc(repository: HomeRepository())
+                  ..add(GetPopularBooksEvent())
+                  ..add(FetchCategoriesEvent()),
               ),
               BlocProvider(create: (context) => CartBloc()),
             ],
@@ -41,11 +47,9 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
 
       case Routes.book:
-        final categoryTitle = settings.arguments as String? ?? 'الكل';
+        final category = settings.arguments as CategoryModel;
 
-        return MaterialPageRoute(
-          builder: (_) => Book(categoryName: categoryTitle),
-        );
+        return MaterialPageRoute(builder: (_) => Book(category: category));
 
       case Routes.bookDetails:
         final imagePath = settings.arguments as String;

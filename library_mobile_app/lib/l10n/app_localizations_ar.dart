@@ -32,7 +32,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get mostPopular => 'الأكثر شهرة';
+  String get mostPopular => 'الأكثر شعبية';
 
   @override
   String get bookCategories => 'تصنيفات الكتب';
@@ -77,29 +77,29 @@ class AppLocalizationsAr extends AppLocalizations {
   String get borrowingTab => 'الاستعارة';
 
   @override
-  String borrowPrice(Object price) {
+  String borrowPrice(String price) {
     return 'رسم استعارة: $price ل.س';
   }
 
   @override
   String buyPrice(Object price) {
-    return 'سعر الشراء: $price ل.س';
+    return 'Buying price: $price SYP';
   }
 
   @override
   String get confirmOrderAndPay => 'تأكيد الطلب والدفع';
 
   @override
-  String get checkoutAndPayment => 'الدفع والتشيك أوت';
+  String get checkoutAndPayment => 'الدفع وإتمام الطلب';
 
   @override
   String get invoiceSummary => 'ملخص الفاتورة';
 
   @override
-  String get buyingBooks => 'كتب للشراء:';
+  String get buyingBooks => 'كتب للشراء';
 
   @override
-  String get borrowingBooks => 'كتب للاستعارة:';
+  String get borrowingBooks => 'كتب للاستعارة';
 
   @override
   String itemsCount(Object count) {
@@ -107,7 +107,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get totalPrice => 'السعر الإجمالي:';
+  String get totalPrice => 'السعر الإجمالي';
 
   @override
   String get currency => 'ل.س';
@@ -122,7 +122,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get phoneNumber => 'رقم الهاتف';
 
   @override
-  String get detailedAddress => 'العنوان بالتفصيل';
+  String get detailedAddress => 'العنوان التفصيلي';
 
   @override
   String get deliveryService => 'خدمة التوصيل';
@@ -137,30 +137,29 @@ class AppLocalizationsAr extends AppLocalizations {
   String get paymentMethod => 'طريقة الدفع';
 
   @override
-  String get creditCard => 'بطاقة ائتمان';
+  String get creditCard => 'بطاقة ائتمان / دفع إلكتروني';
 
   @override
-  String get cashOnDelivery => 'الدفع عند الاستلام';
+  String get cashOnDelivery => 'الدفع نقداً عند الاستلام';
 
   @override
-  String get borrowingTerms => 'شروط الاستعارة';
+  String get borrowingTerms => 'شروط وملاحظات الاستعارة';
 
   @override
-  String get importantNoteBorrow => 'ملاحظة هامة للكتب المستعارة';
+  String get importantNoteBorrow => 'ملاحظة هامة بخصوص الكتب المستعارة';
 
   @override
-  String get borrowPeriodNotice => 'الحد الأقصى لفترة الاستعارة هو 7 أيام فقط من تاريخ استلام الطلب. يرجى التأكد من الإعادة في الوقت المحدد.';
+  String get borrowPeriodNotice =>
+      'الحد الأقصى للاستعارة هو 7 أيام فقط. يرجى الالتزام بالموعد لتجنب الغرامات.';
 
   @override
   String get confirmOrderNow => 'تأكيد الطلب الآن';
 
   @override
-  String get orderReceived => 'تم استلام الطلب!';
+  String get orderReceived => 'تم استلام طلبكِ بنجاح!';
 
   @override
-  String orderId(Object id) {
-    return 'رقم الطلب: $id';
-  }
+  String get orderId => 'رقم الطلب';
 
   @override
   String orderDate(Object date) {
@@ -195,4 +194,65 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get free => 'مجاني';
+
+  @override
+  String get favouritePage => 'الصفحة المفضلة';
+
+  @override
+  String get orderHistory => 'سجل الطلبات';
+
+  @override
+  String myPoints(int points) {
+    return 'نقاطي: $points';
+  }
+
+  @override
+  String get bookGhadrAlSalafiya => 'غدر السلفية';
+
+  @override
+  String get authorEzzElDin => 'عز الدين';
+
+  @override
+  String get bookAncientLibrary => 'رواية:\nالمكتبة العتيقة';
+
+  @override
+  String get authorGarmoush => 'غارمورش';
+
+  @override
+  String get bookTheSpider => 'العنكبوت';
+
+  @override
+  String get authorDawnWizard => 'ساحر الفجر';
+
+  @override
+  String get searchYourBook => 'ابحث عن كتابك';
+
+  @override
+  String get noItemsInSection => 'لا توجد عناصر في هذا القسم';
+
+  @override
+  String purchasePrice(String price) {
+    return 'سعر الشراء: $price ل.س';
+  }
+
+  @override
+  String get yesWantsDelivery => 'نعم، أريد التوصيل إلى عنواني';
+
+  @override
+  String get noStorePickup => 'لا، سأقوم باستلامها بنفسي من المكتبة';
+
+  @override
+  String get date => 'التاريخ';
+
+  @override
+  String get buyingItems => 'عدد كتب الشراء';
+
+  @override
+  String get borrowingItems => 'عدد كتب الاستعارة';
+
+  @override
+  String get requested => 'مطلوب';
+
+  @override
+  String get storePickup => 'استلام من المكتبة';
 }

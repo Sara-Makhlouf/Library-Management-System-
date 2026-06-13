@@ -62,7 +62,8 @@ import 'app_localizations_en.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -70,7 +71,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -82,17 +84,18 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('ar'),
-    Locale('en')
+    Locale('en'),
   ];
 
   /// No description provided for @settings.
@@ -227,11 +230,11 @@ abstract class AppLocalizations {
   /// **'Borrowing'**
   String get borrowingTab;
 
-  /// No description provided for @borrowPrice.
+  /// The borrow fee of the book
   ///
   /// In en, this message translates to:
-  /// **'Borrowing fee: {price} SYP'**
-  String borrowPrice(Object price);
+  /// **'Borrow Fee: {price} SYP'**
+  String borrowPrice(String price);
 
   /// No description provided for @buyPrice.
   ///
@@ -260,13 +263,13 @@ abstract class AppLocalizations {
   /// No description provided for @buyingBooks.
   ///
   /// In en, this message translates to:
-  /// **'Buying Books:'**
+  /// **'Books for Purchase'**
   String get buyingBooks;
 
   /// No description provided for @borrowingBooks.
   ///
   /// In en, this message translates to:
-  /// **'Borrowing Books:'**
+  /// **'Books for Borrowing'**
   String get borrowingBooks;
 
   /// No description provided for @itemsCount.
@@ -278,7 +281,7 @@ abstract class AppLocalizations {
   /// No description provided for @totalPrice.
   ///
   /// In en, this message translates to:
-  /// **'Total Price:'**
+  /// **'Total Price'**
   String get totalPrice;
 
   /// No description provided for @currency.
@@ -338,7 +341,7 @@ abstract class AppLocalizations {
   /// No description provided for @creditCard.
   ///
   /// In en, this message translates to:
-  /// **'Credit Card'**
+  /// **'Credit Card / Electronic Payment'**
   String get creditCard;
 
   /// No description provided for @cashOnDelivery.
@@ -350,7 +353,7 @@ abstract class AppLocalizations {
   /// No description provided for @borrowingTerms.
   ///
   /// In en, this message translates to:
-  /// **'Borrowing Terms'**
+  /// **'Borrowing Terms & Notes'**
   String get borrowingTerms;
 
   /// No description provided for @importantNoteBorrow.
@@ -362,7 +365,7 @@ abstract class AppLocalizations {
   /// No description provided for @borrowPeriodNotice.
   ///
   /// In en, this message translates to:
-  /// **'The maximum borrowing period is 7 days only from the date of receiving the order. Please ensure timely returns.'**
+  /// **'The maximum borrowing period is 7 days. Please return the books on time to avoid fines.'**
   String get borrowPeriodNotice;
 
   /// No description provided for @confirmOrderNow.
@@ -374,14 +377,14 @@ abstract class AppLocalizations {
   /// No description provided for @orderReceived.
   ///
   /// In en, this message translates to:
-  /// **'Order Received!'**
+  /// **'Order Received Successfully!'**
   String get orderReceived;
 
   /// No description provided for @orderId.
   ///
   /// In en, this message translates to:
-  /// **'Order ID: {id}'**
-  String orderId(Object id);
+  /// **'Order ID'**
+  String get orderId;
 
   /// No description provided for @orderDate.
   ///
@@ -442,9 +445,124 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Free'**
   String get free;
+
+  /// No description provided for @favouritePage.
+  ///
+  /// In en, this message translates to:
+  /// **'Favourite Page'**
+  String get favouritePage;
+
+  /// No description provided for @orderHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'OrderHistory'**
+  String get orderHistory;
+
+  /// No description provided for @myPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'My Points: {points}'**
+  String myPoints(int points);
+
+  /// No description provided for @bookGhadrAlSalafiya.
+  ///
+  /// In en, this message translates to:
+  /// **'Ghadr Al-Salafiya'**
+  String get bookGhadrAlSalafiya;
+
+  /// No description provided for @authorEzzElDin.
+  ///
+  /// In en, this message translates to:
+  /// **'Ezz El-Din'**
+  String get authorEzzElDin;
+
+  /// No description provided for @bookAncientLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Novel:\nThe Ancient Library'**
+  String get bookAncientLibrary;
+
+  /// No description provided for @authorGarmoush.
+  ///
+  /// In en, this message translates to:
+  /// **'Garmoush'**
+  String get authorGarmoush;
+
+  /// No description provided for @bookTheSpider.
+  ///
+  /// In en, this message translates to:
+  /// **'The Spider'**
+  String get bookTheSpider;
+
+  /// No description provided for @authorDawnWizard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dawn Wizard'**
+  String get authorDawnWizard;
+
+  /// No description provided for @searchYourBook.
+  ///
+  /// In en, this message translates to:
+  /// **'Search your book'**
+  String get searchYourBook;
+
+  /// No description provided for @noItemsInSection.
+  ///
+  /// In en, this message translates to:
+  /// **'NoItemsInSection'**
+  String get noItemsInSection;
+
+  /// The purchase price of the book
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase Price: {price} SYP'**
+  String purchasePrice(String price);
+
+  /// No description provided for @yesWantsDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, I want home delivery'**
+  String get yesWantsDelivery;
+
+  /// No description provided for @noStorePickup.
+  ///
+  /// In en, this message translates to:
+  /// **'No, I will pick it up from the library'**
+  String get noStorePickup;
+
+  /// No description provided for @date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get date;
+
+  /// No description provided for @buyingItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase Items'**
+  String get buyingItems;
+
+  /// No description provided for @borrowingItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Borrowing Items'**
+  String get borrowingItems;
+
+  /// No description provided for @requested.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested'**
+  String get requested;
+
+  /// No description provided for @storePickup.
+  ///
+  /// In en, this message translates to:
+  /// **'Library Pickup'**
+  String get storePickup;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -453,25 +571,26 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['ar', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) =>
+      <String>['ar', 'en'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'ar': return AppLocalizationsAr();
-    case 'en': return AppLocalizationsEn();
+    case 'ar':
+      return AppLocalizationsAr();
+    case 'en':
+      return AppLocalizationsEn();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
+    'that was used.',
   );
 }

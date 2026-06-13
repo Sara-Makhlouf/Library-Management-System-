@@ -77,8 +77,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get borrowingTab => 'Borrowing';
 
   @override
-  String borrowPrice(Object price) {
-    return 'Borrowing fee: $price SYP';
+  String borrowPrice(String price) {
+    return 'Borrow Fee: $price SYP';
   }
 
   @override
@@ -96,10 +96,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invoiceSummary => 'Invoice Summary';
 
   @override
-  String get buyingBooks => 'Buying Books:';
+  String get buyingBooks => 'Books for Purchase';
 
   @override
-  String get borrowingBooks => 'Borrowing Books:';
+  String get borrowingBooks => 'Books for Borrowing';
 
   @override
   String itemsCount(Object count) {
@@ -107,7 +107,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get totalPrice => 'Total Price:';
+  String get totalPrice => 'Total Price';
 
   @override
   String get currency => 'SYP';
@@ -137,30 +137,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentMethod => 'Payment Method';
 
   @override
-  String get creditCard => 'Credit Card';
+  String get creditCard => 'Credit Card / Electronic Payment';
 
   @override
   String get cashOnDelivery => 'Cash on Delivery';
 
   @override
-  String get borrowingTerms => 'Borrowing Terms';
+  String get borrowingTerms => 'Borrowing Terms & Notes';
 
   @override
   String get importantNoteBorrow => 'Important Note for Borrowed Books';
 
   @override
-  String get borrowPeriodNotice => 'The maximum borrowing period is 7 days only from the date of receiving the order. Please ensure timely returns.';
+  String get borrowPeriodNotice =>
+      'The maximum borrowing period is 7 days. Please return the books on time to avoid fines.';
 
   @override
   String get confirmOrderNow => 'Confirm Order Now';
 
   @override
-  String get orderReceived => 'Order Received!';
+  String get orderReceived => 'Order Received Successfully!';
 
   @override
-  String orderId(Object id) {
-    return 'Order ID: $id';
-  }
+  String get orderId => 'Order ID';
 
   @override
   String orderDate(Object date) {
@@ -195,4 +194,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get free => 'Free';
+
+  @override
+  String get favouritePage => 'Favourite Page';
+
+  @override
+  String get orderHistory => 'OrderHistory';
+
+  @override
+  String myPoints(int points) {
+    return 'My Points: $points';
+  }
+
+  @override
+  String get bookGhadrAlSalafiya => 'Ghadr Al-Salafiya';
+
+  @override
+  String get authorEzzElDin => 'Ezz El-Din';
+
+  @override
+  String get bookAncientLibrary => 'Novel:\nThe Ancient Library';
+
+  @override
+  String get authorGarmoush => 'Garmoush';
+
+  @override
+  String get bookTheSpider => 'The Spider';
+
+  @override
+  String get authorDawnWizard => 'Dawn Wizard';
+
+  @override
+  String get searchYourBook => 'Search your book';
+
+  @override
+  String get noItemsInSection => 'NoItemsInSection';
+
+  @override
+  String purchasePrice(String price) {
+    return 'Purchase Price: $price SYP';
+  }
+
+  @override
+  String get yesWantsDelivery => 'Yes, I want home delivery';
+
+  @override
+  String get noStorePickup => 'No, I will pick it up from the library';
+
+  @override
+  String get date => 'Date';
+
+  @override
+  String get buyingItems => 'Purchase Items';
+
+  @override
+  String get borrowingItems => 'Borrowing Items';
+
+  @override
+  String get requested => 'Requested';
+
+  @override
+  String get storePickup => 'Library Pickup';
 }
