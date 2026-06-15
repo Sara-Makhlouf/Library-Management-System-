@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import api from "../../Api/aixos";
 
 
 const getAuthConfig = () => ({
@@ -9,13 +9,12 @@ const getAuthConfig = () => ({
   },
 });
 
-// Get All Transactions
 export const getAllTransactions = createAsyncThunk(
   "adminTransactions/getAllTransactions",
   async (status = null, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        `/admin/transactions`,
+      const response = await api.get(
+        `/transactions`,
         {
           ...getAuthConfig(),
           params: status ? { status } : {},
@@ -37,8 +36,8 @@ export const checkoutTransaction = createAsyncThunk(
   "adminTransactions/checkoutTransaction",
   async (checkoutData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `/admin/transactions/checkout`,
+      const response = await api.post(
+        `/transactions/checkout`,
         checkoutData,
         getAuthConfig()
       );

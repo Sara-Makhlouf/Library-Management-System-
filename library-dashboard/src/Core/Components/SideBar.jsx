@@ -1,198 +1,240 @@
-import { NavLink } from "react-router-dom";
-
+import { NavLink, useLocation } from "react-router-dom";
 import { Box, Typography, Collapse } from "@mui/material";
-
 import { useState } from "react";
 
-import MenuIcon from "@mui/icons-material/Menu";
+const NAV_ITEMS = [
+  { to: "/dashboard",  icon: "dashboard",      label: "Dashboard" },
+  { to: "/inventory",  icon: "menu_book",       label: "Book Inventory" },
+  { to: "/analytics",  icon: "analytics",       label: "Analytics" },
+  { to: "/order",      icon: "shopping_cart",   label: "Orders" },
+  //{ to: "/finance",    icon: "payments",        label: "Finances" },
+  //{ to: "/archives",   icon: "archive",         label: "Archives" },
+{to:"/bookrequest", icon:"request_page", label:"BookRequest"},
+{to:"/waitinglist", icon:"hourglass_top", label:"WaitingBooks"},
+{to:"/bills", icon:"receipt_long", label:"Bills"},
+{to:"/transactions", icon:"sync_alt", label:"Transactions"}
+];
 
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+const USER_SUBNAV = [
+  { to: "/users/list",     label: "List" },
+  { to: "/users/profiles", label: "Profiles" },
+];
 
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-
+const GOLD   = "#c9a84c";
+const GOLDDIM = "rgba(201,168,76,0.08)";
+const GOLDBORDER = "rgba(201,168,76,0.18)";
+const MUTED  = "rgba(255,255,255,0.38)";
+const BRIGHT = "rgba(255,255,255,0.82)";
+const HOVER  = "rgba(255,255,255,0.04)";
 
 export default function Sidebar() {
   const [openUsers, setOpenUsers] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation();
+  const usersActive = location.pathname.startsWith("/users");
 
   const navItem = (isActive) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: collapsed ? "center" : "flex-start",
-    gap: collapsed ? 0 : 1.5,
-    px: 1.5,
-    py: 1,
+    gap: collapsed ? 0 : "11px",
+    px: "10px",
+    py: "9px",
     borderRadius: "10px",
-    fontSize: "0.9rem",
+    fontSize: "13px",
     fontWeight: isActive ? 600 : 500,
-    color: "rgb(96, 82, 50)",
-    position: "relative",
+    color: isActive ? GOLD : MUTED,
     cursor: "pointer",
-    transition: "0.2s",
-
-    "&:hover": {
-      bgcolor: "rgba(0,0,0,0.06)",
-    },
-
+    transition: "all 0.2s",
+    border: "1px solid transparent",
+    textDecoration: "none",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
     ...(isActive && {
-      bgcolor: "rgba(49,40,22,0.12)",
+      bgcolor: GOLDDIM,
+      borderColor: GOLDBORDER,
     }),
+    "&:hover": {
+      color: isActive ? GOLD : BRIGHT,
+      bgcolor: isActive ? GOLDDIM : HOVER,
+    },
   });
+
+  const iconStyle = {
+    fontSize: "18px",
+    minWidth: "18px",
+    color: "inherit",
+  };
 
   return (
     <Box
       sx={{
-        width: collapsed ? 80 : 250,
+        width: collapsed ? 68 : 240,
         height: "100vh",
         position: "fixed",
         left: 0,
         top: 0,
-        px: collapsed ? 1 : 2,
-        py: 3,
+        px: collapsed ? "10px" : "14px",
+        py: "20px",
         display: "flex",
         flexDirection: "column",
-        background:
-          "linear-gradient(180deg, rgb(189,170,127), rgb(175,155,110))",
-        borderRight: "1px solid rgba(0,0,0,0.06)",
-        transition: "0.3s ease",
+        bgcolor: "#0d0d14",
+        borderRight: "1px solid rgba(255,255,255,0.05)",
+        transition: "width 0.3s ease, padding 0.3s ease",
+        zIndex: 100,
+        overflowX: "hidden",
       }}
     >
-      {/* HEADER */}
       <Box
         sx={{
           display: "flex",
           alignItems: "center",
           justifyContent: collapsed ? "center" : "space-between",
+          mb: "28px",
+          minHeight: 40,
         }}
       >
-        {!collapsed && (
-          <Box>
-            <Typography sx={{ fontWeight: 700, fontSize: "1.2rem", mb: 0.5 }}>
-              Scholarly Curator
-            </Typography>
-
-            <Typography sx={{ fontSize: "0.6rem", opacity: 0.8 }}>
-              INSTITUTIONAL LMS
-            </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: "10px", overflow: "hidden" }}>
+          <Box
+            sx={{
+              width: 34,
+              height: 34,
+              minWidth: 34,
+              borderRadius: "10px",
+              background: "linear-gradient(135deg,#c9a84c,#8b5e1a)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 16,
+            }}
+          >
+            📚
           </Box>
-        )}
 
-        {/* TOGGLE BUTTON */}
+          {!collapsed && (
+            <Box sx={{ overflow: "hidden" }}>
+              <Typography
+                sx={{ fontWeight: 700, fontSize: "13.5px", color: "#fff", letterSpacing: -0.3, lineHeight: 1.2 }}
+              >
+                Scholarly Curator
+              </Typography>
+              <Typography
+                sx={{ fontSize: "9px", fontWeight: 600, color: "rgba(201,168,76,0.6)", letterSpacing: "1.5px", mt: "2px" }}
+              >
+                INSTITUTIONAL LMS
+              </Typography>
+            </Box>
+          )}
+        </Box>
+
         <Box
           onClick={() => setCollapsed(!collapsed)}
           sx={{
-            cursor: "pointer",
-            color: "rgb(96, 82, 50)",
+            width: 28,
+            height: 28,
+            minWidth: 28,
+            borderRadius: "8px",
+            bgcolor: "rgba(255,255,255,0.05)",
             display: "flex",
             alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            color: MUTED,
+            transition: "all 0.2s",
+            ml: collapsed ? 0 : 0,
+            "&:hover": { bgcolor: "rgba(255,255,255,0.1)", color: "#fff" },
           }}
         >
-          <MenuIcon />
+          <span className="material-symbols-outlined" style={{ fontSize: 17 }}>
+            {collapsed ? "menu_open" : "menu"}
+          </span>
         </Box>
       </Box>
 
-      {/* NAV */}
-      <Box sx={{ mt: 3, display: "flex", flexDirection: "column", gap: 0.5 }}>
+      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px", overflow: "hidden" }}>
 
-        {/* DASHBOARD */}
-        <NavLink to="/dashboard" style={{ textDecoration: "none" }}>
-          {({ isActive }) => (
-            <Box sx={navItem(isActive)}>
-              <span className="material-symbols-outlined">dashboard</span>
-              {!collapsed && "Dashboard"}
-            </Box>
-          )}
-        </NavLink>
-
-        {/* INVENTORY */}
-        <NavLink to="/inventory" style={{ textDecoration: "none" }}>
-          {({ isActive }) => (
-            <Box sx={navItem(isActive)}>
-              <span className="material-symbols-outlined">menu_book</span>
-              {!collapsed && "Book Inventory"}
-            </Box>
-          )}
-        </NavLink>
-
-        {/* USERS */}
-        <Box sx={{ position: "relative" }}>
-
-          {/* USERS BUTTON */}
-          <Box
-            sx={navItem(openUsers)}
-            onClick={() => setOpenUsers(!openUsers)}
-          >
-            <span className="material-symbols-outlined">person</span>
-            {!collapsed && "Users"}
-
-            {!collapsed && (
-              <Box sx={{ ml: "auto", display: "flex" }}>
-                {openUsers ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        {NAV_ITEMS.map(({ to, icon, label }) => (
+          <NavLink key={to} to={to} style={{ textDecoration: "none" }}>
+            {({ isActive }) => (
+              <Box sx={navItem(isActive)}>
+                <span className="material-symbols-outlined" style={iconStyle}>{icon}</span>
+                {!collapsed && label}
               </Box>
+            )}
+          </NavLink>
+        ))}
+
+        <Box sx={{ position: "relative" }}>
+          <Box sx={navItem(usersActive)} onClick={() => !collapsed && setOpenUsers(!openUsers)}>
+            <span className="material-symbols-outlined" style={iconStyle}>person</span>
+            {!collapsed && (
+              <>
+                <Box sx={{ flex: 1 }}>Users</Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    color: MUTED,
+                    transition: "transform 0.25s",
+                    transform: openUsers ? "rotate(180deg)" : "rotate(0deg)",
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>expand_more</span>
+                </Box>
+              </>
             )}
           </Box>
 
-          {/* VERTICAL LINE */}
+          {/* Vertical line */}
           {!collapsed && (
             <Box
               sx={{
                 position: "absolute",
-                left: "18px",
-                top: "42px",
-                width: "2px",
-                height: openUsers ? "95px" : "0px",
-                bgcolor: "rgba(96, 82, 50, 0.25)",
-                transition: "0.3s",
+                left: "19px",
+                top: "38px",
+                width: "1.5px",
+                height: openUsers ? "90px" : "0px",
+                bgcolor: GOLDBORDER,
+                transition: "height 0.3s ease",
               }}
             />
           )}
 
-          {/* DROPDOWN */}
           {!collapsed && (
             <Collapse in={openUsers}>
-              <Box
-                sx={{
-                  pl: 4,
-                  mt: 0.5,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 0.5,
-                }}
-              >
-                {[
-                  ["/users/list", "List"],
-                  ["/users/cards", "Cards"],
-                  ["/users/profiles", "Profiles"],
-                ].map(([path, label]) => (
-                  <NavLink key={path} to={path} style={{ textDecoration: "none" }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        px: 1.5,
-                        py: 0.8,
-                        borderRadius: "8px",
-                        fontSize: "0.85rem",
-                        color: "rgb(96, 82, 50)",
-                        position: "relative",
-                        transition: "0.2s",
-
-                        "&::before": {
-                          content: '""',
-                          position: "absolute",
-                          left: "-10px",
-                          width: "8px",
-                          height: "2px",
-                          bgcolor: "rgba(96, 82, 50, 0.25)",
-                        },
-
-                        "&:hover": {
-                          bgcolor: "rgba(0,0,0,0.05)",
-                        },
-                      }}
-                    >
-                      {label}
-                    </Box>
+              <Box sx={{ pl: "28px", mt: "2px", display: "flex", flexDirection: "column", gap: "2px" }}>
+                {USER_SUBNAV.map(({ to, label }) => (
+                  <NavLink key={to} to={to} style={{ textDecoration: "none" }}>
+                    {({ isActive }) => (
+                      <Box
+                        sx={{
+                          position: "relative",
+                          display: "flex",
+                          alignItems: "center",
+                          px: "10px",
+                          py: "7px",
+                          borderRadius: "8px",
+                          fontSize: "12.5px",
+                          fontWeight: isActive ? 600 : 400,
+                          color: isActive ? GOLD : MUTED,
+                          transition: "all 0.2s",
+                          cursor: "pointer",
+                          "&::before": {
+                            content: '""',
+                            position: "absolute",
+                            left: "-9px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            width: "7px",
+                            height: "1.5px",
+                            bgcolor: GOLDBORDER,
+                          },
+                          "&:hover": { color: BRIGHT, bgcolor: HOVER },
+                        }}
+                      >
+                        {label}
+                      </Box>
+                    )}
                   </NavLink>
                 ))}
               </Box>
@@ -200,96 +242,90 @@ export default function Sidebar() {
           )}
         </Box>
 
-        {/* OTHER ITEMS */}
-        <NavLink to="/analytics" style={{ textDecoration: "none" }}>
-          <Box sx={navItem(false)}>
-            <span className="material-symbols-outlined">analytics</span>
-            {!collapsed && "Analytics"}
-          </Box>
-        </NavLink>
-
-        <NavLink to="/order" style={{ textDecoration: "none" }}>
-          <Box sx={navItem(false)}>
-            <span className="material-symbols-outlined">shopping_cart</span>
-            {!collapsed && "Orders"}
-          </Box>
-        </NavLink>
-
-        <NavLink to="/finance" style={{ textDecoration: "none" }}>
-          <Box sx={navItem(false)}>
-            <span className="material-symbols-outlined">payments</span>
-            {!collapsed && "Finances"}
-          </Box>
-        </NavLink>
-
-        <NavLink to="/archives" style={{ textDecoration: "none" }}>
-          <Box sx={navItem(false)}>
-            <span className="material-symbols-outlined">archive</span>
-            {!collapsed && "Archives"}
-          </Box>
-        </NavLink>
+        <Box sx={{ height: "1px", bgcolor: "rgba(255,255,255,0.05)", my: "8px" }} />
 
         <NavLink to="/settings" style={{ textDecoration: "none" }}>
-          <Box sx={navItem(false)}>
-            <span className="material-symbols-outlined">settings</span>
-            {!collapsed && "Settings"}
-          </Box>
+          {({ isActive }) => (
+            <Box sx={navItem(isActive)}>
+              <span className="material-symbols-outlined" style={iconStyle}>settings</span>
+              {!collapsed && "Settings"}
+            </Box>
+          )}
         </NavLink>
       </Box>
-{/* SPACER */}
-<Box sx={{ height: 150 }} />
-<Box
-  sx={{
-    display: "flex",
-    flexDirection: "column",
-    gap: 1,
-    mt: 2,
-    borderTop: "1px solid rgba(0,0,0,0.1)",
-    pt: 2,
-  }}
->
 
-  {/* USER INFO */}
-  <Box
-    sx={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: collapsed ? "center" : "flex-start",
-      gap: 1,
-      color: "rgb(96, 82, 50)",
-    }}
-  >
-    <span className="material-symbols-outlined">
-      account_circle
-    </span>
+      <Box
+        sx={{
+          mt: "auto",
+          pt: "14px",
+          borderTop: "1px solid rgba(255,255,255,0.05)",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            px: "10px",
+            py: "8px",
+            borderRadius: "10px",
+            mb: "4px",
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+          }}
+        >
+          <Box
+            sx={{
+              width: 32,
+              height: 32,
+              minWidth: 32,
+              borderRadius: "9px",
+              background: "linear-gradient(135deg,#c9a84c,#8b5e1a)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "11px",
+              fontWeight: 700,
+              color: "#fff",
+            }}
+          >
+            SM
+          </Box>
 
-    {!collapsed && (
-      <Typography sx={{ fontSize: "0.85rem", fontWeight: 600 }}>
-Sara Makhlouf      </Typography>
-    )}
-  </Box>
+          {!collapsed && (
+            <Box>
+              <Typography sx={{ fontSize: "13px", fontWeight: 600, color: BRIGHT, lineHeight: 1.3 }}>
+                Sara Makhlouf
+              </Typography>
+              <Typography sx={{ fontSize: "10px", color: MUTED }}>
+                Administrator
+              </Typography>
+            </Box>
+          )}
+        </Box>
 
-  {/* LOGOUT */}
-  <Box
-    sx={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: collapsed ? "center" : "flex-start",
-      gap: 1,
-      px: 1.5,
-      py: 1,
-      borderRadius: "10px",
-      cursor: "pointer",
-      color: "rgb(96, 82, 50)",
-      "&:hover": { bgcolor: "rgba(0,0,0,0.06)" },
-    }}
-  >
-    <span className="material-symbols-outlined">logout</span>
-
-    {!collapsed && "Logout"}
-  </Box>
-
-</Box>
- </Box>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: collapsed ? "center" : "flex-start",
+            gap: "10px",
+            px: "10px",
+            py: "8px",
+            borderRadius: "10px",
+            cursor: "pointer",
+            fontSize: "13px",
+            color: MUTED,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            transition: "all 0.2s",
+            "&:hover": { color: "#e24b4a", bgcolor: "rgba(226,75,74,0.06)" },
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>logout</span>
+          {!collapsed && "Logout"}
+        </Box>
+      </Box>
+    </Box>
   );
 }

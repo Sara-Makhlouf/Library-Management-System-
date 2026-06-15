@@ -1,35 +1,27 @@
-import { createSlice } from "@reduxjs/toolkit";
-//for crude operation 
-import { fetchBills ,fetchBillsWithId,fetchBillDelivery
- } from "../Thunks/BillThunk";
+import { createSlice } from '@reduxjs/toolkit';
+import {fetchBills,fetchBillDetails} from "../Thunks/BillThunk";
 
-const billSlice = createSlice({
-    name:"bill",
-initialState:{
-billSlice: [],
-error: null,
-loading:false,
+const billsSlice = createSlice({
+  name: 'bills',
+  initialState: {
+    list: [],
+    currentBill: null,
+    loading: false,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchBills.fulfilled, (state, action) => {
+        state.list = action.payload;
+      })
+      .addCase(fetchBillDetails.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchBillDetails.fulfilled, (state, action) => {
+        state.currentBill = action.payload;
+        state.loading = false;
+      });
+  },
+});
 
-},
-    extraReducers : (builder) => {
-        builder 
-    .addCase(fetchBills.pending, (state) => {})
-    .addCase(fetchBills.fulfilled, (state, action) => {})
-    .addCase(fetchBills.rejected, (state, action) => {})
-    
-
-    .addCase(fetchBillsWithId.pending, (state) => {})
-    .addCase(fetchBillsWithId.fulfilled, (state, action) => {})
-    .addCase(fetchBillsWithId.rejected, (state, action) => {})    
-
-
-    .addCase(fetchBillDelivery.pending, (state) => {})
-    .addCase(fetchBillDelivery.fulfilled, (state, action) => {})
-    .addCase(fetchBillDelivery.rejected, (state, action) => {})  
-
-   
- 
-    
-    }});
-
-export default billSlice.reducer;
+export default billsSlice.reducer;

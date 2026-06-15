@@ -5,110 +5,138 @@ import {
   Button,
   IconButton,
   CircularProgress,
+  Chip,
 } from "@mui/material";
-import { COLORS } from "../../Core/Constants/ColorsUse";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-import { useDispatch } from "react-redux";
-
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
+import SpaceDashboardOutlinedIcon from "@mui/icons-material/SpaceDashboardOutlined";
+import { useDispatch, useSelector } from "react-redux";
 import {
   getDashboardStats,
-  getTopBorrowed,
   getWeeklySales,
   getTopSellingBooks,
   getWeeklyBorrows,
 } from "../../Core/Redux/Thunks/DashboardThunk";
 import {
   ResponsiveContainer,
+
   AreaChart,
   Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  BarChart,
-  Bar,
 } from "recharts";
 
-import { useSelector } from "react-redux";
 
 const ADS = [
-{
-  title: "Discover New Arrivals",
-  desc: "Curated collection of newly added premium books",
-  img: "https://undraw.co/api/illustrations/digital_library.svg",
-},
+  {
+    emoji: "📖",
+    title: "Discover New Arrivals",
+    desc: "Curated collection of newly added premium books",
+  },
+  {
+    emoji: "🏆",
+    title: "Reading Performance Boost",
+    desc: "Engage users and unlock achievement-based rewards",
+  },
+  {
+    emoji: "💡",
+    title: "Smart Fee Optimization",
+    desc: "Reduce overdue losses with automated discount campaigns",
+  },
+];
 
-{
-  title: "Reading Performance Boost",
-  desc: "Engage users and unlock achievement-based rewards",
-  img: "https://undraw.co/api/illustrations/reading.svg",
-},
+const STAT_META = {
+  Users:      { icon: <PeopleAltOutlinedIcon sx={{ fontSize: 16 }} />, accent: "#c9a84c", trend: "+12% this week" },
+  Books:      { icon: <MenuBookOutlinedIcon  sx={{ fontSize: 16 }} />, accent: "#97c459", trend: "+8% this month" },
+  Revenue:    { icon: <AttachMoneyIcon       sx={{ fontSize: 16 }} />, accent: "#1d9e75", trend: "+23% vs last month" },
+  Categories: { icon: <CategoryOutlinedIcon  sx={{ fontSize: 16 }} />, accent: "#7f77dd", trend: "3 new added" },
+};
 
-{
-  title: "Smart Fee Optimization",
-  desc: "Reduce overdue losses with automated discount campaigns",
-  img: "https://undraw.co/api/illustrations/finance.svg",
+const CHART_DATA = [8, 14, 10, 20, 26, 18, 30].map((v) => ({ v }));
+
+
+function MiniChart({ color }) {
+  return (
+    <Box sx={{ height: 32, mt: 1.5 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={CHART_DATA}>
+          <defs>
+            <linearGradient id={`g${color.replace("#", "")}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity={0.25} />
+              <stop offset="100%" stopColor={color} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <Area
+            type="monotone"
+            dataKey="v"
+            stroke={color}
+            strokeWidth={1.5}
+            fill={`url(#g${color.replace("#", "")})`}
+            dot={false}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </Box>
+  );
 }
 
-];
+function WeeklyBar({ data, color }) {
+  const max = Math.max(...data);
+  return (
+    <Box sx={{ display: "flex", alignItems: "flex-end", gap: "3px", height: 50, mt: 2.5 }}>
+      {data.map((v, i) => (
+        <Box
+          key={i}
+          sx={{
+            flex: 1,
+            borderRadius: "3px 3px 0 0",
+            background: `linear-gradient(180deg, ${color}, ${color}30)`,
+            height: `${Math.round((v / max) * 100)}%`,
+            minHeight: 3,
+            transition: "height 0.5s ease",
+          }}
+        />
+      ))}
+    </Box>
+  );
+}
+
+
 export default function Dashboard() {
   const [adIndex, setAdIndex] = useState(0);
-const dispatch = useDispatch();
-useEffect(() => {
-  dispatch(getDashboardStats());
-  dispatch(getTopBorrowed());
-  dispatch(getWeeklySales());
-  dispatch(getTopSellingBooks());
-  dispatch(getWeeklyBorrows());
-}, [dispatch]);
- 
-const {
-  dashboardStats,
-   weeklySales,
-  topSellingBooks,
-  topBorrowedBooks,
-  weeklyBorrows,
-  loading,
-} = useSelector((state) => state.dashboard);
-  useEffect(() => {
-    const t = setInterval(() => {
-      setAdIndex((p) => (p + 1) % ADS.length);
-    }, 4500);
+  const dispatch = useDispatch();
 
+  useEffect(() => {
+    dispatch(getDashboardStats());
+    dispatch(getWeeklySales());
+    dispatch(getTopSellingBooks());
+    dispatch(getWeeklyBorrows());
+  }, [dispatch]);
+
+  const { dashboardStats, weeklySales, topSellingBooks, weeklyBorrows, loading } =
+    useSelector((state) => state.dashboard);
+
+  useEffect(() => {
+    const t = setInterval(() => setAdIndex((p) => (p + 1) % ADS.length), 4500);
     return () => clearInterval(t);
   }, []);
 
-  const currentAd = ADS[adIndex];
-
   const statsCards = useMemo(() => {
     if (!dashboardStats) return [];
-
     return [
-      {
-        title: "Users",
-        value: dashboardStats.users || 0,
-        mini: [30, 45, 20, 60, 40, 80],
-      },
-      {
-        title: "Books",
-        value: dashboardStats.books || 0,
-        mini: [20, 35, 50, 40, 70, 60],
-      },
-      {
-        title: "Revenue",
-        value: topBorrowedBooks?.total || 0,
-        mini: [60, 80, 70, 90, 100, 85],
-      },
-      {
-        title: "Waiting",
-        value: topSellingBooks?.length || 0,
-        mini: [10, 20, 15, 25, 30, 20],
-      },
-    ].map((s) => ({
-      ...s,
-      chartData: s.mini.map((v) => ({ value: v })),
-    }));
-  }, [dashboardStats, topBorrowedBooks, topSellingBooks]);
+      { title: "Users",      value: dashboardStats.counts.total_customers },
+      { title: "Books",      value: dashboardStats.counts.total_books },
+      { title: "Revenue",    value: dashboardStats.counts.total_revenue },
+      { title: "Categories", value: dashboardStats.counts.total_categories },
+    ];
+  }, [dashboardStats]);
+
+  const currentAd = ADS[adIndex];
+  const salesBars  = [30, 45, 35, 60, 50, 70, 55];
+  const borrowBars = [20, 35, 28, 42, 38, 55, 44];
 
   if (loading) {
     return (
@@ -118,10 +146,10 @@ const {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          bgcolor: COLORS.bg,
+          bgcolor: "#0a0a0f",
         }}
       >
-        <CircularProgress />
+        <CircularProgress sx={{ color: "#c9a84c" }} />
       </Box>
     );
   }
@@ -130,451 +158,417 @@ const {
     <Box
       sx={{
         minHeight: "100vh",
-        bgcolor: COLORS.bg,
-        p: { xs: 2, md: 4 },
+        bgcolor: "#0a0a0f",
+        p: { xs: 2, md: "20px 24px" },
+        ml: { xs: 0, },
         fontFamily: "Inter, sans-serif",
-
-        // Sidebar
-        ml: { xs: 0, md: "50px" },
-        transition: "0.3s",
       }}
     >
-      {/* TOP BAR */}
       <Box
         sx={{
-          position: "sticky",
-          top: 0,
-          height: 70,
-          px: 3,
-          mb: 3,
-
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-
-          bgcolor: "rgba(255,255,255,0.75)",
-          backdropFilter: "blur(12px)",
-          borderRadius: 3,
-          border: "1px solid rgba(0,0,0,0.05)",
+          mb: 3,
+          px: "20px",
+          height: 60,
+          bgcolor: "rgba(255,255,255,0.04)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: "16px",
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          backdropFilter: "blur(16px)",
         }}
       >
-        <Typography fontWeight={900} color={COLORS.text}>
-          Library Dashboard
-        </Typography>
-
-        <Box>
-          <IconButton>
-            <NotificationsNoneIcon />
-          </IconButton>
-          <IconButton>
-            <SettingsOutlinedIcon />
-          </IconButton>
-        </Box>
-      </Box>
-
-      {/* HERO SECTION */}
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" },
-          gap: 3,
-          mb: 4,
-        }}
-      >
-   <Box
-  sx={{
-    p: { xs: 3, md: 5 },
-    borderRadius: 5,
-    color: COLORS.Text,
-    background: `
-      radial-gradient(circle at top left, rgba(184,160,104,0.25), transparent 45%),
-      radial-gradient(circle at bottom right, rgba(49,40,22,0.18), transparent 50%),
-      linear-gradient(135deg, ${COLORS.Background}, #f3ece4)
-    `,
-    boxShadow: "0 25px 60px rgba(49,40,22,0.15)",
-    border: "1px solid rgba(184,160,104,0.25)",
-    position: "relative",
-    overflow: "hidden",
-  }}
->
-  {/* soft luxury glow */}
-  <Box
-    sx={{
-      position: "absolute",
-      top: -80,
-      right: -80,
-      width: 220,
-      height: 220,
-      background: `radial-gradient(circle, ${COLORS.Primary}55, transparent 70%)`,
-      filter: "blur(25px)",
-    }}
-  />
-
-  <Typography
-    sx={{
-      fontSize: { xs: 28, md: 40 },
-      fontWeight: 900,
-      letterSpacing: -1,
-      color: COLORS.Accent,
-    }}
-  >
-    Welcome back
-  </Typography>
-
-  <Typography
-    sx={{
-      fontSize: 18,
-      fontWeight: 700,
-      mt: 1,
-      color: COLORS.Text,
-    }}
-  >
-    Library Operations Center
-  </Typography>
-
-  <Typography
-    sx={{
-      mt: 2,
-      maxWidth: 520,
-      lineHeight: 1.7,
-      fontSize: 15,
-      color: COLORS.Text,
-      opacity: 0.85,
-    }}
-  >
-    Monitor performance, track engagement, and manage your entire library ecosystem
-    from a unified intelligent dashboard designed for clarity and control.
-  </Typography>
-
-  <Button
-    sx={{
-      mt: 4,
-      px: 4,
-      py: 1.3,
-      borderRadius: 3,
-      fontWeight: 800,
-      textTransform: "none",
-      color: "#fff",
-      background: `linear-gradient(135deg, ${COLORS.Primary}, ${COLORS.Secondary})`,
-      boxShadow: `0 15px 30px ${COLORS.Primary}55`,
-      letterSpacing: 0.3,
-      "&:hover": {
-        background: `linear-gradient(135deg, ${COLORS.Secondary}, ${COLORS.Primary})`,
-        transform: "translateY(-3px)",
-        boxShadow: `0 20px 40px ${COLORS.Primary}66`,
-      },
-    }}
-  >
-    Enter Control Panel →
-  </Button>
-</Box>
-
-        {/* AD CARD */}
-        <Box
-         sx={{
-  borderRadius: 4,
-  bgcolor: "#fff",
-  boxShadow: "0 18px 45px rgba(0,0,0,0.08)",
-  overflow: "hidden",
-  display: "flex",
-  flexDirection: "column",
-  border: "1px solid rgba(0,0,0,0.05)",
-  transition: "0.35s cubic-bezier(.2,.8,.2,1)",
-  "&:hover": {
-    transform: "translateY(-6px) scale(1.01)",
-    boxShadow: "0 25px 60px rgba(0,0,0,0.12)",
-  },
-}}
-        >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Box
             sx={{
-              height: 240,
+              width: 32,
+              height: 32,
+              borderRadius: "10px",
+              background: "linear-gradient(135deg,#c9a84c,#8b5e1a)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              bgcolor: "#faf8f2",
-              p: 2,
+              fontSize: 16,
             }}
           >
-            <Box
-              component="img"
-              src={currentAd.img}
-              alt={currentAd.title}
-              sx={{
-                maxHeight: "100%",
-                maxWidth: "100%",
-                objectFit: "contain",
-              }}
-            />
+            📚
           </Box>
+          <Typography sx={{ fontWeight: 700, fontSize: 15, color: "#fff", letterSpacing: -0.3 }}>
+            Library Dashboard
+          </Typography>
+        </Box>
 
-          <Box p={2}>
-            <Typography fontWeight={900}>{currentAd.title}</Typography>
-            <Typography fontSize={13} opacity={0.7}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {[<NotificationsNoneIcon sx={{ fontSize: 18 }} />, <SettingsOutlinedIcon sx={{ fontSize: 18 }} />].map(
+            (icon, i) => (
+              <IconButton
+                key={i}
+                sx={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: "10px",
+                  bgcolor: "rgba(255,255,255,0.06)",
+                  color: "#888",
+                  "&:hover": { bgcolor: "rgba(255,255,255,0.1)", color: "#fff" },
+                  transition: "all 0.2s",
+                }}
+              >
+                {icon}
+              </IconButton>
+            )
+          )}
+          <Box
+            sx={{
+              width: 34,
+              height: 34,
+              borderRadius: "10px",
+              background: "linear-gradient(135deg,#c9a84c,#8b5e1a)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 12,
+              fontWeight: 700,
+              color: "#fff",
+              ml: 0.5,
+            }}
+          >
+            AD
+          </Box>
+        </Box>
+      </Box>
+
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "1fr 300px" },
+          gap: 2,
+          mb: 2.5,
+        }}
+      >
+       
+        <Box
+          sx={{
+            p: { xs: 3, md: "36px 40px" },
+            borderRadius: "20px",
+            background: "linear-gradient(135deg,#111118 0%,#1a1206 100%)",
+            border: "1px solid rgba(201,168,76,0.2)",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <Box sx={{ position: "absolute", top: -100, right: -80, width: 300, height: 300, background: "radial-gradient(circle,rgba(201,168,76,0.08) 0%,transparent 70%)", pointerEvents: "none" }} />
+          <Box sx={{ position: "absolute", bottom: -60, left: -40, width: 200, height: 200, background: "radial-gradient(circle,rgba(139,94,26,0.06) 0%,transparent 70%)", pointerEvents: "none" }} />
+          <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg,transparent,rgba(201,168,76,0.4),transparent)" }} />
+
+          <Chip
+            label="● Live System"
+            size="small"
+            sx={{
+              mb: 2.5,
+              bgcolor: "rgba(201,168,76,0.1)",
+              border: "1px solid rgba(201,168,76,0.2)",
+              color: "#c9a84c",
+              fontWeight: 600,
+              fontSize: 11,
+              letterSpacing: 0.5,
+              height: 24,
+              borderRadius: "20px",
+              "& .MuiChip-label": { px: 1.5 },
+            }}
+          />
+
+          <Typography
+            sx={{
+              fontSize: { xs: 26, md: 34 },
+              fontWeight: 800,
+              letterSpacing: -1,
+              lineHeight: 1.1,
+              mb: 1.5,
+              background: "linear-gradient(135deg,#fff 0%,#c9a84c 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            Welcome back,<br />Library Admin
+          </Typography>
+
+          <Typography sx={{ fontSize: 14, color: "rgba(255,255,255,0.45)", lineHeight: 1.7, maxWidth: 420, mb: 3.5 }}>
+            Monitor performance, track engagement, and manage your entire library
+            ecosystem from a unified intelligent dashboard.
+          </Typography>
+
+          <Button
+            endIcon={<SpaceDashboardOutlinedIcon sx={{ fontSize: 15 }} />}
+            sx={{
+              px: 3,
+              py: 1.2,
+              borderRadius: "12px",
+              fontWeight: 700,
+              textTransform: "none",
+              fontSize: 13.5,
+              color: "#fff",
+              background: "linear-gradient(135deg,#c9a84c,#8b5e1a)",
+              letterSpacing: 0.2,
+              "&:hover": {
+                background: "linear-gradient(135deg,#d4b562,#9e6c20)",
+                transform: "translateY(-2px)",
+                boxShadow: "0 16px 32px rgba(201,168,76,0.25)",
+              },
+              transition: "all 0.25s",
+            }}
+          >
+            Enter Control Panel
+          </Button>
+        </Box>
+
+        <Box
+          sx={{
+            bgcolor: "#111118",
+            border: "1px solid rgba(255,255,255,0.06)",
+            borderRadius: "20px",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            transition: "border-color 0.3s",
+            "&:hover": { borderColor: "rgba(201,168,76,0.2)" },
+          }}
+        >
+          <Box
+            sx={{
+              height: 180,
+              bgcolor: "rgba(255,255,255,0.02)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 52,
+            }}
+          >
+            {currentAd.emoji}
+          </Box>
+          <Box sx={{ p: "16px 18px", flex: 1 }}>
+            <Typography sx={{ fontWeight: 700, fontSize: 13.5, color: "#fff", mb: 0.5 }}>
+              {currentAd.title}
+            </Typography>
+            <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.5 }}>
               {currentAd.desc}
             </Typography>
           </Box>
-        </Box>
-      </Box>
-
-      {/* STATS */}
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm: "repeat(2,1fr)",
-            md: "repeat(4,1fr)",
-          },
-          gap: 3,
-          mb: 4,
-        }}
-      >
-        {statsCards.map((s) => (
-          <Box
-            key={s.title}
-            sx={{
-              p: 3,
-              borderRadius: 4,
-              bgcolor: "#fff",
-              boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
-              border: "1px solid rgba(0,0,0,0.04)",
-              transition: "0.25s",
-              "&:hover": {
-                transform: "translateY(-6px)",
-                boxShadow: "0 18px 35px rgba(0,0,0,0.08)",
-              },
-            }}
-          >
-            <Typography fontWeight={700} color={COLORS.text}>
-              {s.title}
-            </Typography>
-
-            <Typography fontSize={28} fontWeight={900}>
-              {Number(s.value).toLocaleString()}
-            </Typography>
-
-            <Box height={40} mt={2}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={s.chartData}>
-                  <Bar dataKey="value" fill={COLORS.primary} radius={6} />
-                </BarChart>
-              </ResponsiveContainer>
-            </Box>
-          </Box>
-        ))}
-      </Box>
-
-      {/* CHARTS */}
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "1.4fr 1fr" },
-          gap: 3,
-        }}
-      >
-        {/* AREA CHART */}
-        <Box
-          sx={{
-            p: 3,
-            borderRadius: 4,
-            bgcolor: "#fff",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
-          }}
-        >
-          <Typography fontWeight={900} mb={2}>
-            Borrowing Trend
-          </Typography>
-
-          <ResponsiveContainer width="100%" height={240}>
-            <AreaChart
-             data={
-  topBorrowedBooks?.map((book, index) => ({
-    name: book.title || `Book ${index + 1}`,
-    value: book.total || 0,
-  })) || []
-}
-            >
-              <XAxis dataKey="name" />
-              <YAxis hide />
-              <Tooltip />
-              <Area
-                dataKey="value"
-                stroke={COLORS.text}
-                fill={COLORS.primary}
-                fillOpacity={0.25}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </Box>
-
-        {/* TOP BOOKS */}
-        <Box
-          sx={{
-            p: 3,
-            borderRadius: 4,
-            bgcolor: "#fff",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
-          }}
-        >
-          <Typography fontWeight={900} mb={2}>
-            Top Borrowed Books
-          </Typography>
-
-          {topBorrowedBooks?.length > 0 ? (
-            topBorrowedBooks.map((book, index) => (
+          <Box sx={{ display: "flex", justifyContent: "center", gap: "6px", pb: 1.5 }}>
+            {ADS.map((_, i) => (
               <Box
-                key={index}
+                key={i}
                 sx={{
-                  p: 1.5,
-                  mb: 1.5,
-                  borderRadius: 2,
-                  bgcolor: "#f9f7f1",
-                  "&:hover": {
-                    bgcolor: "#f2efe6",
-                    transform: "translateX(3px)",
-                  },
+                  height: 4,
+                  borderRadius: "2px",
+                  width: i === adIndex ? 20 : 4,
+                  bgcolor: i === adIndex ? "#c9a84c" : "rgba(255,255,255,0.15)",
+                  transition: "all 0.4s ease",
                 }}
-              >
-                <Typography fontWeight={700}>
-                  📚 {book.title}
-                </Typography>
-                <Typography fontSize={13} opacity={0.7}>
-                  Borrowed {book.total || 0} times
-                </Typography>
-              </Box>
-            ))
-          ) : (
-            <Typography>No data found</Typography>
-          )}
+              />
+            ))}
+          </Box>
         </Box>
       </Box>
 
-      {/* WAITING LIST */}
       <Box
         sx={{
-          mt: 4,
-          p: 3,
-          borderRadius: 4,
-          bgcolor: "#fff",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(4,1fr)" },
+          gap: 2,
+          mb: 2.5,
         }}
       >
-        <Typography fontWeight={900} mb={2}>
-          Top Selling Books
-        </Typography>
-
-        {topSellingBooks?.length > 0 ? (
-          topSellingBooks.map((book, index) => (
+        {statsCards.map((s) => {
+          const meta = STAT_META[s.title] || { icon: null, accent: "#888", trend: "" };
+          return (
             <Box
-              key={index}
+              key={s.title}
               sx={{
-                py: 1.5,
-                px: 2,
-                mb: 1.5,
-                borderRadius: 2,
-                bgcolor: "#f9f7f1",
+                p: "20px",
+                borderRadius: "18px",
+                bgcolor: "#111118",
+                border: "1px solid rgba(255,255,255,0.06)",
+                position: "relative",
+                overflow: "hidden",
+                cursor: "pointer",
+                transition: "all 0.25s",
                 "&:hover": {
-                  bgcolor: "#f2efe6",
-                  transform: "translateX(3px)",
+                  borderColor: `${meta.accent}40`,
+                  transform: "translateY(-3px)",
+                  bgcolor: "#151520",
                 },
               }}
             >
-              <Typography fontWeight={700}>
-                � {book.title}
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
+                <Typography sx={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.35)", letterSpacing: "0.8px", textTransform: "uppercase" }}>
+                  {s.title}
+                </Typography>
+                <Box
+                  sx={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: "8px",
+                    bgcolor: `${meta.accent}18`,
+                    color: meta.accent,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {meta.icon}
+                </Box>
+              </Box>
+              <Typography sx={{ fontSize: 28, fontWeight: 800, letterSpacing: -1, color: "#fff", mb: 0.5 }}>
+                {Number(s.value).toLocaleString()}
               </Typography>
-              <Typography fontSize={13} opacity={0.7}>
-                Sold {book.total || 0} times
+              <Typography sx={{ fontSize: 11, color: meta.accent, display: "flex", alignItems: "center", gap: 0.3 }}>
+                <TrendingUpIcon sx={{ fontSize: 12 }} /> {meta.trend}
               </Typography>
+              <MiniChart color={meta.accent} />
             </Box>
-          ))
-        ) : (
-          <Typography>No top selling books</Typography>
-        )}
+          );
+        })}
       </Box>
-      {/* WEEKLY STATS GRID */}
-<Box
-  sx={{
-    display: "grid",
-    gridTemplateColumns: { xs: "1fr", md: "repeat(2,1fr)" },
-    gap: 3,
-    mt: 3, // مسافة عن الـ Charts اللي فوق
-  }}
->
-  {/* Weekly Sales */}
-  <Box
-    sx={{
-      p: 3,
-      borderRadius: 4,
-      bgcolor: "#fff",
-      boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
-    }}
-  >
-    <Typography fontWeight={900} mb={2}>
-      Weekly Sales
-    </Typography>
 
-    {weeklySales?.length > 0 ? (
-      <ResponsiveContainer width="100%" height={240}>
-        <AreaChart
-          data={weeklySales.map((item) => ({
-            name: item.week || "Week",
-            value: item.total || 0,
-          }))}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1.4fr" },
+          gap: 2,
+        }}
+      >
+        <Box
+          sx={{
+            p: "20px",
+            borderRadius: "18px",
+            bgcolor: "#111118",
+            border: "1px solid rgba(255,255,255,0.06)",
+            position: "relative",
+            overflow: "hidden",
+          }}
         >
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Area
-            dataKey="value"
-            stroke={COLORS.Primary}
-            fill={COLORS.Primary}
-            fillOpacity={0.25}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    ) : (
-      <Typography>No weekly sales data</Typography>
-    )}
-  </Box>
+          <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg,transparent,rgba(201,168,76,0.4),transparent)" }} />
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+            <Typography sx={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 0.3 }}>
+              Weekly Sales
+            </Typography>
+            <Box sx={{ px: 1.2, py: 0.3, borderRadius: "6px", bgcolor: "rgba(74,222,128,0.1)" }}>
+              <Typography sx={{ fontSize: 10, fontWeight: 700, color: "#4ade80", letterSpacing: 0.5 }}>↑ LIVE</Typography>
+            </Box>
+          </Box>
+          <Typography sx={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.5, color: "#c9a84c", mb: 0.5 }}>
+            {weeklySales?.total_revenue || "0 SYP"}
+          </Typography>
+          <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
+            {weeklySales?.total_orders || 0} orders this week
+          </Typography>
+          <WeeklyBar data={salesBars} color="#c9a84c" />
+        </Box>
 
-  {/* Weekly Borrows */}
-  <Box
-    sx={{
-      p: 3,
-      borderRadius: 4,
-      bgcolor: "#fff",
-      boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
-    }}
-  >
-    <Typography fontWeight={900} mb={2}>
-      Weekly Borrows
-    </Typography>
-
-    {weeklyBorrows?.length > 0 ? (
-      <ResponsiveContainer width="100%" height={240}>
-        <AreaChart
-          data={weeklyBorrows.map((item) => ({
-            name: item.week || "Week",
-            value: item.total || 0,
-          }))}
+        <Box
+          sx={{
+            p: "20px",
+            borderRadius: "18px",
+            bgcolor: "#111118",
+            border: "1px solid rgba(255,255,255,0.06)",
+          }}
         >
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Area
-            dataKey="value"
-            stroke={COLORS.Secondary}
-            fill={COLORS.Secondary}
-            fillOpacity={0.25}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
-    ) : (
-      <Typography>No weekly borrows data</Typography>
-    )}
-  </Box>
-</Box>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+            <Typography sx={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 0.3 }}>
+              Weekly Borrows
+            </Typography>
+            <Box sx={{ px: 1.2, py: 0.3, borderRadius: "6px", bgcolor: "rgba(127,119,221,0.1)" }}>
+              <Typography sx={{ fontSize: 10, fontWeight: 700, color: "#7f77dd", letterSpacing: 0.5 }}>Books</Typography>
+            </Box>
+          </Box>
+          <Typography sx={{ fontSize: 26, fontWeight: 800, letterSpacing: -0.5, color: "#7f77dd", mb: 0.5 }}>
+            {weeklyBorrows?.total_borrows || 0}
+          </Typography>
+          <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
+            Total borrowed items
+          </Typography>
+          <WeeklyBar data={borrowBars} color="#7f77dd" />
+        </Box>
+
+        <Box
+          sx={{
+            p: "20px",
+            borderRadius: "18px",
+            bgcolor: "#111118",
+            border: "1px solid rgba(255,255,255,0.06)",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2.5 }}>
+            <Typography sx={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 0.3 }}>
+              Top Selling Books
+            </Typography>
+            <Typography sx={{ fontSize: 11, color: "#c9a84c", fontWeight: 600, cursor: "pointer" }}>
+              View all →
+            </Typography>
+          </Box>
+
+          {topSellingBooks?.length > 0 ? (
+            topSellingBooks.map((book, i) => {
+              const pct = Math.round(((book.units_sold || 0) / (topSellingBooks[0]?.units_sold || 1)) * 100);
+              return (
+                <Box
+                  key={i}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
+                    py: 1.2,
+                    px: 1,
+                    borderRadius: "10px",
+                    mb: 0.5,
+                    transition: "all 0.2s",
+                    "&:hover": { bgcolor: "rgba(255,255,255,0.04)" },
+                    cursor: "pointer",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      minWidth: 26,
+                      height: 26,
+                      borderRadius: "7px",
+                      bgcolor: i === 0 ? "rgba(201,168,76,0.15)" : "rgba(255,255,255,0.05)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 11,
+                      fontWeight: 800,
+                      color: i === 0 ? "#c9a84c" : "rgba(255,255,255,0.2)",
+                    }}
+                  >
+                    {i + 1}
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography sx={{ fontWeight: 600, fontSize: 13, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {book.book_title}
+                    </Typography>
+                    <Typography sx={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
+                      {book.units_sold || 0} sold
+                    </Typography>
+                  </Box>
+                  <Box sx={{ width: 50 }}>
+                    <Box sx={{ height: 3, borderRadius: 2, bgcolor: "rgba(255,255,255,0.07)", overflow: "hidden" }}>
+                      <Box sx={{ height: "100%", width: `${pct}%`, bgcolor: i === 0 ? "#c9a84c" : "rgba(255,255,255,0.2)", borderRadius: 2 }} />
+                    </Box>
+                  </Box>
+                </Box>
+              );
+            })
+          ) : (
+            <Box sx={{ py: 4, textAlign: "center" }}>
+              <Typography sx={{ color: "rgba(255,255,255,0.2)", fontSize: 13 }}>No top selling books yet</Typography>
+            </Box>
+          )}
+        </Box>
+      </Box>
     </Box>
   );
 }

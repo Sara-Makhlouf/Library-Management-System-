@@ -5,7 +5,7 @@ import {
 } from "recharts";
 
 import { Users, BookOpen, Clock, TrendingUp, Download, Filter } from "lucide-react";
-
+import { COLORS } from "../../Core/Constants/ColorsUse";
 const data = [
   { month: "Jan", borrows: 120, returns: 100 },
   { month: "Feb", borrows: 210, returns: 150 },
@@ -22,7 +22,6 @@ const categories = [
   { name: "Tech", value: 278 },
 ];
 
-const COLORS = ["#B8A068", "#CBB88A", "#E3D6B8", "#F3ECE1"];
 
 export default function AnalyistPage() {
   const [timeFrame, setTimeFrame] = useState("Last 6 Months");
@@ -35,7 +34,6 @@ export default function AnalyistPage() {
         background: "linear-gradient(135deg,#f8f6ef,#efe9dc)",
       }}
     >
-      {/* HEADER */}
       <div
         style={{
           display: "flex",

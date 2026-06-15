@@ -1,11 +1,10 @@
 import api from "../../Api/aixos";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-
 export const getauthor = createAsyncThunk(
   "author/getauthor",
-  async (authorId, thunkAPI) => {
+  async (_, thunkAPI) => {
     try {
-      const response = await api.get(`/authors/${authorId}`);
+      const response = await api.get("/authors");
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(

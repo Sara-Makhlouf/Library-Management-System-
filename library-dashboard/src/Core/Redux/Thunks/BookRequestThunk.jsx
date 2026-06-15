@@ -2,13 +2,6 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 
-const getAuthConfig = () => ({
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
-    Accept: "application/json",
-  },
-});
-
 export const updateBookRequestStatus = createAsyncThunk(
   "adminBookRequests/updateBookRequestStatus",
   async (
@@ -21,12 +14,12 @@ export const updateBookRequestStatus = createAsyncThunk(
   ) => {
     try {
       const response = await axios.put(
-        `/admin/book-requests/${requestId}/status`,
+        `/book-requests/${requestId}/status`,
         {
           status,
           admin_note,
         },
-        getAuthConfig()
+     
       );
 
       return response.data;

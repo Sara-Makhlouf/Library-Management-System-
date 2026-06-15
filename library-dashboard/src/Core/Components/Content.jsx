@@ -44,7 +44,6 @@ export default function Content() {
         
       }}
     >
-      {/*  Title */}
       <Box>
 
         <Typography
@@ -62,7 +61,6 @@ export default function Content() {
         </Typography>
       </Box>
 
-      {/* Features */}
       <Stack spacing={2}>
         {items.map((item, index) => (
           <Box
@@ -84,7 +82,6 @@ export default function Content() {
               },
             }}
           >
-            {/* icon */}
             <Box
               sx={{
                 width: 42,
@@ -100,7 +97,6 @@ export default function Content() {
               {item.icon}
             </Box>
 
-            {/* text */}
             <Box>
               <Typography sx={{ fontWeight: 600 }}>
                 {item.title}

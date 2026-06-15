@@ -42,7 +42,6 @@ export default function UsersPage() {
         background: "#f6f3ea",
       }}
     >
-      {/*  Header */}
       <Box
         sx={{
           display: "flex",
@@ -75,7 +74,6 @@ export default function UsersPage() {
         </Button>
       </Box>
 
-      {/* 📊 Stats */}
       <Box
         sx={{
           display: "grid",
@@ -111,7 +109,6 @@ export default function UsersPage() {
         ))}
       </Box>
 
-      {/* 📋 Table Card */}
       <Box
         sx={{
           background: "#fff",
@@ -121,7 +118,6 @@ export default function UsersPage() {
           boxShadow: "0 8px 25px rgba(0,0,0,0.05)",
         }}
       >
-        {/* 🔍 Search */}
         <Box sx={{ mb: 3, display: "flex", justifyContent: "flex-end" }}>
           <TextField
             size="small"
@@ -137,9 +133,7 @@ export default function UsersPage() {
           />
         </Box>
 
-        {/* 🧾 Table */}
         <Box>
-          {/* Header */}
           <Box
             sx={{
               display: "grid",
@@ -157,7 +151,6 @@ export default function UsersPage() {
             <span></span>
           </Box>
 
-          {/* Rows */}
           {users.map((user) => (
             <motion.div
               key={user.id}
@@ -176,7 +169,6 @@ export default function UsersPage() {
                   },
                 }}
               >
-                {/* User */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                   <Box
                     sx={{
@@ -204,7 +196,6 @@ export default function UsersPage() {
                   </Box>
                 </Box>
 
-                {/* Role */}
                 <Box>
                   <Box
                     sx={{
@@ -221,10 +212,8 @@ export default function UsersPage() {
                   </Box>
                 </Box>
 
-                {/* Date */}
                 <Typography>{user.joined}</Typography>
 
-                {/* Status */}
                 <Box>
                   <Box
                     sx={{
@@ -248,7 +237,6 @@ export default function UsersPage() {
                   </Box>
                 </Box>
 
-                {/* Action */}
                 <Button sx={{ minWidth: 0 }}>
                   <MoreVertical size={16} />
                 </Button>

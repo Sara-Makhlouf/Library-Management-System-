@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { getauthor, createauthor } from "../Thunks/AuthorThunk";
 
 const initialState = {
-  author: null,
+  authors: [],
   loading: false,
   error: null,
 };
@@ -12,16 +12,16 @@ const authorSlice = createSlice({
   initialState,
   reducers: {},
 
-extraReducers: (builder) => {
+  extraReducers: (builder) => {
     builder
 
-    .addCase(getauthor.pending, (state) => {
+      .addCase(getauthor.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(getauthor.fulfilled, (state, action) => {
         state.loading = false;
-        state.author = action.payload;
+        state.authors = action.payload.data;
       })
       .addCase(getauthor.rejected, (state, action) => {
         state.loading = false;
@@ -34,7 +34,10 @@ extraReducers: (builder) => {
       })
       .addCase(createauthor.fulfilled, (state, action) => {
         state.loading = false;
-        state.author = action.payload;
+
+        if (action.payload?.data) {
+          state.authors.push(action.payload.data);
+        }
       })
       .addCase(createauthor.rejected, (state, action) => {
         state.loading = false;

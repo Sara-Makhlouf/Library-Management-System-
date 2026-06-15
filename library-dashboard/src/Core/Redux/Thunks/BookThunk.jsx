@@ -3,27 +3,26 @@ import api from "../../Api/aixos";
 
 
 export const fetchBooks = createAsyncThunk(
-    "books/fetchBooks", 
-async () => {
-try {
-    const response = await api.get("/books");
-    return response.data;
-}
-catch(error) {
-    return error.response.data;
-}
-}
+  "books/fetchBooks",
+  async (page = 1, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/books?page=${page}`);
+      return response.data.data; 
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
 );
 
 export const createBooks = createAsyncThunk(
     "books/createBooks",
-    async (bookData) => {
+    async (bookData, { rejectWithValue }) => {
         try {
+           
             const response = await api.post("/books", bookData);
             return response.data;
-        }
-        catch (error) {
-            return error.response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || "Error occurred");
         }
     }
 );
@@ -39,30 +38,27 @@ export const deletBooks = createAsyncThunk(
             return error.response.data;
         } 
     }
-);
+);export const updateBooks = createAsyncThunk(
+  "books/updateBooks",
+  async ({ bookId, bookData }, thunkAPI) => {
+    try {
+      console.log("SENDING", bookData);
 
- export const updateBooks = createAsyncThunk(
-    "books/updateBooks", 
-        async (bookData,bookId) =>{
-            try{
-                const response = await api.put("/books/"+bookId,bookData);
-                return response.data;
-            }
-            catch(error){
-         return error.response.data;
-            }
-        } 
- );
- 
- export const getBook = createAsyncThunk("books/getBookById",async (bookId) => {
-try {
-const response = await api.get("/books/"+bookId);
-return response.data;
-}
-catch(error){
-    return error.response.data;
-}
- });
+      const response = await api.put(
+        `/books/${bookId}`,
+        bookData
+      );
+
+      console.log("UPDATE RESPONSE", response.data);
+
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data || error.message
+      );
+    }
+  }
+);
 export const getBooksWithDetails = createAsyncThunk("books/getBooksWithDetails",async (bookId,thunkApi) =>{
     try {
         const response = await api.get("/books/"+bookId);

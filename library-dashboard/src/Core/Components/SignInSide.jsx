@@ -41,7 +41,6 @@ export default function SignInSide(props) {
           },
         }}
       >
-        {/* Container */}
         <Stack
           direction={{ xs: "column", md: "row" }}
           sx={{
