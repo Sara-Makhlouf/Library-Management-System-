@@ -1,11 +1,20 @@
-import React, { useState } from "react";
+import React, { useState,useRef } from "react";
 import {
-  XAxis, YAxis, Tooltip,
-  CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend, AreaChart, Area
+  XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, 
+  PieChart, Pie, Cell, AreaChart, Area
 } from "recharts";
-
 import { Users, BookOpen, Clock, TrendingUp, Download, Filter } from "lucide-react";
-import { COLORS } from "../../Core/Constants/ColorsUse";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import {
+  Box,
+  Button,
+Paper, 
+  Typography,
+ 
+} from "@mui/material";
+const COLORS = ["#c9a84c", "#4ade80", "#3b82f6", "#f472b6"];
+
 const data = [
   { month: "Jan", borrows: 120, returns: 100 },
   { month: "Feb", borrows: 210, returns: 150 },
@@ -22,230 +31,144 @@ const categories = [
   { name: "Tech", value: 278 },
 ];
 
-
 export default function AnalyistPage() {
-  const [timeFrame, setTimeFrame] = useState("Last 6 Months");
+  const [timeFrame] = useState("Last 6 Months");
+const pageRef = useRef(null);
 
+const handleExport = async () => {
+  try {
+    const canvas = await html2canvas(pageRef.current, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#0a0a0f",
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+    const imgWidth = pdfWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pdfHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+    }
+
+    pdf.save("Library_Analytics.pdf");
+  } catch (error) {
+    console.error("Export failed:", error);
+  }
+};
   return (
-    <div
-      style={{
-        padding: "30px",
-        minHeight: "100vh",
-        background: "linear-gradient(135deg,#f8f6ef,#efe9dc)",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "30px",
-        }}
-      >
-        <div>
-          <h1 style={{ margin: 0 }}>Library Intelligence ✨</h1>
-          <p style={{ opacity: 0.6 }}>
-            Real-time analytics & circulation insights
-          </p>
-        </div>
+<Box
+  ref={pageRef}
+  sx={{
+    minHeight: "100vh",
+    bgcolor: "#0a0a0f",
+    p: 3,
+    color: "#fff",
+    fontFamily: "Inter, sans-serif",
+  }}
+>      
+      <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Box>
+          <Typography sx={{ fontSize: 28, fontWeight: 800, color: "#fff" }}>Library Intelligence ✨</Typography>
+          <Typography sx={{ color: "rgba(255,255,255,0.4)", fontSize: 14 }}>Real-time analytics & circulation insights</Typography>
+        </Box>
+        
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Button variant="outlined" sx={{ borderColor: "rgba(255,255,255,0.1)", color: "#fff" }}>
+            <Filter size={16} style={{ marginRight: 8 }} /> {timeFrame}
+          </Button>
+         <Button
+  onClick={handleExport}
+  sx={{
+    bgcolor: "#c9a84c",
+    color: "#000",
+    fontWeight: 700,
+    "&:hover": { bgcolor: "#b89740" },
+  }}
+>
+  <Download size={16} style={{ marginRight: 8 }} />
+  Export
+</Button>
+        </Box>
+      </Box>
 
-        <div style={{ display: "flex", gap: "10px" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              background: "white",
-              padding: "8px 12px",
-              borderRadius: "10px",
-            }}
-          >
-            <Filter size={14} />
-            <select
-              value={timeFrame}
-              onChange={(e) => setTimeFrame(e.target.value)}
-              style={{ border: "none", outline: "none" }}
-            >
-              <option>Last 7 Days</option>
-              <option>Last 30 Days</option>
-              <option>Last 6 Months</option>
-            </select>
-          </div>
-
-          <button
-            style={{
-              background: "#B8A068",
-              color: "white",
-              border: "none",
-              padding: "10px 14px",
-              borderRadius: "10px",
-              display: "flex",
-              gap: "6px",
-              cursor: "pointer",
-            }}
-          >
-            <Download size={14} />
-            Export
-          </button>
-        </div>
-      </div>
-
-      {/* STATS */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))",
-          gap: "20px",
-          marginBottom: "30px",
-        }}
-      >
+      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 3, mb: 4 }}>
         <StatCard title="Total Borrows" value="1,340" trend="+12%" icon={<BookOpen />} />
         <StatCard title="Members" value="540" trend="+5%" icon={<Users />} />
         <StatCard title="Overdue" value="32" trend="-2%" danger icon={<Clock />} />
         <StatCard title="Growth" value="18%" trend="+4%" icon={<TrendingUp />} />
-      </div>
+      </Box>
 
-      {/* MAIN GRID */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "2fr 1fr",
-          gap: "20px",
-        }}
-      >
-        {/* AREA CHART */}
-        <div style={cardStyle}>
-          <h3>Borrow vs Return</h3>
-
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" }, gap: 3 }}>
+        <CardWrapper title="Borrow vs Return">
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={data}>
               <defs>
                 <linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#B8A068" stopOpacity={0.2}/>
-                  <stop offset="95%" stopColor="#B8A068" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#c9a84c" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#c9a84c" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-
-              <CartesianGrid stroke="#eee" vertical={false}/>
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-
-              <Area
-                type="monotone"
-                dataKey="borrows"
-                stroke="#B8A068"
-                fill="url(#grad1)"
-                strokeWidth={3}
-              />
-
-              <Area
-                type="monotone"
-                dataKey="returns"
-                stroke="#333"
-                strokeDasharray="5 5"
-              />
+              <CartesianGrid stroke="#222" vertical={false}/>
+              <XAxis dataKey="month" stroke="#666" />
+              <YAxis stroke="#666" />
+              <Tooltip contentStyle={{ backgroundColor: "#111118", border: "none" }} />
+              <Area type="monotone" dataKey="borrows" stroke="#c9a84c" fill="url(#grad1)" strokeWidth={3} />
+              <Area type="monotone" dataKey="returns" stroke="#fff" strokeDasharray="5 5" fill="none" />
             </AreaChart>
           </ResponsiveContainer>
-        </div>
+        </CardWrapper>
 
-        {/* PIE + LIST */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          {/* PIE */}
-          <div style={cardStyle}>
-            <h3>Categories</h3>
-
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <CardWrapper title="Categories">
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
-                <Pie data={categories} dataKey="value" innerRadius={50}>
-                  {categories.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i]} />
-                  ))}
+                <Pie data={categories} dataKey="value" innerRadius={60} outerRadius={80}>
+                  {categories.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
-                <Tooltip />
-                <Legend />
+                <Tooltip contentStyle={{ backgroundColor: "#111118", border: "none" }} />
               </PieChart>
             </ResponsiveContainer>
-          </div>
-
-          {/* TOP USERS */}
-          <div style={cardStyle}>
-            <h3>Top Borrowers</h3>
-
-            {[
-              { name: "Ahmad Ali", books: 12 },
-              { name: "Sara Salem", books: 9 },
-              { name: "John Doe", books: 7 },
-            ].map((u, i) => (
-              <div
-                key={i}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "10px 0",
-                  borderBottom: "1px solid #eee",
-                }}
-              >
-                <div style={{ display: "flex", gap: "10px" }}>
-                  <div
-                    style={{
-                      width: 35,
-                      height: 35,
-                      borderRadius: "50%",
-                      background: "#B8A068",
-                      color: "white",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {u.name[0]}
-                  </div>
-
-                  <div>
-                    <div>{u.name}</div>
-                    <small>{u.books} books</small>
-                  </div>
-                </div>
-
-                <span style={{ fontSize: "0.8rem", opacity: 0.6 }}>
-                  #{i + 1}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+          </CardWrapper>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 
-const cardStyle = {
-  background: "rgba(255,255,255,0.8)",
-  padding: "20px",
-  borderRadius: "20px",
-  backdropFilter: "blur(10px)",
-  boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-};
+function CardWrapper({ title, children }) {
+  return (
+    <Paper sx={{ p: 3, bgcolor: "#111118", borderRadius: "20px", border: "1px solid rgba(255,255,255,0.06)" }}>
+      <Typography sx={{ mb: 2, fontWeight: 700 }}>{title}</Typography>
+      {children}
+    </Paper>
+  );
+}
 
 function StatCard({ title, value, trend, danger, icon }) {
   return (
-    <div
-      style={{
-        background: "white",
-        borderRadius: "16px",
-        padding: "20px",
-        boxShadow: "0 8px 20px rgba(0,0,0,0.06)",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+    <Paper sx={{ p: 3, bgcolor: "#111118", borderRadius: "20px", border: "1px solid rgba(255,255,255,0.06)" }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2, color: "#c9a84c" }}>
         {icon}
-        <span style={{ color: danger ? "red" : "green" }}>{trend}</span>
-      </div>
-
-      <h2 style={{ margin: "10px 0 0 0" }}>{value}</h2>
-      <p style={{ opacity: 0.6 }}>{title}</p>
-    </div>
+        <Typography sx={{ color: danger ? "#ff4d4d" : "#4ade80", fontSize: 12, fontWeight: 700 }}>{trend}</Typography>
+      </Box>
+      <Typography variant="h4" sx={{ fontWeight: 800 }}>{value}</Typography>
+      <Typography sx={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>{title}</Typography>
+    </Paper>
   );
 }

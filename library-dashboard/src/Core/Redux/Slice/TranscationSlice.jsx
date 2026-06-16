@@ -36,11 +36,13 @@ const adminTransactionsSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(getAllTransactions.fulfilled, (state, action) => {
-        state.loading = false;
-        state.transactions =
-          action.payload.data || action.payload;
-      })
+// في ملف TranscationSlice.js داخل الـ extraReducers
+.addCase(getAllTransactions.fulfilled, (state, action) => {
+  state.loading = false;
+  // الوصول الصحيح هو payload.data.data بناءً على الـ Console الذي أرسلته
+  const data = action.payload?.data?.data; 
+  state.transactions = Array.isArray(data) ? data : [];
+})
       .addCase(getAllTransactions.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
@@ -48,20 +50,17 @@ const adminTransactionsSlice = createSlice({
 
      
 
-      .addCase(checkoutTransaction.pending, (state) => {
+ .addCase(checkoutTransaction.pending, (state) => {
         state.checkoutLoading = true;
         state.error = null;
       })
       .addCase(checkoutTransaction.fulfilled, (state, action) => {
         state.checkoutLoading = false;
-        state.checkoutResult = action.payload;
-
-        state.successMessage =
-          action.payload?.message ||
-          "Transaction created successfully";
+        state.successMessage = "تمت العملية بنجاح";
       })
       .addCase(checkoutTransaction.rejected, (state, action) => {
         state.checkoutLoading = false;
+        // هنا نخزن الخطأ القادم من السيرفر (مثل 422) لنتمكن من عرضه في الواجهة
         state.error = action.payload;
       });
   },

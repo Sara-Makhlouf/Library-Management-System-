@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Toaster } from "react-hot-toast";
 import AppRouter from "./Core/Constants/AppRouter.jsx";
 import Sidebar from "./Core/Components/SideBar.jsx";
@@ -9,19 +9,30 @@ import { Provider } from "react-redux";
 function App() {
   const location = useLocation();
 
+  const [collapsed, setCollapsed] = useState(false);
+
   const hideSidebar = location.pathname === "/";
 
   return (
     <Provider store={store}>
       <>
-        {!hideSidebar && <Sidebar />}
+        {!hideSidebar && (
+          <Sidebar
+            collapsed={collapsed}
+            setCollapsed={setCollapsed}
+          />
+        )}
 
         <main
           style={{
             minHeight: "100vh",
             display: "block",
-            marginLeft: hideSidebar ? 0 : 250, 
-            transition: "0.3s",
+            marginLeft: hideSidebar
+              ? 0
+              : collapsed
+              ? 84
+              : 256,
+            transition: "margin-left 0.3s ease",
           }}
         >
           <AppRouter />

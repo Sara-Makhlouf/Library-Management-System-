@@ -1,7 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Box, Typography, Collapse } from "@mui/material";
+import { Box, Typography,  Collapse, Menu, MenuItem } from "@mui/material";
 import { useState } from "react";
-
 const NAV_ITEMS = [
   { to: "/dashboard",  icon: "dashboard",      label: "Dashboard" },
   { to: "/inventory",  icon: "menu_book",       label: "Book Inventory" },
@@ -27,12 +26,16 @@ const MUTED  = "rgba(255,255,255,0.38)";
 const BRIGHT = "rgba(255,255,255,0.82)";
 const HOVER  = "rgba(255,255,255,0.04)";
 
-export default function Sidebar() {
+export default function Sidebar({
+  collapsed,
+  setCollapsed,
+}) {
   const [openUsers, setOpenUsers] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const usersActive = location.pathname.startsWith("/users");
+const [anchorEl, setAnchorEl] = useState(null);
 
+const menuOpen = Boolean(anchorEl);
   const navItem = (isActive) => ({
     display: "flex",
     alignItems: "center",
@@ -164,83 +167,157 @@ export default function Sidebar() {
           </NavLink>
         ))}
 
-        <Box sx={{ position: "relative" }}>
-          <Box sx={navItem(usersActive)} onClick={() => !collapsed && setOpenUsers(!openUsers)}>
-            <span className="material-symbols-outlined" style={iconStyle}>person</span>
-            {!collapsed && (
-              <>
-                <Box sx={{ flex: 1 }}>Users</Box>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    color: MUTED,
-                    transition: "transform 0.25s",
-                    transform: openUsers ? "rotate(180deg)" : "rotate(0deg)",
-                  }}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>expand_more</span>
-                </Box>
-              </>
-            )}
-          </Box>
+      <Box sx={{ position: "relative" }}>
+  <Box
+    sx={navItem(usersActive)}
+    onClick={(e) => {
+      if (collapsed) {
+        setAnchorEl(e.currentTarget);
+      } else {
+        setOpenUsers(!openUsers);
+      }
+    }}
+  >
+    <span className="material-symbols-outlined" style={iconStyle}>
+      person
+    </span>
 
-          {/* Vertical line */}
-          {!collapsed && (
-            <Box
-              sx={{
-                position: "absolute",
-                left: "19px",
-                top: "38px",
-                width: "1.5px",
-                height: openUsers ? "90px" : "0px",
-                bgcolor: GOLDBORDER,
-                transition: "height 0.3s ease",
-              }}
-            />
-          )}
+    {!collapsed && (
+      <>
+        <Box sx={{ flex: 1 }}>Users</Box>
 
-          {!collapsed && (
-            <Collapse in={openUsers}>
-              <Box sx={{ pl: "28px", mt: "2px", display: "flex", flexDirection: "column", gap: "2px" }}>
-                {USER_SUBNAV.map(({ to, label }) => (
-                  <NavLink key={to} to={to} style={{ textDecoration: "none" }}>
-                    {({ isActive }) => (
-                      <Box
-                        sx={{
-                          position: "relative",
-                          display: "flex",
-                          alignItems: "center",
-                          px: "10px",
-                          py: "7px",
-                          borderRadius: "8px",
-                          fontSize: "12.5px",
-                          fontWeight: isActive ? 600 : 400,
-                          color: isActive ? GOLD : MUTED,
-                          transition: "all 0.2s",
-                          cursor: "pointer",
-                          "&::before": {
-                            content: '""',
-                            position: "absolute",
-                            left: "-9px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            width: "7px",
-                            height: "1.5px",
-                            bgcolor: GOLDBORDER,
-                          },
-                          "&:hover": { color: BRIGHT, bgcolor: HOVER },
-                        }}
-                      >
-                        {label}
-                      </Box>
-                    )}
-                  </NavLink>
-                ))}
-              </Box>
-            </Collapse>
-          )}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            color: MUTED,
+            transition: "transform 0.25s",
+            transform: openUsers ? "rotate(180deg)" : "rotate(0deg)",
+          }}
+        >
+          <span
+            className="material-symbols-outlined"
+            style={{ fontSize: 16 }}
+          >
+            expand_more
+          </span>
         </Box>
+      </>
+    )}
+  </Box>
+
+  <Menu
+    anchorEl={anchorEl}
+    open={menuOpen}
+    onClose={() => setAnchorEl(null)}
+    anchorOrigin={{
+      vertical: "center",
+      horizontal: "right",
+    }}
+    transformOrigin={{
+      vertical: "center",
+      horizontal: "left",
+    }}
+    PaperProps={{
+      sx: {
+        bgcolor: "#111118",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: "12px",
+        minWidth: 160,
+        ml: 1,
+
+        "& .MuiMenuItem-root": {
+          color: MUTED,
+          fontSize: "13px",
+
+          "&:hover": {
+            bgcolor: HOVER,
+            color: GOLD,
+          },
+        },
+      },
+    }}
+  >
+    {USER_SUBNAV.map(({ to, label }) => (
+      <MenuItem
+        key={to}
+        component={NavLink}
+        to={to}
+        onClick={() => setAnchorEl(null)}
+      >
+        {label}
+      </MenuItem>
+    ))}
+  </Menu>
+
+  {!collapsed && (
+    <Box
+      sx={{
+        position: "absolute",
+        left: "19px",
+        top: "38px",
+        width: "1.5px",
+        height: openUsers ? "90px" : "0px",
+        bgcolor: GOLDBORDER,
+        transition: "height 0.3s ease",
+      }}
+    />
+  )}
+
+  {!collapsed && (
+    <Collapse in={openUsers}>
+      <Box
+        sx={{
+          pl: "28px",
+          mt: "2px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "2px",
+        }}
+      >
+        {USER_SUBNAV.map(({ to, label }) => (
+          <NavLink key={to} to={to} style={{ textDecoration: "none" }}>
+            {({ isActive }) => (
+              <Box
+                sx={{
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                  px: "10px",
+                  py: "7px",
+                  borderRadius: "8px",
+                  fontSize: "12.5px",
+                  fontWeight: isActive ? 600 : 400,
+                  color: isActive ? GOLD : MUTED,
+                  transition: "all 0.2s",
+                  cursor: "pointer",
+
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    left: "-9px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: "7px",
+                    height: "1.5px",
+                    bgcolor: GOLDBORDER,
+                  },
+
+                  "&:hover": {
+                    color: BRIGHT,
+                    bgcolor: HOVER,
+                  },
+                }}
+              >
+                {label}
+              </Box>
+            )}
+          </NavLink>
+        ))}
+      </Box>
+    </Collapse>
+  )}
+</Box>
 
         <Box sx={{ height: "1px", bgcolor: "rgba(255,255,255,0.05)", my: "8px" }} />
 
