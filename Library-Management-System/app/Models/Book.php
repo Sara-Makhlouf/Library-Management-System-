@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Translatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,7 +14,7 @@ class Book extends Model
 {
     /** @use HasFactory<\Database\Factories\BookFactory> */
     use HasFactory, SoftDeletes;
-
+    use Translatable;
     protected $fillable = [
         'ISBN',
         'title',
@@ -37,7 +38,7 @@ class Book extends Model
         'sale_price' => 'decimal:2',
     ];
 
-
+    public array $translatable = ['title'];
 
     /**
      * التصنيف الذي ينتمي إليه الكتاب.

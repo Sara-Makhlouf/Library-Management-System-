@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Translatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 class Notification extends Model
 {
+    use Translatable;
     // 1. ثوابت أنواع الإشعارات الشاملة لتغطية كل أحداث التطبيق
     public const TYPE_BOOK_AVAILABLE   = 'book_available';
     public const TYPE_OVERDUE_RETURN   = 'overdue_return';
@@ -41,7 +43,7 @@ class Notification extends Model
         'sent_at'    => 'datetime',
         'created_at' => 'datetime',
     ];
-
+    public array $translatable = ['title', 'body'];
 
     public function customer(): BelongsTo
     {

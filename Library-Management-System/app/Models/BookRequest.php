@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\Translatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class BookRequest extends Model
 {
     use HasFactory;
-
+    use Translatable;
     protected $fillable = [
         'book_title',
         'author_name',
@@ -19,6 +20,7 @@ class BookRequest extends Model
         'customer_id',
     ];
 
+    public array $translatable = ['book_title', 'author_name'];
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
