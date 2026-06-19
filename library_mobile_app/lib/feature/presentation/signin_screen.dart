@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -47,16 +48,27 @@ class _SigninScreenState extends State<SigninScreen> {
     super.dispose();
   }
 
-  void _onLogin() {
+
+  Future<void> _onLogin() async {
     if (_phoneController.text.isEmpty || _passwordController.text.isEmpty) {
       _shakeKey.currentState?.shake();
       return;
     }
+
+
+    String? fcmToken;
+    try {
+      fcmToken = await FirebaseMessaging.instance.getToken();
+    } catch (e) {
+      print("Error fetching FCM token From firebase: $e");
+    }
+
     _loginBloc.add(
       LoginSubmitted(
         phone: _phoneController.text.trim(),
         password: _passwordController.text,
-        fcmToken: '',
+
+        fcmToken: fcmToken ?? "", //هون كان الغلط ...جرب وشوف
       ),
     );
   }
@@ -316,7 +328,10 @@ class _SigninScreenState extends State<SigninScreen> {
                                   const SizedBox(height: 24),
 
                                   CustomButton(
-                                        isLoading: _loginBloc.state is LoginLoading,
+
+                                        isLoading:
+                                            _loginBloc.state is LoginLoading,
+
                                         onTap: _onLogin,
                                         text: 'Login',
                                       )
