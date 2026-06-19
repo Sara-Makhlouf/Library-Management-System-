@@ -2,27 +2,33 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Traits\Translatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BookRequest extends Model
 {
     use HasFactory;
+    use Translatable;
     protected $fillable = [
-        'user_id',
         'book_title',
         'author_name',
         'status',
-        'is_notified',
-        'admin_notes'
+        'notes',
+        'admin_note',
+        'customer_id',
     ];
 
-    protected $casts = [
-        'is_notified' => 'boolean',
-    ];
-
-    public function user()
+    public array $translatable = ['book_title', 'author_name'];
+    public function scopePending($query)
     {
-        return $this->belongsTo(User::class);
+        return $query->where('status', 'pending');
+    }
+
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
     }
 }
