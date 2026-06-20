@@ -60,7 +60,7 @@ class _SigninScreenState extends State<SigninScreen> {
     try {
       fcmToken = await FirebaseMessaging.instance.getToken();
     } catch (e) {
-      print("Error fetching FCM token From firebase: $e");
+      print("Error fetching FCM token From firebase==========================================================================================================================================================================: $e");
     }
 
     _loginBloc.add(
@@ -68,7 +68,7 @@ class _SigninScreenState extends State<SigninScreen> {
         phone: _phoneController.text.trim(),
         password: _passwordController.text,
 
-        fcmToken: fcmToken ?? "", //هون كان الغلط ...جرب وشوف
+        fcm_token: fcmToken ?? "", //هون كان الغلط ...جرب وشوف
       ),
     );
   }

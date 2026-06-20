@@ -8,9 +8,11 @@ class NetworkService {
   static Future<Dio> getInstance() async {
     if (_instance != null) return _instance!;
 
-    final dio = Dio(BaseOptions(
-      baseUrl: baseUrl,
-      headers: {
+   final dio = Dio(BaseOptions(
+  baseUrl: baseUrl,
+  connectTimeout: const Duration(seconds: 8),
+  receiveTimeout: const Duration(seconds: 8),
+  headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },

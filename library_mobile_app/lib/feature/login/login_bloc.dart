@@ -15,7 +15,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LoginSubmitted>((event, emit) async {
       emit(LoginLoading());
       try {
-        final data = await repository.login(event.phone, event.password, event.fcmToken);
+        final data = await repository.login(event.phone, event.password, event.fcm_token);
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(tokenKey, data['token']);
         await prefs.setString(userKey, jsonEncode(data['user']));
