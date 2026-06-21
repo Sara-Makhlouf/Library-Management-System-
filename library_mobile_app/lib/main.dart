@@ -7,6 +7,7 @@ import 'package:library_mobile_app/core/locale_cubit.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/app_bloc_observer.dart';
 import 'package:library_mobile_app/l10n/app_localizations.dart';
 import '../../core/constant.dart';
+import '../../core/constants.dart';
 import '../../core/theme.dart';
 import '../../core/theme_cubit.dart';
 import '../../core/app_router.dart';
@@ -19,6 +20,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 void main() async {
+   printNetworkConfig();
   Bloc.observer = AppBlocObserver();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
