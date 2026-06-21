@@ -6,9 +6,16 @@ class LoginLoading extends LoginState {}
 
 class LoginSuccess extends LoginState {
   final String token;
-  final Map<String, dynamic> user;
+  final String name;
+  final String type;
+  final int pointsBalance;
 
-  LoginSuccess({required this.token, required this.user});
+  LoginSuccess({
+    required this.token,
+    required this.name,
+    required this.type,
+    required this.pointsBalance,
+  });
 }
 
 class LoginFailure extends LoginState {

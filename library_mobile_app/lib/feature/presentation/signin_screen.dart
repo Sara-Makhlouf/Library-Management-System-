@@ -327,14 +327,15 @@ class _SigninScreenState extends State<SigninScreen> {
 
                                   const SizedBox(height: 24),
 
-                                  CustomButton(
-
-                                        isLoading:
-                                            _loginBloc.state is LoginLoading,
-
+                                  BlocBuilder<LoginBloc, LoginState>(
+                                    builder: (context, state) {
+                                      return CustomButton(
+                                        isLoading: state is LoginLoading,
                                         onTap: _onLogin,
                                         text: 'Login',
-                                      )
+                                      );
+                                    },
+                                  )
                                       .animate(delay: 420.ms)
                                       .fadeIn()
                                       .slideY(begin: 0.1, end: 0),
