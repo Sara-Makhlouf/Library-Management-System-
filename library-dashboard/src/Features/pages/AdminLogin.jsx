@@ -32,7 +32,6 @@ export default function LoginPage() {
   }}
 />
 
-{/*  Overlay */}
 <Box
   sx={{
     position: "absolute",
@@ -41,7 +40,6 @@ export default function LoginPage() {
   "linear-gradient(135deg, rgba(17,17,24,0.55), rgba(17,17,24,0.45))" ,   zIndex: 1,
   }}
 />
-  {/* glow */}
   <Box
     sx={{
       position: "absolute",
@@ -169,7 +167,7 @@ export default function LoginPage() {
     }}
   />
 </Grid>
-
+{/** The Right Side of My Page */}
       
       <Grid size={{ xs: 12, sm: 6, md: 5 }}>
         <Paper

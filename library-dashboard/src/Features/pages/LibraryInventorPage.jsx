@@ -27,44 +27,38 @@ import SwapHorizIcon          from "@mui/icons-material/SwapHoriz";
 import AddIcon                from "@mui/icons-material/Add";
 import SearchIcon             from "@mui/icons-material/Search";
 import CategoryOutlinedIcon   from "@mui/icons-material/CategoryOutlined";
-import MenuBookOutlinedIcon   from "@mui/icons-material/MenuBookOutlined";
-import LayersOutlinedIcon     from "@mui/icons-material/LayersOutlined";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+
 import EditIcon               from "@mui/icons-material/Edit";
 import TrendingUpIcon         from "@mui/icons-material/TrendingUp";
+import CloseIcon              from "@mui/icons-material/Close";
+import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 
 import { fetchBooks, deletBooks, updateBooks } from "../../Core/Redux/Thunks/BookThunk";
 import AddBookPage from "./AddNewBook";
+import {GOLD ,SURFACE,MUTED2,MUTED,TEXT,IMAGE_BASE_URL ,BORDER,BG,GOLD_DIM} from "../../Core/Constants/utils";
+import {KPI,StockBar} from "../Utils/bookData";
 
 
-const BG       = "#0a0a0f";
-const SURFACE  = "#111118";
-const GOLD     = "#c9a84c";
-const GOLD_DIM = "#8b5e1a";
-const BORDER   = "rgba(255,255,255,0.06)";
-const TEXT     = "#fff";
-const MUTED    = "rgba(255,255,255,0.35)";
-const MUTED2   = "rgba(255,255,255,0.20)";
+const FONT_IMPORT_ID = "lib-fonts";
+const FONT_HREF =
+  "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap";
 
-const IMAGE_BASE_URL = "http://localhost:8000/storage/";
-
-const KPI = [
-  { label: "Total Books", icon: <MenuBookOutlinedIcon  sx={{ fontSize: 16 }} />, accent: GOLD,      trend: "all time" },
-  { label: "This Page",   icon: <CheckCircleOutlineIcon sx={{ fontSize: 16 }} />, accent: "#97c459", trend: "current view" },
-  { label: "Total Pages", icon: <LayersOutlinedIcon    sx={{ fontSize: 16 }} />, accent: "#7f77dd", trend: "paginated" },
-];
-
-function StockBar({ stock, max, accent }) {
-  const pct = max > 0 ? Math.round((stock / max) * 100) : 0;
-  return (
-    <Box sx={{ height: 3, borderRadius: 2, bgcolor: "rgba(255,255,255,0.07)", overflow: "hidden", mt: 1.5 }}>
-      <Box sx={{ height: "100%", width: `${pct}%`, bgcolor: accent, borderRadius: 2, transition: "width 0.4s ease" }} />
-    </Box>
-  );
+function injectFonts() {
+  if (document.getElementById(FONT_IMPORT_ID)) return;
+  const link = document.createElement("link");
+  link.id = FONT_IMPORT_ID;
+  link.rel = "stylesheet";
+  link.href = FONT_HREF;
+  document.head.appendChild(link);
 }
+
+const display = { fontFamily: "'Fraunces', serif" };
+const mono = { fontFamily: "'IBM Plex Mono', monospace" };
 
 export default function LibraryInventoryPage() {
   const dispatch = useDispatch();
+
+  useEffect(() => { injectFonts(); }, []);
 
   const booksData   = useSelector((state) => state.books.books) || {};
   const books       = booksData.data         || [];
@@ -78,6 +72,9 @@ export default function LibraryInventoryPage() {
   const [openAdd,  setOpenAdd]  = useState(false);
   const [editBook, setEditBook] = useState(null);
   const [editForm, setEditForm] = useState({ title: "", price: "", sale_price: "" });
+  const [viewBook, setViewBook] = useState(null);
+  const [deleteBook, setDeleteBook] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => { dispatch(fetchBooks(1)); }, [dispatch]);
 
@@ -86,12 +83,18 @@ export default function LibraryInventoryPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this book?")) return;
+  const handleConfirmDelete = async () => {
+    if (!deleteBook) return;
+    setDeleting(true);
     try {
-      await dispatch(deletBooks(id)).unwrap();
+      await dispatch(deletBooks(deleteBook.id)).unwrap();
       dispatch(fetchBooks(currentPage));
-    } catch (err) { console.error(err); }
+      setDeleteBook(null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const handleToggleStatus = async (book) => {
@@ -115,6 +118,11 @@ const handleOpenEdit = (book) => {
       setEditBook(null);
       dispatch(fetchBooks(currentPage));
     } catch (err) { console.error(err); }
+  };
+
+  const handleOpenView = (book) => {
+    if (!book || !book.file_path) return;
+    setViewBook(book);
   };
 
 const filteredBooks = Array.isArray(books) ? books.filter((book) => {
@@ -166,7 +174,7 @@ const maxStock = filteredBooks.length > 0
           >
             <AutoStoriesIcon sx={{ fontSize: 17, color: "#fff" }} />
           </Box>
-          <Typography sx={{ fontWeight: 700, fontSize: 15, color: TEXT, letterSpacing: -0.3 }}>
+          <Typography sx={{ ...display, fontWeight: 600, fontSize: 16, color: TEXT, letterSpacing: -0.2 }}>
             Library Inventory
           </Typography>
         </Box>
@@ -220,13 +228,13 @@ const maxStock = filteredBooks.length > 0
 
         <Typography
           sx={{
-            fontSize: { xs: 24, md: 32 }, fontWeight: 800,
-            letterSpacing: -1, lineHeight: 1.1, mb: 1.5,
-            background: `linear-gradient(135deg,${TEXT} 0%,${GOLD} 100%)`,
-            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+            ...display,
+            fontSize: { xs: 26, md: 34 }, fontWeight: 600,
+            letterSpacing: -0.5, lineHeight: 1.1, mb: 1.5,
+            color: TEXT,
           }}
         >
-          Manage your book collection
+          Manage your <Box component="span" sx={{ color: GOLD, fontStyle: "italic" }}>book collection</Box>
         </Typography>
 
         <Typography sx={{ fontSize: 14, color: "rgba(255,255,255,0.45)", lineHeight: 1.7, maxWidth: 440 }}>
@@ -239,12 +247,13 @@ const maxStock = filteredBooks.length > 0
           { ...KPI[0], value: booksData.total || 0 },
           { ...KPI[1], value: books.length },
           { ...KPI[2], value: totalPages },
-        ].map((item) => (
+        ].map((item, i) => (
           <Box
             key={item.label}
             component={motion.div}
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: i * 0.06 }}
             sx={{
               p: "20px", borderRadius: "18px",
               bgcolor: SURFACE, border: `1px solid ${BORDER}`,
@@ -260,10 +269,10 @@ const maxStock = filteredBooks.length > 0
                 {item.icon}
               </Box>
             </Box>
-            <Typography sx={{ fontSize: 28, fontWeight: 800, letterSpacing: -1, color: TEXT, mb: 0.5 }}>
+            <Typography sx={{ ...display, fontSize: 28, fontWeight: 600, letterSpacing: -0.5, color: TEXT, mb: 0.5 }}>
               {Number(item.value).toLocaleString()}
             </Typography>
-            <Typography sx={{ fontSize: 11, color: item.accent, display: "flex", alignItems: "center", gap: 0.3 }}>
+            <Typography sx={{ fontSize: 11, color: item.accent, display: "flex", alignItems: "center", gap: 0.3, fontWeight: 600 }}>
               <TrendingUpIcon sx={{ fontSize: 12 }} /> {item.trend}
             </Typography>
           </Box>
@@ -359,7 +368,16 @@ const maxStock = filteredBooks.length > 0
                   },
                 }}
               >
-                <Box sx={{ aspectRatio: "3/2", bgcolor: "rgba(255,255,255,0.02)", position: "relative", overflow: "hidden" }}>
+                <Box
+                  onClick={() => handleOpenView(book)}
+                  sx={{
+                    aspectRatio: "3/2",
+                    bgcolor: "rgba(255,255,255,0.02)",
+                    position: "relative",
+                    overflow: "hidden",
+                    cursor: book.file_path ? "pointer" : "default",
+                  }}
+                >
                   <Avatar
                     src={book.cover ? `${IMAGE_BASE_URL}${book.cover}` : "/history book.jpg"}
                     variant="square"
@@ -372,14 +390,14 @@ const maxStock = filteredBooks.length > 0
                       bgcolor: book.stock > 0 ? "rgba(74,222,128,0.12)" : "rgba(239,68,68,0.12)",
                     }}
                   >
-                    <Typography sx={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.5, color: book.stock > 0 ? "#4ade80" : "#f87171" }}>
+                    <Typography sx={{ ...mono, fontSize: 9.5, fontWeight: 600, letterSpacing: 0.4, color: book.stock > 0 ? "#4ade80" : "#f87171" }}>
                       {book.stock > 0 ? `STOCK ${book.stock}` : "OUT OF STOCK"}
                     </Typography>
                   </Box>
                 </Box>
 
                 <Box sx={{ p: "14px 16px", flex: 1, display: "flex", flexDirection: "column" }}>
-                  <Typography sx={{ fontWeight: 700, fontSize: 13.5, color: TEXT, mb: 0.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <Typography sx={{ ...display, fontWeight: 600, fontSize: 14, color: TEXT, mb: 0.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {book.title}
                   </Typography>
                   <Typography sx={{ fontSize: 11.5, color: MUTED, mb: 1.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -399,13 +417,13 @@ const maxStock = filteredBooks.length > 0
                       </Typography>
                     </Box>
 
-                    <Typography sx={{ fontSize: 13, fontWeight: 800, color: GOLD, letterSpacing: -0.3 }}>
+                    <Typography sx={{ ...mono, fontSize: 13, fontWeight: 600, color: GOLD, letterSpacing: -0.2 }}>
                       {Number(book.sale_price).toLocaleString()}
-                      <Box component="span" sx={{ fontSize: 10, fontWeight: 400, color: MUTED, ml: 0.4 }}>SAR</Box>
+                      <Box component="span" sx={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 400, color: MUTED, ml: 0.4 }}>SAR</Box>
                     </Typography>
                   </Box>
 
-                  <Typography sx={{ fontSize: 11, color: MUTED2, mb: 1.5 }}>
+                  <Typography sx={{ ...mono, fontSize: 10.5, color: MUTED2, mb: 1.5 }}>
                     Cost: {Number(book.price).toLocaleString()} · Sale: {Number(book.sale_price).toLocaleString()}
                   </Typography>
 
@@ -454,7 +472,7 @@ const maxStock = filteredBooks.length > 0
                     <Tooltip title="Delete" arrow>
                       <IconButton
                         size="small"
-                        onClick={() => handleDelete(book.id)}
+                        onClick={() => setDeleteBook(book)}
                         sx={{
                           borderRadius: "8px",
                           border: `1px solid ${BORDER}`,
@@ -483,7 +501,8 @@ const maxStock = filteredBooks.length > 0
           size="medium"
           sx={{
             "& .MuiPaginationItem-root": {
-              borderRadius: "8px", fontWeight: 700, fontSize: 13,
+              ...mono,
+              borderRadius: "8px", fontWeight: 600, fontSize: 13,
               color: MUTED, border: `1px solid ${BORDER}`, bgcolor: SURFACE,
               "&:hover": { bgcolor: "rgba(255,255,255,0.07)", borderColor: "rgba(255,255,255,0.12)", color: TEXT },
               transition: "all 0.2s",
@@ -519,7 +538,7 @@ const maxStock = filteredBooks.length > 0
           },
         }}
       >
-        <DialogTitle sx={{ fontWeight: 700, fontSize: 15, color: TEXT, pb: 0.5 }}>
+        <DialogTitle sx={{ ...display, fontWeight: 600, fontSize: 16, color: TEXT, pb: 0.5 }}>
           Edit book details
         </DialogTitle>
 
@@ -585,6 +604,142 @@ const maxStock = filteredBooks.length > 0
             Save changes
           </Button>
         </DialogActions>
+      </Dialog>
+
+   
+      <Dialog
+        open={Boolean(deleteBook)}
+        onClose={() => !deleting && setDeleteBook(null)}
+        PaperProps={{
+          sx: {
+            borderRadius: "20px",
+            minWidth: "380px",
+            maxWidth: "420px",
+            bgcolor: "#1a1a24",
+            border: "1px solid rgba(248,113,113,0.18)",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+          },
+        }}
+      >
+        <DialogContent sx={{ p: "28px 26px 8px" }}>
+          <Box
+            sx={{
+              width: 44, height: 44, borderRadius: "12px",
+              bgcolor: "rgba(248,113,113,0.12)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              mb: 2,
+            }}
+          >
+            <WarningAmberRoundedIcon sx={{ fontSize: 22, color: "#f87171" }} />
+          </Box>
+
+          <Typography sx={{ ...display, fontSize: 17, fontWeight: 600, color: TEXT, mb: 0.8 }}>
+            Delete this book?
+          </Typography>
+          <Typography sx={{ fontSize: 13, color: MUTED, lineHeight: 1.6, mb: 2.2 }}>
+            This removes it from the inventory permanently. This can't be undone.
+          </Typography>
+
+          {deleteBook && (
+            <Box
+              sx={{
+                display: "flex", alignItems: "center", gap: 1.4,
+                p: "10px 12px", borderRadius: "12px",
+                bgcolor: "rgba(255,255,255,0.03)",
+                border: `1px solid ${BORDER}`,
+              }}
+            >
+              <Avatar
+                src={deleteBook.cover ? `${IMAGE_BASE_URL}${deleteBook.cover}` : "/history book.jpg"}
+                variant="rounded"
+                sx={{ width: 36, height: 48 }}
+              />
+              <Box sx={{ minWidth: 0 }}>
+                <Typography sx={{ ...display, fontWeight: 600, fontSize: 13, color: TEXT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {deleteBook.title}
+                </Typography>
+                <Typography sx={{ fontSize: 11, color: MUTED2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {deleteBook.authors?.map((a) => a.name).join(", ") || "Unknown Author"}
+                </Typography>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+
+        <DialogActions sx={{ px: "26px", pb: "24px", pt: 2, gap: 1 }}>
+          <Button
+            onClick={() => setDeleteBook(null)}
+            disabled={deleting}
+            sx={{
+              borderRadius: "10px", textTransform: "none", fontWeight: 600,
+              fontSize: 13.5, color: MUTED,
+              border: `1px solid ${BORDER}`, px: 2.5,
+              "&:hover": { bgcolor: "rgba(255,255,255,0.05)", color: TEXT },
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            disabled={deleting}
+            variant="contained"
+            disableElevation
+            startIcon={!deleting ? <DeleteOutlineIcon sx={{ fontSize: 16 }} /> : null}
+            sx={{
+              borderRadius: "10px", textTransform: "none",
+              fontWeight: 700, fontSize: 13.5, px: 2.8,
+              color: "#fff",
+              background: "linear-gradient(135deg,#f87171,#c83737)",
+              "&:hover": {
+                background: "linear-gradient(135deg,#fb8585,#d94545)",
+                boxShadow: "0 12px 28px rgba(248,113,113,0.25)",
+              },
+              "&.Mui-disabled": { color: "rgba(255,255,255,0.6)" },
+            }}
+          >
+            {deleting ? <CircularProgress size={16} sx={{ color: "#fff" }} /> : "Delete book"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={Boolean(viewBook)}
+        onClose={() => setViewBook(null)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: "18px",
+            bgcolor: "#1a1a24",
+            border: "1px solid rgba(201,168,76,0.15)",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+            height: "85vh",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            ...display,
+            fontWeight: 600, fontSize: 16, color: TEXT,
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            borderBottom: `1px solid ${BORDER}`,
+          }}
+        >
+          {viewBook?.title || "Book preview"}
+          <IconButton onClick={() => setViewBook(null)} size="small" sx={{ color: MUTED }}>
+            <CloseIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{ p: 0, height: "100%" }}>
+          {viewBook?.file_path && (
+            <iframe
+              src={`${IMAGE_BASE_URL}${viewBook.file_path}`}
+              title={viewBook?.title || "Book PDF"}
+              style={{ width: "100%", height: "100%", border: "none" }}
+            />
+          )}
+        </DialogContent>
       </Dialog>
     </Box>
   );

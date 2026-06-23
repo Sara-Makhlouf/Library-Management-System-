@@ -10,14 +10,8 @@ import {
 
 import { updateBookRequestStatus } from "../../Core/Redux/Thunks/BookRequestThunk";
 import { clearBookRequestState } from "../../Core/Redux/Slice/BookRequestSlice";
+import {GOLD ,SURFACE,MUTED,TEXT ,BORDER,BG,GOLD2} from "../../Core/Constants/utils";
 
-const BG      = "#0a0a0f";
-const SURFACE = "#111118";
-const GOLD    = "#c9a84c";
-const GOLD2   = "#8b5e1a";
-const BORDER  = "rgba(255,255,255,0.06)";
-const TEXT    = "#fff";
-const MUTED   = "rgba(255,255,255,0.35)";
 
 const STATUS_META = {
   approved: { label: "Approved", color: "#97c459", bg: "rgba(151,196,89,0.1)",  border: "rgba(151,196,89,0.2)",  icon: <CheckCircle2 size={13} /> },

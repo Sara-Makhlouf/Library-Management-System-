@@ -3,113 +3,36 @@ import { useDispatch, useSelector } from "react-redux";
 import { Box, Typography, CircularProgress } from "@mui/material";
 import toast from "react-hot-toast";
 import { fetchDeliveryOrders, updateDeliveryStatus } from "../../Core/Redux/Thunks/OrderThunk";
+import {STATUSES,FILTERS,COL,Avatar,fmt,StatusChip,StatusStepper} from "../Utils/orderData";
 
-const STATUSES = {
-  pending:          { label: "Waiting",   color: "#fbbf24", bg: "rgba(251,191,36,0.1)",  border: "rgba(251,191,36,0.25)"  },
-  preparing:        { label: "In progress ",   color: "#818cf8", bg: "rgba(99,102,241,0.1)",  border: "rgba(99,102,241,0.25)"  },
-  out_for_delivery: { label: " Out to delivery ",    color: "#c9a84c", bg: "rgba(201,168,76,0.1)",  border: "rgba(201,168,76,0.25)"  },
-  delivered:        { label: "Delivered! ",      color: "#1d9e75", bg: "rgba(29,158,117,0.1)", border: "rgba(29,158,117,0.25)" },
+
+const FONT_IMPORT_ID = "lib-fonts";
+const FONT_HREF =
+  "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap";
+
+function injectFonts() {
+  if (document.getElementById(FONT_IMPORT_ID)) return;
+  const link = document.createElement("link");
+  link.id = FONT_IMPORT_ID;
+  link.rel = "stylesheet";
+  link.href = FONT_HREF;
+  document.head.appendChild(link);
+}
+
+const display = { fontFamily: "'Fraunces', serif" };
+const mono = { fontFamily: "'IBM Plex Mono', monospace" };
+
+
+const STATUS_ACCENT = {
+  pending:    "#fbbf24",
+  processing: "#38bdf8",
+  shipped:    "#7f77dd",
+  delivered:  "#4ade80",
+  cancelled:  "#f87171",
 };
 
-const STEPS = [
-  { key: "pending",          label: "pending" },
-  { key: "preparing",        label: "preparing"  },
-  { key: "out_for_delivery", label: "خرج"    },
-  { key: "delivered",        label: "delivered"  },
-];
-
-const FILTERS = [
-  { key: "all",              label: "all"           },
-  { key: "pending",          label: "pending ⏳  " },
-  { key: "preparing",        label: "preparing 📦  " },
-  { key: "out_for_delivery", label: "out_for_delivery 🚚  "  },
-  { key: "delivered",        label: " delivered ✅ "   },
-];
-
-const GRADIENTS = [
-  "linear-gradient(135deg,#c9a84c,#8b5e1a)",
-  "linear-gradient(135deg,#7f77dd,#4a43a0)",
-  "linear-gradient(135deg,#1d9e75,#0f6b4f)",
-  "linear-gradient(135deg,#97c459,#5f8e20)",
-  "linear-gradient(135deg,#e06b5a,#a03322)",
-];
-
-const COL = "70px 2fr 1.2fr 1.4fr 1fr";
-
-const initials = (name = "") =>
-  name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase()).join("");
-
-const fmt = (val) =>
-  parseFloat(val || 0).toLocaleString("en-US", { minimumFractionDigits: 2 });
-
-function Avatar({ name, index }) {
-  return (
-    <Box sx={{
-      width: 32, height: 32, minWidth: 32, borderRadius: "9px",
-      background: GRADIENTS[index % GRADIENTS.length],
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: 12, fontWeight: 700, color: "#fff",
-    }}>
-      {initials(name)}
-    </Box>
-  );
-}
-
-
-function StatusChip({ status }) {
-  const s = STATUSES[status] ?? STATUSES.pending;
-  return (
-    <Box sx={{
-      display: "inline-flex", alignItems: "center", gap: "5px",
-      px: "10px", py: "4px", borderRadius: "20px", fontSize: 11, fontWeight: 600,
-      bgcolor: s.bg, border: `1px solid ${s.border}`, color: s.color,
-    }}>
-      <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: s.color, flexShrink: 0 }} />
-      {s.label}
-    </Box>
-  );
-}
-
-function StatusStepper({ bill, onUpdate, isUpdating }) {
-  const currentIdx = STEPS.findIndex((s) => s.key === bill.delivery_status);
-
-  return (
-    <Box sx={{ display: "flex", alignItems: "center" }}>
-      {STEPS.map((step, i) => {
-        const isActive = bill.delivery_status === step.key;
-        const isDone   = i < currentIdx;
-        const s        = STATUSES[step.key];
-
-        return (
-          <Box
-            key={step.key}
-            onClick={() => !isUpdating && onUpdate(bill.id, step.key)}
-            sx={{
-              px: "10px", py: "5px", fontSize: 11, fontWeight: 600,
-              cursor: isUpdating ? "wait" : "pointer",
-              border: "1px solid",
-              borderLeft: i > 0 ? "none" : "1px solid",
-              borderRadius: i === 0 ? "8px 0 0 8px" : i === STEPS.length - 1 ? "0 8px 8px 0" : "0",
-              transition: "all .2s",
-              ...(isActive
-                ? { color: s.color, bgcolor: s.bg, borderColor: s.border }
-                : isDone
-                ? { color: "rgba(255,255,255,0.4)", bgcolor: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.1)" }
-                : { color: "rgba(255,255,255,0.25)", bgcolor: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.07)" }),
-              "&:hover": !isUpdating && !isActive ? {
-                color: s.color, bgcolor: s.bg, borderColor: s.border,
-              } : {},
-            }}
-          >
-            {isUpdating && isActive
-              ? <CircularProgress size={10} sx={{ color: s.color }} />
-              : step.label
-            }
-          </Box>
-        );
-      })}
-    </Box>
-  );
+function getAccent(status) {
+  return STATUS_ACCENT[status] || "rgba(255,255,255,0.12)";
 }
 
 export default function DeliveryPage() {
@@ -117,6 +40,7 @@ export default function DeliveryPage() {
   const { list, loading, updateLoading } = useSelector((state) => state.delivery);
   const [activeFilter, setActiveFilter] = useState("all");
 
+  useEffect(() => { injectFonts(); }, []);
   useEffect(() => { dispatch(fetchDeliveryOrders()); }, [dispatch]);
 
   const handleFilterChange = (key) => {
@@ -127,15 +51,18 @@ export default function DeliveryPage() {
   const handleUpdate = async (id, delivery_status) => {
     try {
       await dispatch(updateDeliveryStatus({ id, delivery_status })).unwrap();
-      toast.success(`  updated to : ${STATUSES[delivery_status].label}`);
+      toast.success(`Updated to: ${STATUSES[delivery_status].label}`);
     } catch (err) {
-      toast.error(err?.message ?? "fail to update status");
+      toast.error(err?.message ?? "Failed to update status");
     }
   };
 
   const filtered = activeFilter === "all"
     ? list
     : list.filter((b) => b.delivery_status === activeFilter);
+
+  const countFor = (key) =>
+    key === "all" ? list.length : list.filter((b) => b.delivery_status === key).length;
 
   if (loading && list.length === 0) {
     return (
@@ -154,19 +81,20 @@ export default function DeliveryPage() {
     }}>
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 0.5 }}>
-          <Typography sx={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: -0.5 }}>
+          <Typography sx={{ ...display, fontSize: 23, fontWeight: 600, color: "#fff", letterSpacing: -0.4 }}>
             Delivery Orders
           </Typography>
           <Box sx={{
+            ...mono,
             px: "10px", py: "3px", borderRadius: "20px",
             bgcolor: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.2)",
             fontSize: 11, fontWeight: 600, color: "#c9a84c",
           }}>
-            {filtered.length} order
+            {filtered.length} {filtered.length === 1 ? "order" : "orders"}
           </Box>
         </Box>
         <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
-Manage and trace the status of orders 
+          Manage and trace the status of orders
         </Typography>
       </Box>
 
@@ -176,6 +104,7 @@ Manage and trace the status of orders
             key={f.key}
             onClick={() => handleFilterChange(f.key)}
             sx={{
+              display: "flex", alignItems: "center", gap: "6px",
               px: "14px", py: "6px", borderRadius: "8px",
               fontSize: 12, fontWeight: 600, cursor: "pointer",
               transition: "all .2s",
@@ -185,13 +114,24 @@ Manage and trace the status of orders
             }}
           >
             {f.label}
+            <Box
+              component="span"
+              sx={{
+                ...mono,
+                fontSize: 10.5,
+                color: activeFilter === f.key ? "#c9a84c" : "rgba(255,255,255,0.3)",
+                opacity: 0.85,
+              }}
+            >
+              {countFor(f.key)}
+            </Box>
           </Box>
         ))}
       </Box>
 
       <Box sx={{ bgcolor: "#0d0d14", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", overflow: "hidden" }}>
         <Box sx={{ display: "grid", gridTemplateColumns: COL, px: "20px", py: "10px", bgcolor: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-          {["#", "customers", "price", " delivery status", "= update status"].map((h) => (
+          {["Order", "Customer", "Price", "Status", "Update status"].map((h) => (
             <Typography key={h} sx={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.25)", letterSpacing: "0.8px", textTransform: "uppercase" }}>
               {h}
             </Typography>
@@ -204,12 +144,20 @@ Manage and trace the status of orders
             sx={{
               display: "grid", gridTemplateColumns: COL,
               px: "20px", py: "14px", alignItems: "center",
+              position: "relative",
               borderBottom: i < filtered.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
               transition: "background .15s",
               "&:hover": { bgcolor: "rgba(255,255,255,0.02)" },
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                left: 0, top: "12%", bottom: "12%",
+                width: 3, borderRadius: "0 3px 3px 0",
+                bgcolor: getAccent(bill.delivery_status),
+              },
             }}
           >
-            <Typography sx={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.3)" }}>
+            <Typography sx={{ ...mono, fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.3)" }}>
               #{bill.id}
             </Typography>
 
@@ -220,15 +168,15 @@ Manage and trace the status of orders
                   {bill.customer?.name}
                 </Typography>
                 {bill.delivery_address && (
-                  <Typography sx={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
-                    📍 {bill.delivery_address}
+                  <Typography sx={{ fontSize: 11, color: "rgba(255,255,255,0.3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 200 }}>
+                    {bill.delivery_address}
                   </Typography>
                 )}
               </Box>
             </Box>
 
-            <Typography sx={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
-              {fmt(bill.total_price)} ل.س
+            <Typography sx={{ ...mono, fontSize: 13, fontWeight: 600, color: "#fff" }}>
+              {fmt(bill.total_price)} <Box component="span" sx={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)" }}>ل.س</Box>
             </Typography>
 
             <Box>
@@ -245,8 +193,12 @@ Manage and trace the status of orders
           </Box>
         )) : (
           <Box sx={{ py: 8, textAlign: "center" }}>
-            <Typography sx={{ fontSize: 13, color: "rgba(255,255,255,0.2)" }}>
-No Delivery orders             </Typography>
+            <Typography sx={{ ...display, fontSize: 15, fontWeight: 600, color: "rgba(255,255,255,0.35)", mb: 0.5 }}>
+              Nothing here yet
+            </Typography>
+            <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>
+              {activeFilter === "all" ? "No delivery orders so far" : "No orders match this filter"}
+            </Typography>
           </Box>
         )}
       </Box>

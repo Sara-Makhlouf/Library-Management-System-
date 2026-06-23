@@ -6,16 +6,15 @@ import {
 
 const initialState = {
   transactions: [],
+  pagination: null, 
   topBorrowedBooks: [],
-
   loading: false,
   checkoutLoading: false,
-
   error: null,
   successMessage: null,
-
   checkoutResult: null,
 };
+
 
 const adminTransactionsSlice = createSlice({
   name: "adminTransactions",
@@ -36,12 +35,16 @@ const adminTransactionsSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-// في ملف TranscationSlice.js داخل الـ extraReducers
 .addCase(getAllTransactions.fulfilled, (state, action) => {
   state.loading = false;
-  // الوصول الصحيح هو payload.data.data بناءً على الـ Console الذي أرسلته
-  const data = action.payload?.data?.data; 
-  state.transactions = Array.isArray(data) ? data : [];
+  const payload = action.payload?.data;
+  state.transactions = Array.isArray(payload?.data) ? payload.data : [];
+  state.pagination = {         
+    currentPage: payload?.current_page ?? 1,
+    lastPage: payload?.last_page ?? 1,
+    total: payload?.total ?? 0,
+    perPage: payload?.per_page ?? 15,
+  };
 })
       .addCase(getAllTransactions.rejected, (state, action) => {
         state.loading = false;
@@ -56,11 +59,10 @@ const adminTransactionsSlice = createSlice({
       })
       .addCase(checkoutTransaction.fulfilled, (state, action) => {
         state.checkoutLoading = false;
-        state.successMessage = "تمت العملية بنجاح";
+        state.successMessage = "The proccess end succussfully ✅";
       })
       .addCase(checkoutTransaction.rejected, (state, action) => {
         state.checkoutLoading = false;
-        // هنا نخزن الخطأ القادم من السيرفر (مثل 422) لنتمكن من عرضه في الواجهة
         state.error = action.payload;
       });
   },

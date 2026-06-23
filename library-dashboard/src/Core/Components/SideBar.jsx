@@ -1,30 +1,12 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { Box, Typography,  Collapse, Menu, MenuItem } from "@mui/material";
 import { useState } from "react";
-const NAV_ITEMS = [
-  { to: "/dashboard",  icon: "dashboard",      label: "Dashboard" },
-  { to: "/inventory",  icon: "menu_book",       label: "Book Inventory" },
-  { to: "/analytics",  icon: "analytics",       label: "Analytics" },
-  { to: "/order",      icon: "shopping_cart",   label: "Orders" },
-  //{ to: "/finance",    icon: "payments",        label: "Finances" },
-  //{ to: "/archives",   icon: "archive",         label: "Archives" },
-{to:"/bookrequest", icon:"request_page", label:"BookRequest"},
-{to:"/waitinglist", icon:"hourglass_top", label:"WaitingBooks"},
-{to:"/bills", icon:"receipt_long", label:"Bills"},
-{to:"/transactions", icon:"sync_alt", label:"Transactions"}
-];
-
-const USER_SUBNAV = [
-  { to: "/users/list",     label: "List" },
-  { to: "/users/profiles", label: "Profiles" },
-];
-
-const GOLD   = "#c9a84c";
-const GOLDDIM = "rgba(201,168,76,0.08)";
-const GOLDBORDER = "rgba(201,168,76,0.18)";
-const MUTED  = "rgba(255,255,255,0.38)";
-const BRIGHT = "rgba(255,255,255,0.82)";
-const HOVER  = "rgba(255,255,255,0.04)";
+import {GOLDBORDER,GOLD , MUTED,GOLDDIM, BRIGHT,
+        HOVER,
+      NAV_ITEMS,
+      USER_SUBNAV,
+      
+      } from "../../Features/Utils/sidebarData";
 
 export default function Sidebar({
   collapsed,

@@ -8,29 +8,26 @@ const getAuthConfig = () => ({
     Accept: "application/json",
   },
 });
-
 export const getAllTransactions = createAsyncThunk(
   "adminTransactions/getAllTransactions",
-  async (status = null, { rejectWithValue }) => {
+  async ({ status = null, page = 1 } = {}, { rejectWithValue }) => {
     try {
-      const response = await api.get(
-        `/transactions`,
-        {
-          ...getAuthConfig(),
-          params: status ? { status } : {},
-        }
-      );
-
+      const response = await api.get(`/transactions`, {
+        ...getAuthConfig(),
+        params: {
+          ...(status ? { status } : {}),
+          page,
+        },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data ||
-          "Failed to fetch transactions"
+        error.response?.data || "Failed to fetch transactions"
       );
     }
   }
 );
-;
+
 
 export const checkoutTransaction = createAsyncThunk(
   "adminTransactions/checkoutTransaction",

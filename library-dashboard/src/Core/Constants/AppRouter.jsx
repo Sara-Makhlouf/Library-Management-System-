@@ -1,7 +1,6 @@
 import {  Routes, Route } from "react-router-dom";
 import AdminLoginPage from "../../Features/pages/AdminLogin";
 import Dashboard from "../../Features/pages/DashBoard";
-import UsersPage from "../../Features/pages/Users";
 import AddBookPage from "../../Features/pages/AddNewBook";
 import AnalyticsPage from "../../Features/pages/AnalyistPage";
 import LibraryInventoryPage from "../../Features/pages/LibraryInventorPage";
@@ -21,7 +20,6 @@ return (
     
     <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/users" element={<UsersPage />} />
         <Route path="/" element={<AdminLoginPage />} />
         <Route path="/add-book" element={<AddBookPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
