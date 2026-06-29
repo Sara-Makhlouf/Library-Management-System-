@@ -4,7 +4,6 @@ import Dashboard from "../../Features/pages/DashBoard";
 import AddBookPage from "../../Features/pages/AddNewBook";
 import AnalyticsPage from "../../Features/pages/AnalyistPage";
 import LibraryInventoryPage from "../../Features/pages/LibraryInventorPage";
-import NotificationsPage from "../../Features/pages/Notification";
 import LibrarySettings from "../../Features/pages/Setting";
 import Orders from "../../Features/pages/Order";
 import UsersListPage from "../../Features/pages/UserList";
@@ -25,7 +24,6 @@ return (
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/" element={<AdminLoginPage />} />
         <Route path="/inventory" element={<LibraryInventoryPage />} />
-        <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/settings" element={<LibrarySettings />} />
         <Route path="/order" element={<Orders />} />
         <Route path="/users/list" element={<UsersListPage />} />

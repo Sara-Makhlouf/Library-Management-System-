@@ -2,14 +2,10 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createBooks } from "../../Core/Redux/Thunks/BookThunk";
 import {
-  getCategory,
-  createCategory,
-} from "../../Core/Redux/Thunks/CategoriesThunk";
+  getCategory, createCategory,updateCategory,deleteCategory} from "../../Core/Redux/Thunks/CategoriesThunk";
 
 import {
-  getauthor,
-  createauthor,
-} from "../../Core/Redux/Thunks/AuthorThunk";
+  getauthor,createauthor,updateAuthor,deleteAuthor} from "../../Core/Redux/Thunks/AuthorThunk";
 
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -38,6 +34,9 @@ import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import CategoryIcon from "@mui/icons-material/Category";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import CheckIcon from "@mui/icons-material/Check";
 
 const filter = createFilterOptions();
 
@@ -95,6 +94,135 @@ function SectionLabel({ index, children }) {
   );
 }
 
+
+function EditableChip({
+  option,
+  label,
+  onConfirmEdit,
+  onDelete,
+  onRemove,
+  busy,
+  accentBg,
+  accentColor,
+}) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(label);
+
+  const canManage = Boolean(option?.id); 
+  const isBusy = busy === option?.id;
+
+  if (editing) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 0.5,
+          bgcolor: PAPER,
+          border: `1px solid ${CLOTH}`,
+          borderRadius: "8px",
+          px: 0.75,
+          py: 0.25,
+          m: "2px",
+        }}
+      >
+        <TextField
+          autoFocus
+          size="small"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => {
+       
+            e.stopPropagation();
+
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (value.trim() && value.trim() !== label) {
+                onConfirmEdit(option, value.trim());
+              }
+              setEditing(false);
+            }
+            if (e.key === "Escape") {
+              setValue(label);
+              setEditing(false);
+            }
+          }}
+          variant="standard"
+          InputProps={{ disableUnderline: true, sx: { fontSize: 12, fontWeight: 700, color: CLOTH_DEEP, width: Math.max(60, value.length * 7) } }}
+        />
+        <IconButton
+          size="small"
+          onClick={() => {
+            if (value.trim() && value.trim() !== label) {
+              onConfirmEdit(option, value.trim());
+            }
+            setEditing(false);
+          }}
+          sx={{ p: 0.25 }}
+        >
+          <CheckIcon sx={{ fontSize: 14, color: "#2e7d32" }} />
+        </IconButton>
+        <IconButton
+          size="small"
+          onClick={() => {
+            setValue(label);
+            setEditing(false);
+          }}
+          sx={{ p: 0.25 }}
+        >
+          <CloseIcon sx={{ fontSize: 14, color: INK_SOFT }} />
+        </IconButton>
+      </Box>
+    );
+  }
+
+  return (
+    <Chip
+      label={
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <span>{label}</span>
+          {canManage && (
+            <>
+              {isBusy ? (
+                <CircularProgress size={11} sx={{ color: accentColor, ml: 0.25 }} />
+              ) : (
+                <>
+                  <EditIcon
+                    sx={{ fontSize: 13, color: accentColor, opacity: 0.7, cursor: "pointer", "&:hover": { opacity: 1 } }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setValue(label);
+                      setEditing(true);
+                    }}
+                  />
+                  <DeleteIcon
+                    sx={{ fontSize: 13, color: "#c0392b", opacity: 0.7, cursor: "pointer", "&:hover": { opacity: 1 } }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(option);
+                    }}
+                  />
+                </>
+              )}
+            </>
+          )}
+        </Box>
+      }
+      onDelete={onRemove}
+      sx={{
+        borderRadius: "8px",
+        bgcolor: accentBg,
+        color: accentColor,
+        fontWeight: 700,
+        fontSize: 12,
+        "& .MuiChip-label": { display: "flex", alignItems: "center" },
+      }}
+    />
+  );
+}
+
 export default function AddBookPage({ onClose }) {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
@@ -114,6 +242,9 @@ export default function AddBookPage({ onClose }) {
 
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedAuthors, setSelectedAuthors] = useState([]);
+
+  const [busyCategoryId, setBusyCategoryId] = useState(null);
+  const [busyAuthorId, setBusyAuthorId] = useState(null);
 
   const [book, setBook] = useState({
     title: "",
@@ -152,6 +283,84 @@ export default function AddBookPage({ onClose }) {
     if (file) {
       setBookFile(file);
       setBook((prev) => ({ ...prev, is_digital: "1" }));
+    }
+  };
+
+  const handleEditCategory = async (option, newName) => {
+    if (!option?.id) return;
+    setBusyCategoryId(option.id);
+    try {
+    
+      const updated = await dispatch(
+        updateCategory({ id: option.id, categoryData: { name: newName } })
+      ).unwrap();
+
+      const updatedCategory = updated?.data || updated;
+
+      setSelectedCategories((prev) =>
+        prev.map((c) => (c.id === option.id ? { ...c, name: updatedCategory?.name || newName } : c))
+      );
+
+      toast.success("The Cateogry edit successful   ");
+    } catch (error) {
+      toast.error(error?.message || "cant edit this category");
+    } finally {
+      setBusyCategoryId(null);
+    }
+  };
+
+  const handleDeleteCategory = async (option) => {
+    if (!option?.id) return;
+    setBusyCategoryId(option.id);
+    try {
+      await dispatch(deleteCategory(option.id)).unwrap();
+
+      setSelectedCategories((prev) => prev.filter((c) => c.id !== option.id));
+
+      toast.success("the category  deleted");
+    } catch (error) {
+      toast.error(error?.message || "  cant delete this category");
+    } finally {
+      setBusyCategoryId(null);
+    }
+  };
+
+  const handleEditAuthor = async (option, newName) => {
+    if (!option?.id) return;
+    setBusyAuthorId(option.id);
+    try {
+     
+      const updated = await dispatch(
+        updateAuthor({ id: option.id, authorData: { name: newName } })
+      ).unwrap();
+
+      const updatedAuthor = updated?.data || updated;
+
+      setSelectedAuthors((prev) =>
+        prev.map((a) => (a.id === option.id ? { ...a, name: updatedAuthor?.name || newName } : a))
+      );
+
+      toast.success(" The author edit successfully ");
+    } catch (error) {
+      toast.error(error?.message || " cant edit the author ");
+    } finally {
+      setBusyAuthorId(null);
+    }
+  };
+
+  const handleDeleteAuthor = async (option) => {
+    if (!option?.id) return;
+    setBusyAuthorId(option.id);
+    try {
+      await dispatch(deleteAuthor(option.id)).unwrap();
+
+      setSelectedAuthors((prev) => prev.filter((a) => a.id !== option.id));
+
+      toast.success("author is deleted   ");
+    } catch (error) {
+      toast.error(error?.message || " cant delete author ");
+    } finally {
+      setBusyAuthorId(null);
     }
   };
 
@@ -316,7 +525,6 @@ export default function AddBookPage({ onClose }) {
           overflow: "hidden",
         }}
       >
-        {/* ── LEFT RAIL: live preview, not a form field ── */}
         <Box
           sx={{
             width: 280,
@@ -335,9 +543,7 @@ export default function AddBookPage({ onClose }) {
             New Archive Entry
           </Typography>
 
-          {/* The signature element: a book rendered as cover + spine that
-              fills in live as the person types — this is the one thing on
-              the screen that's actually a book, not a form about one. */}
+        
           <Box sx={{ display: "flex", justifyContent: "center", mb: 3.5 }}>
             <Box
               sx={{
@@ -353,7 +559,6 @@ export default function AddBookPage({ onClose }) {
                 overflow: "hidden",
               }}
             >
-              {/* spine shadow */}
               <Box sx={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 8, bgcolor: "rgba(0,0,0,0.28)" }} />
               {!coverPreview && (
                 <Box sx={{ p: "16px 14px", textAlign: "center" }}>
@@ -487,14 +692,22 @@ export default function AddBookPage({ onClose }) {
                   options={categories}
                   getOptionLabel={(option) => option.inputValue || option.name || ""}
                   renderTags={(tagValue, getTagProps) =>
-                    tagValue.map((option, index) => (
-                      <Chip
-                        key={index}
-                        label={option.inputValue || option.name}
-                        {...getTagProps({ index })}
-                        sx={{ borderRadius: "8px", bgcolor: `${CLOTH}26`, color: CLOTH_DEEP, fontWeight: 700, fontSize: 12 }}
-                      />
-                    ))
+                    tagValue.map((option, index) => {
+                      const { onDelete } = getTagProps({ index });
+                      return (
+                        <EditableChip
+                          key={option.id ?? index}
+                          option={option}
+                          label={option.inputValue || option.name}
+                          onRemove={onDelete}
+                          onConfirmEdit={handleEditCategory}
+                          onDelete={handleDeleteCategory}
+                          busy={busyCategoryId}
+                          accentBg={`${CLOTH}26`}
+                          accentColor={CLOTH_DEEP}
+                        />
+                      );
+                    })
                   }
                   renderInput={(params) => (
                     <TextField
@@ -540,14 +753,22 @@ export default function AddBookPage({ onClose }) {
                   options={authors}
                   getOptionLabel={(option) => option.inputValue || option.name || ""}
                   renderTags={(tagValue, getTagProps) =>
-                    tagValue.map((option, index) => (
-                      <Chip
-                        key={index}
-                        label={option.inputValue || option.name}
-                        {...getTagProps({ index })}
-                        sx={{ borderRadius: "8px", bgcolor: "rgba(61,44,20,0.1)", color: CLOTH_DEEP, fontWeight: 700, fontSize: 12 }}
-                      />
-                    ))
+                    tagValue.map((option, index) => {
+                      const { onDelete } = getTagProps({ index });
+                      return (
+                        <EditableChip
+                          key={option.id ?? index}
+                          option={option}
+                          label={option.inputValue || option.name}
+                          onRemove={onDelete}
+                          onConfirmEdit={handleEditAuthor}
+                          onDelete={handleDeleteAuthor}
+                          busy={busyAuthorId}
+                          accentBg="rgba(61,44,20,0.1)"
+                          accentColor={CLOTH_DEEP}
+                        />
+                      );
+                    })
                   }
                   renderInput={(params) => (
                     <TextField
@@ -568,6 +789,9 @@ export default function AddBookPage({ onClose }) {
                   )}
                 />
               </Box>
+              <Typography sx={{ fontSize: 10.5, color: INK_SOFT, mt: 0.8 }}>
+                Click the pencil on a tag to rename it, or the trash icon to remove it everywhere.
+              </Typography>
             </Box>
 
             <Box>

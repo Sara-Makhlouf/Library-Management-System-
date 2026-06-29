@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getCategory, createCategory } from "../Thunks/CategoriesThunk";
+import { getCategory, createCategory,deleteCategory,updateCategory } from "../Thunks/CategoriesThunk";
 
 export const categorySlice = createSlice({
   name: "category",
@@ -54,7 +54,20 @@ export const categorySlice = createSlice({
         state.loading = false;
         state.success = false;
         state.error = action.error?.message;
+      })
+      .addCase(deleteCategory.fulfilled, (state, action) => {
+        state.categories = state.categories.filter((cat) => cat.id !== action.payload);
+      })
+
+      .addCase(updateCategory.fulfilled, (state, action) => {
+        const updatedCategory = action.payload?.data || action.payload;
+        const index = state.categories.findIndex((cat) => cat.id === updatedCategory.id);
+        
+        if (index !== -1) {
+          state.categories[index] = updatedCategory;
+        }
       });
+  
   },
 });
 

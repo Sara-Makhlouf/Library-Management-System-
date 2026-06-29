@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getauthor, createauthor } from "../Thunks/AuthorThunk";
+import { getauthor, createauthor ,updateAuthor,deleteAuthor } from "../Thunks/AuthorThunk";
 
 const initialState = {
   authors: [],
@@ -42,6 +42,16 @@ const authorSlice = createSlice({
       .addCase(createauthor.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(deleteAuthor.fulfilled, (state, action) => {
+        state.authors = state.authors.filter((author) => author.id !== action.payload);
+      })
+
+      .addCase(updateAuthor.fulfilled, (state, action) => {
+        const index = state.authors.findIndex((a) => a.id === action.payload.data.id);
+        if (index !== -1) {
+          state.authors[index] = action.payload.data;
+        }
       });
   },
 });

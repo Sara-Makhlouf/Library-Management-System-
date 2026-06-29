@@ -27,6 +27,7 @@ function App() {
           style={{
             minHeight: "100vh",
             display: "block",
+            
             marginLeft: hideSidebar
               ? 0
               : collapsed
