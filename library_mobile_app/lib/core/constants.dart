@@ -1,4 +1,4 @@
-const String baseUrl = 'http://10.190.102.86:8000/api/';
+const String baseUrl = 'http://10.20.83.86:8000/api/';
 const String tokenKey = 'auth_token';
 const String fcmTokenKey = 'fcm_token';
 const String userKey = 'user_data';

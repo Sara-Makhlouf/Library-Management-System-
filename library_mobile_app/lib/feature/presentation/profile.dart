@@ -1,8 +1,8 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:library_mobile_app/core/theme.dart';
+import 'package:library_mobile_app/feature/profile/data/customer_repository.dart';
+import 'package:library_mobile_app/feature/profile/presentation/edit_profile_screen.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -12,87 +12,79 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  File? imageFile;
-  final ImagePicker _picker = ImagePicker();
+  final _repository = CustomerRepository();
 
-  // ── بيانات وهمية — رح تتبدل لاحقاً بالـ API ──
-  final String userName = 'Mohammed Alhousen';
-  final String userEmail = 'malhousen036@gmail.com';
-  final String userPhone = '0981454621';
-  final int userPoints = 150;
-  final int borrowedBooks = 8;
-  final int purchasedBooks = 3;
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  Future<void> _imageFromGallery() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) setState(() => imageFile = File(image.path));
+  String _userName = '';
+  String _userEmail = '';
+  String? _userPhone;
+  String? _userGender;
+  String? _userDob;
+  String? _avatarUrl;
+  int _userPoints = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
   }
 
-  Future<void> _imageFromCamera() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
-    if (image != null) setState(() => imageFile = File(image.path));
+  Future<void> _loadProfile() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final result = await _repository.getProfile();
+      final data = result['data'] as Map<String, dynamic>? ?? {};
+      setState(() {
+        _userName = data['name'] ?? '';
+        _userEmail = data['email'] ?? '';
+        _userPhone = data['phone'];
+        _userGender = data['gender'];
+        _userDob = data['DOB'];
+        _avatarUrl = data['avatar'];
+        _userPoints = data['points'] ?? 0;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'تعذر تحميل بيانات الحساب، يرجى المحاولة لاحقاً';
+      });
+    }
   }
 
-  void _showImageOptions(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? AppColors.accentDark : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white24 : Colors.black12,
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              leading: Icon(
-                Icons.photo_library_outlined,
-                color: AppColors.primary,
-              ),
-              title: Text(
-                'Choose from Gallery',
-                style: TextStyle(
-                  color: isDark ? AppColors.textDark : AppColors.textLight,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _imageFromGallery();
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.camera_alt_outlined,
-                color: AppColors.primary,
-              ),
-              title: Text(
-                'Take a Photo',
-                style: TextStyle(
-                  color: isDark ? AppColors.textDark : AppColors.textLight,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _imageFromCamera();
-              },
-            ),
-          ],
+  Future<void> _openEditProfile() async {
+    final updated = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => EditProfileScreen(
+          currentName: _userName,
+          currentEmail: _userEmail,
+          currentPhone: _userPhone,
+          currentGender: _userGender,
+          currentDob: _userDob,
+          currentAvatarUrl: _avatarUrl,
         ),
       ),
     );
+
+    // إذا تم الحفظ بنجاح في شاشة التعديل، أعد تحميل البيانات لعرض آخر تحديث
+    if (updated == true) {
+      _loadProfile();
+    }
+  }
+
+  /// يولّد الحروف الأولى من الاسم لعرضها داخل الصورة الرمزية عند غياب الصورة
+  String _getInitials(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return '؟';
+    final parts = trimmed.split(RegExp(r'\s+'));
+    if (parts.length == 1) return parts.first.substring(0, 1);
+    return parts.first.substring(0, 1) + parts[1].substring(0, 1);
   }
 
   @override
@@ -103,137 +95,227 @@ class _ProfileState extends State<Profile> {
       backgroundColor: isDark
           ? AppColors.backgroundDark
           : AppColors.backgroundLight,
-      body: CustomScrollView(
-        slivers: [
-          // ── الهيدر العلوي ──
-          SliverAppBar(
-            expandedHeight: 260,
-            pinned: true,
-            backgroundColor: isDark
-                ? AppColors.accentDark
-                : AppColors.accentLight,
-            iconTheme: IconThemeData(
-              color: isDark ? AppColors.textDark : AppColors.textLight,
-            ),
-            flexibleSpace: FlexibleSpaceBar(background: _buildHeader(isDark)),
-            title: Text(
-              'My Profile',
-              style: TextStyle(
-                color: isDark ? AppColors.textDark : AppColors.textLight,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
+          : _errorMessage != null
+          ? _buildErrorState(isDark)
+          : RefreshIndicator(
+              color: AppColors.primary,
+              onRefresh: _loadProfile,
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildHeader(isDark)
+                          .animate()
+                          .fadeIn(duration: 350.ms)
+                          .slideY(begin: -0.05, end: 0),
+
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const SizedBox(height: 4),
+
+                            _buildPointsCard(isDark)
+                                .animate()
+                                .fadeIn(delay: 100.ms, duration: 350.ms)
+                                .slideY(begin: 0.15, end: 0),
+
+                            const SizedBox(height: 26),
+
+                            _buildSectionLabel('المعلومات الشخصية', isDark),
+                            const SizedBox(height: 8),
+                            _buildInfoCard(isDark)
+                                .animate()
+                                .fadeIn(delay: 150.ms, duration: 350.ms)
+                                .slideY(begin: 0.15, end: 0),
+
+                            const SizedBox(height: 26),
+
+                            _buildSectionLabel('إعدادات الحساب', isDark),
+                            const SizedBox(height: 8),
+                            _buildSettingsCard(isDark)
+                                .animate()
+                                .fadeIn(delay: 175.ms, duration: 350.ms)
+                                .slideY(begin: 0.15, end: 0),
+
+                            const SizedBox(height: 26),
+
+                            _buildSectionLabel('الإجراءات', isDark),
+                            const SizedBox(height: 8),
+                            _buildActionsCard(isDark)
+                                .animate()
+                                .fadeIn(delay: 200.ms, duration: 350.ms)
+                                .slideY(begin: 0.15, end: 0),
+
+                            const SizedBox(height: 32),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
+    );
+  }
 
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-
-                // ── شريط الإحصائيات ──
-                _buildStatsRow(isDark)
-                    .animate()
-                    .fadeIn(delay: 100.ms, duration: 400.ms)
-                    .slideY(begin: 0.2, end: 0),
-
-                const SizedBox(height: 24),
-
-                // ── بطاقة المعلومات الشخصية ──
-                _buildInfoCard(isDark)
-                    .animate()
-                    .fadeIn(delay: 200.ms, duration: 400.ms)
-                    .slideY(begin: 0.2, end: 0),
-
-                const SizedBox(height: 16),
-
-                // ── بطاقة الإجراءات ──
-                _buildActionsCard(isDark)
-                    .animate()
-                    .fadeIn(delay: 300.ms, duration: 400.ms)
-                    .slideY(begin: 0.2, end: 0),
-
-                const SizedBox(height: 40),
-              ],
+  Widget _buildErrorState(bool isDark) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.cloud_off_rounded,
+              size: 48,
+              color: isDark
+                  ? AppColors.textDark.withOpacity(0.4)
+                  : AppColors.textLight.withOpacity(0.4),
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage ?? '',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark ? AppColors.textDark : AppColors.textLight,
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: _loadProfile,
+              style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+              child: const Text('إعادة المحاولة'),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  // ── الهيدر مع الصورة ──
+  // ── الهيدر: صورة (أو حروف أولى) + الاسم + الإيميل + زر تعديل ──
   Widget _buildHeader(bool isDark) {
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
-        color: isDark ? AppColors.accentDark : AppColors.accentLight,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: isDark
+              ? [AppColors.accentDark, AppColors.backgroundDark]
+              : [AppColors.accentLight, AppColors.backgroundLight],
+        ),
       ),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 60),
-          GestureDetector(
-            onTap: () => _showImageOptions(context),
-            child: Stack(
-              children: [
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.primary, width: 2.5),
-                    color: isDark ? AppColors.inputDark : Colors.white,
-                  ),
-                  child: ClipOval(
-                    child: imageFile != null
-                        ? Image.file(imageFile!, fit: BoxFit.cover)
-                        : Icon(
-                            Icons.person,
-                            size: 52,
-                            color: AppColors.primary.withOpacity(0.6),
-                          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 18,
+                  color: isDark ? AppColors.textDark : AppColors.textLight,
+                ),
+                onPressed: () => Navigator.maybePop(context),
+              ),
+              Text(
+                'الملف الشخصي',
+                style: TextStyle(
+                  color: isDark ? AppColors.textDark : AppColors.textLight,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkCard : Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white10
+                        : Colors.black.withOpacity(0.06),
                   ),
                 ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isDark
-                            ? AppColors.accentDark
-                            : AppColors.accentLight,
-                        width: 2,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: Icon(
+                    Icons.edit_outlined,
+                    size: 16,
+                    color: isDark ? AppColors.textDark : AppColors.textLight,
+                  ),
+                  onPressed: _openEditProfile,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Container(
+            width: 92,
+            height: 92,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.primary.withOpacity(0.15),
+              border: Border.all(
+                color: isDark
+                    ? AppColors.backgroundDark
+                    : AppColors.backgroundLight,
+                width: 3,
+              ),
+            ),
+            child: ClipOval(
+              child: _avatarUrl != null
+                  ? Image.network(
+                      _avatarUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Center(
+                        child: Text(
+                          _getInitials(_userName),
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Text(
+                        _getInitials(_userName),
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      size: 14,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
             ),
           ),
           const SizedBox(height: 12),
           Text(
-            userName,
+            _userName,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 17,
               fontWeight: FontWeight.bold,
               color: isDark ? AppColors.textDark : AppColors.textLight,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 3),
           Text(
-            userEmail,
+            _userEmail,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 12.5,
               color: isDark
                   ? AppColors.textDark.withOpacity(0.55)
                   : AppColors.textLight.withOpacity(0.6),
@@ -244,197 +326,189 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  // ── شريط الإحصائيات الثلاثة ──
-  Widget _buildStatsRow(bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.darkCard : Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.2 : 0.06),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
+  // ── شارة/بطاقة النقاط والإحصائيات ──
+  Widget _buildPointsCard(bool isDark) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkCard : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.06),
         ),
-        child: Row(
-          children: [
-            _buildStat(
-              icon: Icons.auto_stories_outlined,
-              value: '$borrowedBooks',
-              label: 'Borrowed',
-              isDark: isDark,
-              isFirst: true,
-            ),
-            _buildDivider(isDark),
-            _buildStat(
-              icon: Icons.shopping_bag_outlined,
-              value: '$purchasedBooks',
-              label: 'Purchased',
-              isDark: isDark,
-            ),
-            _buildDivider(isDark),
-            _buildStat(
-              icon: Icons.star_outline_rounded,
-              value: '$userPoints',
-              label: 'Points',
-              isDark: isDark,
-              isLast: true,
-            ),
-          ],
-        ),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildStatItem(
+            icon: Icons.star_rounded,
+            value: '$_userPoints',
+            label: 'نقاط',
+            isDark: isDark,
+          ),
+          _buildStatDivider(isDark),
+          _buildStatItem(
+            icon: Icons.menu_book_rounded,
+            value: '8',
+            label: 'مقترضة',
+            isDark: isDark,
+          ),
+          _buildStatDivider(isDark),
+          _buildStatItem(
+            icon: Icons.shopping_bag_rounded,
+            value: '3',
+            label: 'مشتراة',
+            isDark: isDark,
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildStat({
+  Widget _buildStatItem({
     required IconData icon,
     required String value,
     required String label,
     required bool isDark,
-    bool isFirst = false,
-    bool isLast = false,
   }) {
     return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 18),
-        child: Column(
-          children: [
-            Icon(icon, color: AppColors.primary, size: 22),
-            const SizedBox(height: 6),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: isDark ? AppColors.textDark : AppColors.textLight,
-              ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withOpacity(0.05)
+                  : AppColors.backgroundLight,
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                color: isDark
-                    ? AppColors.textDark.withOpacity(0.5)
-                    : AppColors.textLight.withOpacity(0.55),
-              ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: isDark
+                  ? AppColors.textDark.withOpacity(0.7)
+                  : AppColors.textLight.withOpacity(0.7),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: isDark ? AppColors.textDark : AppColors.textLight,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: isDark
+                  ? AppColors.textDark.withOpacity(0.5)
+                  : AppColors.textLight.withOpacity(0.5),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildDivider(bool isDark) {
+  Widget _buildStatDivider(bool isDark) {
     return Container(
-      width: 1,
-      height: 50,
-      color: isDark ? Colors.white10 : Colors.black.withOpacity(0.07),
+      width: 0.5,
+      height: 60,
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      color: isDark ? Colors.white10 : Colors.black.withOpacity(0.06),
+    );
+  }
+
+  Widget _buildSectionLabel(String text, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 4),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: isDark
+              ? AppColors.textDark.withOpacity(0.55)
+              : AppColors.textLight.withOpacity(0.55),
+        ),
+      ),
     );
   }
 
   // ── بطاقة المعلومات الشخصية ──
   Widget _buildInfoCard(bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.darkCard : Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.2 : 0.06),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
-              child: Text(
-                'Personal Information',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-            _buildInfoTile(
-              icon: Icons.person_outline_rounded,
-              label: 'Full Name',
-              value: userName,
-              isDark: isDark,
-            ),
-            _buildTileDivider(isDark),
-            _buildInfoTile(
-              icon: Icons.email_outlined,
-              label: 'Email',
-              value: userEmail,
-              isDark: isDark,
-            ),
-            _buildTileDivider(isDark),
-            _buildInfoTile(
-              icon: Icons.phone_outlined,
-              label: 'Phone',
-              value: userPhone,
-              isDark: isDark,
-              isLast: true,
-            ),
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkCard : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.06),
         ),
       ),
-    );
-  }
-
-  Widget _buildInfoTile({
-    required IconData icon,
-    required String label,
-    required String value,
-    required bool isDark,
-    bool isLast = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, size: 18, color: AppColors.primary),
+          _buildInfoTile(
+            icon: Icons.person_outline_rounded,
+            label: 'الاسم الكامل',
+            value: _userName,
+            isDark: isDark,
           ),
-          const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          _buildTileDivider(isDark),
+          _buildInfoTile(
+            icon: Icons.email_outlined,
+            label: 'البريد الإلكتروني',
+            value: _userEmail,
+            isDark: isDark,
+            trailing: Icon(
+              Icons.lock_outline_rounded,
+              size: 14,
+              color: isDark
+                  ? AppColors.textDark.withOpacity(0.35)
+                  : AppColors.textLight.withOpacity(0.35),
+            ),
+          ),
+          _buildTileDivider(isDark),
+          _buildInfoTile(
+            icon: Icons.phone_outlined,
+            label: 'رقم الهاتف',
+            value: (_userPhone == null || _userPhone!.isEmpty)
+                ? 'غير محدد'
+                : _userPhone!,
+            isDark: isDark,
+          ),
+          _buildTileDivider(isDark),
+          Row(
             children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: isDark
-                      ? AppColors.textDark.withOpacity(0.5)
-                      : AppColors.textLight.withOpacity(0.55),
+              Expanded(
+                child: _buildInfoTile(
+                  icon: Icons.wc_rounded,
+                  label: 'الجنس',
+                  value: _userGender == null
+                      ? 'غير محدد'
+                      : (_userGender == 'M' ? 'ذكر' : 'أنثى'),
+                  isDark: isDark,
+                  compact: true,
                 ),
               ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.textDark : AppColors.textLight,
+              Container(
+                width: 0.5,
+                height: 44,
+                color: isDark ? Colors.white10 : Colors.black.withOpacity(0.06),
+              ),
+              Expanded(
+                child: _buildInfoTile(
+                  icon: Icons.cake_outlined,
+                  label: 'تاريخ الميلاد',
+                  value: (_userDob == null || _userDob!.isEmpty)
+                      ? 'غير محدد'
+                      : _userDob!,
+                  isDark: isDark,
+                  compact: true,
                 ),
               ),
             ],
@@ -444,57 +518,210 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  Widget _buildTileDivider(bool isDark) {
+  Widget _buildInfoTile({
+    required IconData icon,
+    required String label,
+    required String value,
+    required bool isDark,
+    Widget? trailing,
+    bool compact = false,
+    bool isLast = false,
+  }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Divider(
-        height: 1,
-        color: isDark ? Colors.white10 : Colors.black.withOpacity(0.06),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 14 : 16,
+        vertical: 12,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withOpacity(0.05)
+                  : AppColors.backgroundLight,
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: Icon(
+              icon,
+              size: 15,
+              color: isDark
+                  ? AppColors.textDark.withOpacity(0.65)
+                  : AppColors.textLight.withOpacity(0.65),
+            ),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    color: isDark
+                        ? AppColors.textDark.withOpacity(0.5)
+                        : AppColors.textLight.withOpacity(0.5),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppColors.textDark : AppColors.textLight,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (trailing != null) trailing,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTileDivider(bool isDark) {
+    return Divider(
+      height: 1,
+      indent: 16,
+      endIndent: 16,
+      color: isDark ? Colors.white10 : Colors.black.withOpacity(0.06),
+    );
+  }
+
+  // ── بطاقة إعدادات الحساب (Dark Mode + Language) ──
+  Widget _buildSettingsCard(bool isDark) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkCard : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.06),
+        ),
+      ),
+      child: Column(
+        children: [
+          _buildSettingsTile(
+            icon: Icons.dark_mode_outlined,
+            label: 'الوضع الليلي',
+            isDark: isDark,
+            trailing: Switch(
+              value: isDark,
+              onChanged: (value) {
+                // تنفيذ تغيير الوضع
+              },
+              activeColor: AppColors.primary,
+            ),
+          ),
+          _buildTileDivider(isDark),
+          _buildSettingsTile(
+            icon: Icons.language_outlined,
+            label: 'لغة التطبيق',
+            isDark: isDark,
+            trailing: Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: isDark
+                  ? AppColors.textDark.withOpacity(0.35)
+                  : AppColors.textLight.withOpacity(0.35),
+            ),
+            onTap: () {
+              // فتح قائمة اللغات
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsTile({
+    required IconData icon,
+    required String label,
+    required bool isDark,
+    Widget? trailing,
+    VoidCallback? onTap,
+  }) {
+    final color = isDark ? AppColors.textDark : AppColors.textLight;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: isDark
+                ? Colors.white.withOpacity(0.05)
+                : AppColors.backgroundLight,
+            borderRadius: BorderRadius.circular(9),
+          ),
+          child: Icon(icon, size: 15, color: color.withOpacity(0.65)),
+        ),
+        title: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: color,
+          ),
+        ),
+        trailing: trailing,
       ),
     );
   }
 
   // ── بطاقة الإجراءات ──
   Widget _buildActionsCard(bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.darkCard : Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.2 : 0.06),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkCard : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.06),
         ),
-        child: Column(
-          children: [
-            _buildActionTile(
-              icon: Icons.history_edu_outlined,
-              label: 'Order History',
-              isDark: isDark,
-              onTap: () {},
-            ),
-            _buildTileDivider(isDark),
-            _buildActionTile(
-              icon: Icons.lock_outline_rounded,
-              label: 'Change Password',
-              isDark: isDark,
-              onTap: () {},
-            ),
-            _buildTileDivider(isDark),
-            _buildActionTile(
-              icon: Icons.logout_rounded,
-              label: 'Log Out',
-              isDark: isDark,
-              isDestructive: true,
-              onTap: () {},
-            ),
-          ],
-        ),
+      ),
+      child: Column(
+        children: [
+          _buildActionTile(
+            icon: Icons.edit_outlined,
+            label: 'تعديل الملف الشخصي',
+            isDark: isDark,
+            onTap: _openEditProfile,
+          ),
+          _buildTileDivider(isDark),
+          _buildActionTile(
+            icon: Icons.history_rounded,
+            label: 'سجل الطلبات',
+            isDark: isDark,
+            onTap: () {
+              // الانتقال إلى سجل الطلبات
+            },
+          ),
+          _buildTileDivider(isDark),
+          _buildActionTile(
+            icon: Icons.lock_outline_rounded,
+            label: 'تغيير كلمة المرور',
+            isDark: isDark,
+            onTap: () {
+              // فتح شاشة تغيير كلمة المرور
+            },
+          ),
+          _buildTileDivider(isDark),
+          _buildActionTile(
+            icon: Icons.logout_rounded,
+            label: 'تسجيل الخروج',
+            isDark: isDark,
+            isLogout: true,
+            onTap: () {
+              // تنفيذ تسجيل الخروج
+            },
+          ),
+        ],
       ),
     );
   }
@@ -504,34 +731,34 @@ class _ProfileState extends State<Profile> {
     required String label,
     required bool isDark,
     required VoidCallback onTap,
-    bool isDestructive = false,
+    bool isLogout = false,
   }) {
-    final color = isDestructive
-        ? const Color(0xFFB33A3A)
+    final color = isLogout
+        ? Colors.red
         : (isDark ? AppColors.textDark : AppColors.textLight);
 
     return ListTile(
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       leading: Container(
-        width: 36,
-        height: 36,
+        width: 32,
+        height: 32,
         decoration: BoxDecoration(
-          color: isDestructive
-              ? const Color(0xFFB33A3A).withOpacity(0.1)
-              : AppColors.primary.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(10),
+          color: isDark
+              ? Colors.white.withOpacity(0.05)
+              : AppColors.backgroundLight,
+          borderRadius: BorderRadius.circular(9),
         ),
         child: Icon(
           icon,
-          size: 18,
-          color: isDestructive ? const Color(0xFFB33A3A) : AppColors.primary,
+          size: 15,
+          color: isLogout ? Colors.red : color.withOpacity(0.65),
         ),
       ),
       title: Text(
         label,
         style: TextStyle(
-          fontSize: 14,
+          fontSize: 13,
           fontWeight: FontWeight.w600,
           color: color,
         ),
@@ -539,7 +766,7 @@ class _ProfileState extends State<Profile> {
       trailing: Icon(
         Icons.arrow_forward_ios_rounded,
         size: 14,
-        color: color.withOpacity(0.4),
+        color: color.withOpacity(0.35),
       ),
     );
   }
