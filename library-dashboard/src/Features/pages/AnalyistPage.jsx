@@ -131,7 +131,6 @@ export default function DashboardCommandCenter() {
   const salesTrend = trendOf(salesSeries);
   const borrowsTrend = trendOf(borrowsSeries);
 
-  // --- AI Chat ---
   const { messages, loading: aiLoading, error: aiError, sendMessage, resetChat } = useAIChat();
 
   const handleSendMessage = (text) => {

@@ -1,16 +1,5 @@
 import { useState, useCallback, useRef } from "react";
 
-/**
- * useAIChat
- * هوك شات بوت يسمح للمستخدم يسأل بلغة طبيعية عن بيانات الداشبورد.
- * يحتفظ بتاريخ المحادثة (سياق) ويرسله بالكامل مع كل سؤال جديد لـ Gemini،
- * لأن REST API بطبيعته بلا حالة (stateless) — لازم نرسل التاريخ يدوياً
- * في كل مرة عشان الموديل "يتذكر" الأسئلة السابقة.
- *
- * ⚠️ ملاحظة أمان: هذا الاستدعاء من المتصفح مباشرة، مناسب فقط
- * للتطوير المحلي/الديمو. راجع التعليق بأعلى ملف useAIInsights.js
- * القديم لتفاصيل أكثر حول هذه النقطة.
- */
 
 const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.REACT_APP_GEMINI_MODEL || "gemini-2.5-flash-lite";
