@@ -4,6 +4,7 @@ import { Box, Typography, CircularProgress } from "@mui/material";
 import toast from "react-hot-toast";
 import { fetchDeliveryOrders, updateDeliveryStatus } from "../../Core/Redux/Thunks/OrderThunk";
 import {STATUSES,FILTERS,COL,Avatar,fmt,StatusChip,StatusStepper} from "../Utils/orderData";
+import { GOLD, GOLD_DARK, INK, PAGE_BG, CARD_BG, inkA, goldA } from "../../Core/Constants/ColorsUse";
 
 
 const FONT_IMPORT_ID = "lib-fonts";
@@ -24,15 +25,15 @@ const mono = { fontFamily: "'IBM Plex Mono', monospace" };
 
 
 const STATUS_ACCENT = {
-  pending:    "#fbbf24",
-  processing: "#38bdf8",
+  pending:    "#d59a1f",
+  processing: "#2f9fd6",
   shipped:    "#7f77dd",
-  delivered:  "#4ade80",
-  cancelled:  "#f87171",
+  delivered:  "#3fb873",
+  cancelled:  "#e0655f",
 };
 
 function getAccent(status) {
-  return STATUS_ACCENT[status] || "rgba(255,255,255,0.12)";
+  return STATUS_ACCENT[status] || goldA(0.18);
 }
 
 export default function DeliveryPage() {
@@ -66,34 +67,34 @@ export default function DeliveryPage() {
 
   if (loading && list.length === 0) {
     return (
-      <Box sx={{ minHeight: "100vh", bgcolor: "#0a0a0f", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <CircularProgress sx={{ color: "#c9a84c" }} />
+      <Box sx={{ minHeight: "100vh", bgcolor: PAGE_BG, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <CircularProgress sx={{ color: GOLD }} />
       </Box>
     );
   }
 
   return (
     <Box sx={{
-      minHeight: "100vh", bgcolor: "#0a0a0f",
+      minHeight: "100vh", bgcolor: PAGE_BG,
       p: { xs: 2, md: "24px 28px" },
       ml: { xs: 0 },
       fontFamily: "Inter, sans-serif",
     }}>
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 0.5 }}>
-          <Typography sx={{ ...display, fontSize: 23, fontWeight: 600, color: "#fff", letterSpacing: -0.4 }}>
+          <Typography sx={{ ...display, fontSize: 23, fontWeight: 600, color: INK, letterSpacing: -0.4 }}>
             Delivery Orders
           </Typography>
           <Box sx={{
             ...mono,
             px: "10px", py: "3px", borderRadius: "20px",
-            bgcolor: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.2)",
-            fontSize: 11, fontWeight: 600, color: "#c9a84c",
+            bgcolor: goldA(0.1), border: `1px solid ${goldA(0.24)}`,
+            fontSize: 11, fontWeight: 600, color: GOLD_DARK,
           }}>
             {filtered.length} {filtered.length === 1 ? "order" : "orders"}
           </Box>
         </Box>
-        <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
+        <Typography sx={{ fontSize: 12, color: inkA(0.42) }}>
           Manage and trace the status of orders
         </Typography>
       </Box>
@@ -109,8 +110,8 @@ export default function DeliveryPage() {
               fontSize: 12, fontWeight: 600, cursor: "pointer",
               transition: "all .2s",
               ...(activeFilter === f.key
-                ? { color: "#c9a84c", bgcolor: "rgba(201,168,76,0.07)", border: "1px solid rgba(201,168,76,0.3)" }
-                : { color: "rgba(255,255,255,0.4)", bgcolor: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", "&:hover": { color: "#fff", bgcolor: "rgba(255,255,255,0.06)" } }),
+                ? { color: GOLD_DARK, bgcolor: goldA(0.1), border: `1px solid ${goldA(0.32)}` }
+                : { color: inkA(0.45), bgcolor: inkA(0.03), border: `1px solid ${goldA(0.14)}`, "&:hover": { color: INK, bgcolor: goldA(0.07) } }),
             }}
           >
             {f.label}
@@ -119,7 +120,7 @@ export default function DeliveryPage() {
               sx={{
                 ...mono,
                 fontSize: 10.5,
-                color: activeFilter === f.key ? "#c9a84c" : "rgba(255,255,255,0.3)",
+                color: activeFilter === f.key ? GOLD_DARK : inkA(0.35),
                 opacity: 0.85,
               }}
             >
@@ -129,10 +130,10 @@ export default function DeliveryPage() {
         ))}
       </Box>
 
-      <Box sx={{ bgcolor: "#0d0d14", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", overflow: "hidden" }}>
-        <Box sx={{ display: "grid", gridTemplateColumns: COL, px: "20px", py: "10px", bgcolor: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+      <Box sx={{ bgcolor: CARD_BG, border: `1px solid ${goldA(0.16)}`, borderRadius: "22px", overflow: "hidden", boxShadow: "0 2px 14px rgba(201,168,76,.08)" }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: COL, px: "20px", py: "10px", bgcolor: goldA(0.05), borderBottom: `1px solid ${goldA(0.14)}` }}>
           {["Order", "Customer", "Price", "Status", "Update status"].map((h) => (
-            <Typography key={h} sx={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.25)", letterSpacing: "0.8px", textTransform: "uppercase" }}>
+            <Typography key={h} sx={{ fontSize: 10, fontWeight: 600, color: inkA(0.42), letterSpacing: "0.8px", textTransform: "uppercase" }}>
               {h}
             </Typography>
           ))}
@@ -145,9 +146,9 @@ export default function DeliveryPage() {
               display: "grid", gridTemplateColumns: COL,
               px: "20px", py: "14px", alignItems: "center",
               position: "relative",
-              borderBottom: i < filtered.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+              borderBottom: i < filtered.length - 1 ? `1px solid ${goldA(0.1)}` : "none",
               transition: "background .15s",
-              "&:hover": { bgcolor: "rgba(255,255,255,0.02)" },
+              "&:hover": { bgcolor: goldA(0.05) },
               "&::before": {
                 content: '""',
                 position: "absolute",
@@ -157,26 +158,26 @@ export default function DeliveryPage() {
               },
             }}
           >
-            <Typography sx={{ ...mono, fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.3)" }}>
+            <Typography sx={{ ...mono, fontSize: 12, fontWeight: 600, color: inkA(0.4) }}>
               #{bill.id}
             </Typography>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <Avatar name={bill.customer?.name ?? "?"} index={i} />
               <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ fontSize: 13, fontWeight: 600, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 160 }}>
+                <Typography sx={{ fontSize: 13, fontWeight: 600, color: INK, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 160 }}>
                   {bill.customer?.name}
                 </Typography>
                 {bill.delivery_address && (
-                  <Typography sx={{ fontSize: 11, color: "rgba(255,255,255,0.3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 200 }}>
+                  <Typography sx={{ fontSize: 11, color: inkA(0.42), whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 200 }}>
                     {bill.delivery_address}
                   </Typography>
                 )}
               </Box>
             </Box>
 
-            <Typography sx={{ ...mono, fontSize: 13, fontWeight: 600, color: "#fff" }}>
-              {fmt(bill.total_price)} <Box component="span" sx={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)" }}>ل.س</Box>
+            <Typography sx={{ ...mono, fontSize: 13, fontWeight: 700, color: GOLD_DARK }}>
+              {fmt(bill.total_price)} <Box component="span" sx={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: inkA(0.45) }}>ل.س</Box>
             </Typography>
 
             <Box>
@@ -193,10 +194,10 @@ export default function DeliveryPage() {
           </Box>
         )) : (
           <Box sx={{ py: 8, textAlign: "center" }}>
-            <Typography sx={{ ...display, fontSize: 15, fontWeight: 600, color: "rgba(255,255,255,0.35)", mb: 0.5 }}>
+            <Typography sx={{ ...display, fontSize: 15, fontWeight: 600, color: inkA(0.4), mb: 0.5 }}>
               Nothing here yet
             </Typography>
-            <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>
+            <Typography sx={{ fontSize: 12, color: inkA(0.28) }}>
               {activeFilter === "all" ? "No delivery orders so far" : "No orders match this filter"}
             </Typography>
           </Box>

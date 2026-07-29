@@ -5,6 +5,8 @@ import ColorModeSelect from "../shared-theme/ColorModeSelect";
 import SignInCard from "./SignInCard";
 import Content from "./Content";
 
+const TEXT = "#2b2416"; 
+
 export default function SignInSide(props) {
   return (
     <AppTheme {...props}>
@@ -34,9 +36,9 @@ export default function SignInSide(props) {
             position: "absolute",
             inset: 0,
             background:
-              "radial-gradient(circle at 20% 20%, #4facfe33, transparent 40%)," +
-              "radial-gradient(circle at 80% 80%, #00f2fe33, transparent 40%)," +
-              "linear-gradient(135deg, #0f172a, #1e293b)",
+              "radial-gradient(circle at 20% 20%, rgba(201,168,76,0.18), transparent 40%)," +
+              "radial-gradient(circle at 80% 80%, rgba(139,94,26,0.12), transparent 40%)," +
+              "linear-gradient(135deg, #FBF7ED, #FFFCF3)",
             zIndex: -1,
           },
         }}
@@ -53,11 +55,10 @@ export default function SignInSide(props) {
             py: 6,
           }}
         >
-          {/* Left side - Content */}
           <Stack
             sx={{
               flex: 1,
-              color: "#fff",
+              color: TEXT,
               textAlign: { xs: "center", md: "left" },
               animation: "fadeIn 0.8s ease",
               "@keyframes fadeIn": {
@@ -69,7 +70,6 @@ export default function SignInSide(props) {
             <Content />
           </Stack>
 
-          {/* Right side - Login */}
           <Stack
             sx={{
               flex: 1,

@@ -1,12 +1,34 @@
 import * as React from "react";
+import { useEffect } from "react";
 import { Grid, Box, Typography,Paper } from "@mui/material";
 import SignInCard from "../../Core/Components/SignInCard";
 
-const BG = "#0a0a0f";
+const BG        = "#FBF7ED"; 
+const SURFACE   = "#FFFFFF"; 
+const GOLD      = "#c9a84c";
+const TEXT      = "#2b2416"; 
+const goldA = (a) => `rgba(201,168,76,${a})`;
+
+const FONT_IMPORT_ID = "lib-fonts";
+const FONT_HREF =
+  "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap";
+
+function injectFonts() {
+  if (document.getElementById(FONT_IMPORT_ID)) return;
+  const link = document.createElement("link");
+  link.id = FONT_IMPORT_ID;
+  link.rel = "stylesheet";
+  link.href = FONT_HREF;
+  document.head.appendChild(link);
+}
+
+const display = { fontFamily: "'Fraunces', serif" };
 
 export default function LoginPage() {
+  useEffect(() => { injectFonts(); }, []);
+
   return (
-    <Grid container sx={{ height: "100vh", bgcolor: BG }}>
+    <Grid container sx={{ height: "100vh", bgcolor: BG, fontFamily: "Inter, sans-serif" }}>
 
       {/* The Left Side OF My Page */}
    <Grid
@@ -17,7 +39,7 @@ export default function LoginPage() {
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
-    background: "#111118",
+    background: SURFACE,
   }}
 >
 <Box
@@ -27,29 +49,21 @@ export default function LoginPage() {
     backgroundImage: "url('/admin.png')",
     backgroundSize: "cover",
     backgroundPosition: "center",
-    opacity: 0.12,
     zIndex: 0,
   }}
 />
 
-<Box
-  sx={{
-    position: "absolute",
-    inset: 0,
-    background:
-  "linear-gradient(135deg, rgba(17,17,24,0.55), rgba(17,17,24,0.45))" ,   zIndex: 1,
-  }}
-/>
   <Box
     sx={{
       position: "absolute",
       width: 500,
       height: 500,
       background:
-        "radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 65%)",
+        "radial-gradient(circle, rgba(201,168,76,0.16) 0%, transparent 65%)",
       top: "-120px",
       left: "-120px",
       filter: "blur(10px)",
+      zIndex: 1,
     }}
   />
 
@@ -59,30 +73,46 @@ export default function LoginPage() {
       width: 500,
       height: 500,
       background:
-        "radial-gradient(circle, rgba(139,94,26,0.10) 0%, transparent 70%)",
+        "radial-gradient(circle, rgba(139,94,26,0.12) 0%, transparent 70%)",
       bottom: "-120px",
       right: "-120px",
       filter: "blur(12px)",
+      zIndex: 1,
     }}
   />
 
   <Box
     sx={{
+      position: "absolute",
+      top: "56px",
+      left: "50%",
+      transform: "translateX(-50%)",
       zIndex: 2,
       textAlign: "center",
       px: 6,
       maxWidth: 520,
+
+      animation: "showThenHide 9s ease-in-out infinite",
+      "@keyframes showThenHide": {
+        "0%":   { opacity: 0, transform: "translate(-50%, -14px)" },
+        "8%":   { opacity: 1, transform: "translate(-50%, 0)" },
+        "63%":  { opacity: 1, transform: "translate(-50%, 0)" },   
+        "78%":  { opacity: 0, transform: "translate(-50%, 10px)" },
+        "100%": { opacity: 0, transform: "translate(-50%, 10px)" },
+      },
     }}
   >
     <Typography
       sx={{
+        ...display,
         fontSize: 34,
-        fontWeight: 800,
+        fontWeight: 700,
         letterSpacing: -1,
         background:
-          "linear-gradient(135deg, #ffffff 0%, #c9a84c 100%)",
+          `linear-gradient(135deg, ${TEXT} 0%, ${GOLD} 100%)`,
         WebkitBackgroundClip: "text",
         WebkitTextFillColor: "transparent",
+        filter: "drop-shadow(0 2px 10px rgba(255,255,255,0.7))",
       }}
     >
       Admin Control Center
@@ -90,69 +120,16 @@ export default function LoginPage() {
 
     <Typography
       sx={{
-        mt: 2,
+        mt: 1.5,
         fontSize: 14,
-        color: "rgba(255,255,255,0.55)",
+        color: TEXT,
         lineHeight: 1.8,
+        textShadow: "0 1px 12px rgba(255,255,255,0.85), 0 1px 3px rgba(255,255,255,0.85)",
       }}
     >
       Secure access to your dashboard. Manage users, settings,
       analytics and system configuration from one unified interface.
     </Typography>
-
-    <Box
-      sx={{
-        mt: 5,
-        display: "grid",
-        gridTemplateColumns: "repeat(2, 1fr)",
-        gap: 2,
-      }}
-    >
-      {[
-        { label: "Security", value: "High" },
-        { label: "Uptime", value: "99.9%" },
-        { label: "Users", value: "Active" },
-        { label: "Status", value: "Online" },
-      ].map((item, i) => (
-        <Box
-          key={i}
-          sx={{
-            p: 2,
-            borderRadius: 3,
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(201,168,76,0.12)",
-            backdropFilter: "blur(10px)",
-            transition: "0.3s",
-            "&:hover": {
-              transform: "translateY(-4px)",
-              borderColor: "rgba(201,168,76,0.3)",
-              boxShadow:
-                "0 20px 40px rgba(0,0,0,0.4)",
-            },
-          }}
-        >
-          <Typography
-            sx={{
-              fontSize: 12,
-              color: "rgba(255,255,255,0.5)",
-            }}
-          >
-            {item.label}
-          </Typography>
-
-          <Typography
-            sx={{
-              fontSize: 16,
-              fontWeight: 700,
-              color: "#c9a84c",
-              mt: 0.5,
-            }}
-          >
-            {item.value}
-          </Typography>
-        </Box>
-      ))}
-    </Box>
   </Box>
 
   <Box
@@ -164,6 +141,7 @@ export default function LoginPage() {
       height: "1px",
       background:
         "linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent)",
+      zIndex: 2,
     }}
   />
 </Grid>
@@ -178,7 +156,7 @@ export default function LoginPage() {
             alignItems: "center",
             justifyContent: "center",
             background: BG,
-            borderLeft: { sm: "1px solid rgba(255,255,255,0.06)" },
+            borderLeft: { sm: `1px solid ${goldA(0.15)}` },
           }}
         >
           <Box sx={{ width: "80%" }}>

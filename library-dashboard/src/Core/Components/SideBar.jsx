@@ -1,12 +1,12 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { Box, Typography,  Collapse, Menu, MenuItem } from "@mui/material";
 import { useState } from "react";
-import {GOLDBORDER,GOLD , MUTED,GOLDDIM, BRIGHT,
-        HOVER,
+import {
       NAV_ITEMS,
       USER_SUBNAV,
-      
       } from "../../Features/Utils/sidebarData";
+
+import {GOLD_DARK , MUTED,GOLDDIM,GOLDBORDER,SURFACE,BRIGHT,HOVER,goldA,TEXT} from "../Constants/ColorsUse";
 
 export default function Sidebar({
   collapsed,
@@ -28,7 +28,7 @@ const menuOpen = Boolean(anchorEl);
     borderRadius: "10px",
     fontSize: "13px",
     fontWeight: isActive ? 600 : 500,
-    color: isActive ? GOLD : MUTED,
+    color: isActive ? GOLD_DARK : MUTED,
     cursor: "pointer",
     transition: "all 0.2s",
     border: "1px solid transparent",
@@ -40,7 +40,7 @@ const menuOpen = Boolean(anchorEl);
       borderColor: GOLDBORDER,
     }),
     "&:hover": {
-      color: isActive ? GOLD : BRIGHT,
+      color: isActive ? GOLD_DARK : BRIGHT,
       bgcolor: isActive ? GOLDDIM : HOVER,
     },
   });
@@ -63,8 +63,9 @@ const menuOpen = Boolean(anchorEl);
         py: "20px",
         display: "flex",
         flexDirection: "column",
-        bgcolor: "#0d0d14",
-        borderRight: "1px solid rgba(255,255,255,0.05)",
+        bgcolor: SURFACE,
+        borderRight: `1px solid ${goldA(0.15)}`,
+        boxShadow: "2px 0 16px rgba(201,168,76,.06)",
         transition: "width 0.3s ease, padding 0.3s ease",
         zIndex: 100,
         overflowX: "hidden",
@@ -99,12 +100,12 @@ const menuOpen = Boolean(anchorEl);
           {!collapsed && (
             <Box sx={{ overflow: "hidden" }}>
               <Typography
-                sx={{ fontWeight: 700, fontSize: "13.5px", color: "#fff", letterSpacing: -0.3, lineHeight: 1.2 }}
+                sx={{ fontWeight: 700, fontSize: "13.5px", color: TEXT, letterSpacing: -0.3, lineHeight: 1.2 }}
               >
                 Scholarly Curator
               </Typography>
               <Typography
-                sx={{ fontSize: "9px", fontWeight: 600, color: "rgba(201,168,76,0.6)", letterSpacing: "1.5px", mt: "2px" }}
+                sx={{ fontSize: "9px", fontWeight: 600, color: GOLD_DARK, letterSpacing: "1.5px", mt: "2px" }}
               >
                 INSTITUTIONAL LMS
               </Typography>
@@ -119,7 +120,7 @@ const menuOpen = Boolean(anchorEl);
             height: 28,
             minWidth: 28,
             borderRadius: "8px",
-            bgcolor: "rgba(255,255,255,0.05)",
+            bgcolor: goldA(0.08),
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -127,7 +128,7 @@ const menuOpen = Boolean(anchorEl);
             color: MUTED,
             transition: "all 0.2s",
             ml: collapsed ? 0 : 0,
-            "&:hover": { bgcolor: "rgba(255,255,255,0.1)", color: "#fff" },
+            "&:hover": { bgcolor: goldA(0.16), color: TEXT },
           }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: 17 }}>
@@ -202,11 +203,12 @@ const menuOpen = Boolean(anchorEl);
     }}
     PaperProps={{
       sx: {
-        bgcolor: "#111118",
-        border: "1px solid rgba(255,255,255,0.08)",
+        bgcolor: SURFACE,
+        border: `1px solid ${goldA(0.18)}`,
         borderRadius: "12px",
         minWidth: 160,
         ml: 1,
+        boxShadow: "0 12px 30px rgba(43,36,22,0.14)",
 
         "& .MuiMenuItem-root": {
           color: MUTED,
@@ -214,7 +216,7 @@ const menuOpen = Boolean(anchorEl);
 
           "&:hover": {
             bgcolor: HOVER,
-            color: GOLD,
+            color: GOLD_DARK,
           },
         },
       },
@@ -270,7 +272,7 @@ const menuOpen = Boolean(anchorEl);
                   borderRadius: "8px",
                   fontSize: "12.5px",
                   fontWeight: isActive ? 600 : 400,
-                  color: isActive ? GOLD : MUTED,
+                  color: isActive ? GOLD_DARK : MUTED,
                   transition: "all 0.2s",
                   cursor: "pointer",
 
@@ -301,7 +303,7 @@ const menuOpen = Boolean(anchorEl);
   )}
 </Box>
 
-        <Box sx={{ height: "1px", bgcolor: "rgba(255,255,255,0.05)", my: "8px" }} />
+        <Box sx={{ height: "1px", bgcolor: goldA(0.15), my: "8px" }} />
 
         <NavLink to="/settings" style={{ textDecoration: "none" }}>
           {({ isActive }) => (
@@ -317,7 +319,7 @@ const menuOpen = Boolean(anchorEl);
         sx={{
           mt: "auto",
           pt: "14px",
-          borderTop: "1px solid rgba(255,255,255,0.05)",
+          borderTop: `1px solid ${goldA(0.15)}`,
         }}
       >
         <Box
@@ -378,7 +380,7 @@ const menuOpen = Boolean(anchorEl);
             whiteSpace: "nowrap",
             overflow: "hidden",
             transition: "all 0.2s",
-            "&:hover": { color: "#e24b4a", bgcolor: "rgba(226,75,74,0.06)" },
+            "&:hover": { color: "#c8433d", bgcolor: "rgba(226,75,74,0.08)" },
           }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: 18 }}>logout</span>

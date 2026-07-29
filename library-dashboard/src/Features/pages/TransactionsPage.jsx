@@ -8,14 +8,17 @@ import {
 import { getAllTransactions, checkoutTransaction } from "../../Core/Redux/Thunks/TranscationThunk";
 import toast from "react-hot-toast";
 
-const BG      = "#0a0a0f";
-const SURFACE = "#111118";
-const GOLD    = "#c9a84c";
-const GOLD2   = "#8b5e1a";
-const BORDER  = "rgba(255,255,255,0.06)";
-const TEXT    = "#fff";
-const MUTED   = "rgba(255,255,255,0.35)";
-const MUTED2  = "rgba(255,255,255,0.20)";
+const BG        = "#FBF7ED"; 
+const SURFACE   = "#FFFFFF"; 
+const GOLD      = "#c9a84c";
+const GOLD2     = "#8b5e1a"; 
+const GOLD_DARK = "#a8822f"; 
+const TEXT      = "#2b2416";
+const inkA = (a) => `rgba(43,36,22,${a})`;
+const goldA = (a) => `rgba(201,168,76,${a})`;
+const BORDER  = goldA(0.18);
+const MUTED   = inkA(0.5);
+const MUTED2  = inkA(0.35);
 
 const display = { fontFamily: "'Fraunces', serif" };
 const mono    = { fontFamily: "'IBM Plex Mono', monospace" };
@@ -53,10 +56,10 @@ const initials = (name = "") =>
   name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase()).join("");
 
 const STATUS = {
-  received: { color: "#4ade80", bg: "rgba(74,222,128,0.1)",  border: "rgba(74,222,128,0.25)"  },
-  sold:     { color: GOLD,      bg: "rgba(201,168,76,0.1)",  border: "rgba(201,168,76,0.25)"  },
-  returned: { color: "#7f77dd", bg: "rgba(127,119,221,0.1)", border: "rgba(127,119,221,0.25)" },
-  default:  { color: MUTED,     bg: "rgba(255,255,255,0.05)", border: BORDER                  },
+  received: { color: "#2f9b62", bg: "rgba(74,222,128,0.14)",  border: "rgba(74,222,128,0.3)"  },
+  sold:     { color: GOLD_DARK, bg: "rgba(201,168,76,0.1)",  border: "rgba(201,168,76,0.25)"  },
+  returned: { color: "#6a61d1", bg: "rgba(127,119,221,0.12)", border: "rgba(127,119,221,0.3)" },
+  default:  { color: MUTED,     bg: goldA(0.06), border: BORDER                  },
 };
 
 function Avatar({ name, index, size = 30 }) {
@@ -66,7 +69,7 @@ function Avatar({ name, index, size = 30 }) {
       borderRadius: "9px",
       background: GRADIENTS[index % GRADIENTS.length],
       display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: size * 0.36, fontWeight: 700, color: TEXT,
+      fontSize: size * 0.36, fontWeight: 700, color: "#fff",
     }}>
       {initials(name)}
     </Box>
@@ -96,7 +99,7 @@ function TypeChip({ type }) {
       px: "9px", py: "3px", borderRadius: "6px",
       fontSize: 11, fontWeight: 600,
       ...(isBorrow
-        ? { bgcolor: "rgba(201,168,76,0.08)", border: `1px solid rgba(201,168,76,0.2)`, color: GOLD }
+        ? { bgcolor: "rgba(201,168,76,0.08)", border: `1px solid rgba(201,168,76,0.2)`, color: GOLD_DARK }
         : { bgcolor: "rgba(29,158,117,0.08)", border: `1px solid rgba(29,158,117,0.2)`, color: "#1d9e75" }),
     }}>
       {isBorrow ? "📖 Borrow" : "🛒 Buy"}
@@ -115,17 +118,17 @@ function DateCell({ value }) {
 const inputSx = {
   mb: 1.5,
   "& .MuiFilledInput-root": {
-    bgcolor: "rgba(255,255,255,0.04)",
+    bgcolor: goldA(0.05),
     borderRadius: "10px",
     border: `1px solid ${BORDER}`,
     color: TEXT,
     fontFamily: "Inter, sans-serif",
-    "&:hover": { bgcolor: "rgba(255,255,255,0.06)" },
-    "&.Mui-focused": { bgcolor: "rgba(255,255,255,0.06)", border: `1px solid rgba(201,168,76,0.4)` },
+    "&:hover": { bgcolor: goldA(0.08) },
+    "&.Mui-focused": { bgcolor: goldA(0.08), border: `1px solid rgba(201,168,76,0.4)` },
     "&:before, &:after": { display: "none" },
   },
   "& .MuiInputLabel-root": { color: MUTED, fontFamily: "Inter, sans-serif" },
-  "& .MuiInputLabel-root.Mui-focused": { color: GOLD },
+  "& .MuiInputLabel-root.Mui-focused": { color: GOLD_DARK },
   "& .MuiSelect-icon": { color: MUTED },
 };
 
@@ -147,10 +150,10 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
         sx={{
           ...btnBase,
           px: "14px", height: 36,
-          bgcolor: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`,
+          bgcolor: goldA(0.05), border: `1px solid ${BORDER}`,
           color: currentPage === 1 ? MUTED2 : MUTED,
           cursor: currentPage === 1 ? "not-allowed" : "pointer",
-          "&:hover": currentPage > 1 ? { bgcolor: "rgba(255,255,255,0.08)", color: TEXT } : {},
+          "&:hover": currentPage > 1 ? { bgcolor: goldA(0.09), color: TEXT } : {},
         }}
       >
         ← Prev
@@ -164,10 +167,10 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
             ...btnBase,
             width: 36, height: 36,
             ...(page === currentPage
-              ? { background: `linear-gradient(135deg,${GOLD},${GOLD2})`, color: "#000" }
+              ? { background: `linear-gradient(135deg,${GOLD},${GOLD2})`, color: "#fff" }
               : {
-                  bgcolor: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, color: MUTED,
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.08)", color: TEXT },
+                  bgcolor: goldA(0.05), border: `1px solid ${BORDER}`, color: MUTED,
+                  "&:hover": { bgcolor: goldA(0.09), color: TEXT },
                 }),
           }}
         >
@@ -180,10 +183,10 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
         sx={{
           ...btnBase,
           px: "14px", height: 36,
-          bgcolor: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`,
+          bgcolor: goldA(0.05), border: `1px solid ${BORDER}`,
           color: currentPage === totalPages ? MUTED2 : MUTED,
           cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-          "&:hover": currentPage < totalPages ? { bgcolor: "rgba(255,255,255,0.08)", color: TEXT } : {},
+          "&:hover": currentPage < totalPages ? { bgcolor: goldA(0.09), color: TEXT } : {},
         }}
       >
         Next →
@@ -256,11 +259,12 @@ export default function TransactionsPage() {
       <Box sx={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         mb: 3, px: "20px", height: 60,
-        bgcolor: "rgba(255,255,255,0.04)",
+        bgcolor: "rgba(255,255,255,0.75)",
         border: `1px solid ${BORDER}`,
         borderRadius: "16px",
         position: "sticky", top: 0, zIndex: 10,
         backdropFilter: "blur(16px)",
+        boxShadow: "0 2px 16px rgba(201,168,76,.08)",
       }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Box sx={{
@@ -281,7 +285,7 @@ export default function TransactionsPage() {
             ...mono,
             px: "12px", py: "5px", borderRadius: "8px",
             bgcolor: "rgba(201,168,76,0.1)", border: `1px solid rgba(201,168,76,0.2)`,
-            fontSize: 11.5, fontWeight: 600, color: GOLD,
+            fontSize: 11.5, fontWeight: 600, color: GOLD_DARK,
           }}>
             {totalCount} total
           </Box>
@@ -296,7 +300,7 @@ export default function TransactionsPage() {
               "&:hover": { opacity: 0.88 },
             }}
           >
-            <Typography sx={{ ...mono, fontSize: 12, fontWeight: 700, color: "#000" }}>
+            <Typography sx={{ ...mono, fontSize: 12, fontWeight: 700, color: "#fff" }}>
               + New Checkout
             </Typography>
           </Box>
@@ -310,11 +314,11 @@ export default function TransactionsPage() {
             { label: "Borrows",      value: borrows,           unit: "this page"        },
             { label: "Sales",        value: buys,              unit: "this page"        },
           ].map(({ label, value, unit, gold }) => (
-            <Box key={label} sx={{ bgcolor: SURFACE, border: `1px solid ${BORDER}`, borderRadius: "16px", p: "18px 20px" }}>
+            <Box key={label} sx={{ bgcolor: SURFACE, border: `1px solid ${BORDER}`, borderRadius: "16px", p: "18px 20px", boxShadow: "0 2px 14px rgba(201,168,76,.08)" }}>
               <Typography sx={{ ...mono, fontSize: 10, fontWeight: 600, letterSpacing: "0.7px", color: MUTED2, textTransform: "uppercase", mb: "8px" }}>
                 {label}
               </Typography>
-              <Typography sx={{ ...display, fontSize: 26, fontWeight: 600, color: gold ? GOLD : TEXT, letterSpacing: "-0.5px" }}>
+              <Typography sx={{ ...display, fontSize: 26, fontWeight: 600, color: gold ? GOLD_DARK : TEXT, letterSpacing: "-0.5px" }}>
                 {value}
               </Typography>
               <Typography sx={{ ...mono, fontSize: 10, color: MUTED2, mt: "2px" }}>{unit}</Typography>
@@ -327,13 +331,13 @@ export default function TransactionsPage() {
         Page {currentPage} of {totalPages} — {totalCount} total transactions
       </Typography>
 
-      <Box sx={{ bgcolor: "#0d0d14", border: `1px solid ${BORDER}`, borderRadius: "18px", overflow: "auto" }}>
+      <Box sx={{ bgcolor: SURFACE, border: `1px solid ${BORDER}`, borderRadius: "18px", overflow: "auto" }}>
 
         <Box sx={{
           display: "grid", gridTemplateColumns: COL, minWidth: 1100,
           px: "20px", py: "10px", gap: "12px",
-          bgcolor: "rgba(255,255,255,0.02)",
-          borderBottom: `1px solid rgba(255,255,255,0.05)`,
+          bgcolor: goldA(0.04),
+          borderBottom: `1px solid ${goldA(0.12)}`,
         }}>
           {["#", "User", "Price", "Extra", "Type", "Status", "Delivered", "Due", "Returned", ""].map((h) => (
             <Typography key={h} sx={{ ...mono, fontSize: 10, fontWeight: 600, color: MUTED2, letterSpacing: "0.8px", textTransform: "uppercase" }}>
@@ -359,9 +363,9 @@ export default function TransactionsPage() {
                 display: "grid", gridTemplateColumns: COL, minWidth: 1100,
                 px: "20px", py: "13px", gap: "12px",
                 alignItems: "center",
-                borderBottom: i < rows.length - 1 ? `1px solid rgba(255,255,255,0.04)` : "none",
+                borderBottom: i < rows.length - 1 ? `1px solid ${goldA(0.1)}` : "none",
                 transition: "background .15s",
-                "&:hover": { bgcolor: "rgba(255,255,255,0.02)" },
+                "&:hover": { bgcolor: goldA(0.05) },
               }}
             >
               <Typography sx={{ ...mono, fontSize: 12, fontWeight: 700, color: MUTED2 }}>
@@ -380,11 +384,11 @@ export default function TransactionsPage() {
                 </Box>
               </Box>
 
-              <Typography sx={{ ...display, fontSize: 13, fontWeight: 700, color: GOLD }}>
+              <Typography sx={{ ...display, fontSize: 13, fontWeight: 700, color: GOLD_DARK }}>
                 {fmt(row.price)} SYP
               </Typography>
 
-              <Typography sx={{ ...mono, fontSize: 12, color: parseFloat(row.extra_price || 0) > 0 ? "#e06b5a" : MUTED2 }}>
+              <Typography sx={{ ...mono, fontSize: 12, color: parseFloat(row.extra_price || 0) > 0 ? "#c8564a" : MUTED2 }}>
                 {fmt(row.extra_price)}
               </Typography>
 
@@ -418,9 +422,9 @@ export default function TransactionsPage() {
           sx: {
             borderRadius: "20px",
             minWidth: "400px", maxWidth: "440px",
-            bgcolor: "#1a1a24",
-            border: `1px solid rgba(201,168,76,0.18)`,
-            boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+            bgcolor: SURFACE,
+            border: `1px solid rgba(201,168,76,0.2)`,
+            boxShadow: "0 24px 60px rgba(43,36,22,0.18)",
           },
         }}
       >
@@ -451,7 +455,7 @@ export default function TransactionsPage() {
           <TextField select fullWidth label="Type" margin="none" variant="filled"
             value={formData.type} sx={inputSx}
             onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-            SelectProps={{ MenuProps: { PaperProps: { sx: { bgcolor: "#1a1a24", color: TEXT } } } }}>
+            SelectProps={{ MenuProps: { PaperProps: { sx: { bgcolor: SURFACE, color: TEXT } } } }}>
             <MenuItem value="borrow">📖 Borrow</MenuItem>
             <MenuItem value="buy">🛒 Buy</MenuItem>
           </TextField>
@@ -461,7 +465,7 @@ export default function TransactionsPage() {
           <TextField select fullWidth label="Payment Method" margin="none" variant="filled"
             value={formData.payment_method} sx={inputSx}
             onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
-            SelectProps={{ MenuProps: { PaperProps: { sx: { bgcolor: "#1a1a24", color: TEXT } } } }}>
+            SelectProps={{ MenuProps: { PaperProps: { sx: { bgcolor: SURFACE, color: TEXT } } } }}>
             <MenuItem value="cash">💵 Cash</MenuItem>
             <MenuItem value="online">🌐 Online</MenuItem>
           </TextField>
@@ -471,13 +475,13 @@ export default function TransactionsPage() {
           <Button onClick={() => setOpen(false)} sx={{
             borderRadius: "10px", textTransform: "none", fontWeight: 600,
             fontSize: 13.5, color: MUTED, border: `1px solid ${BORDER}`, px: 2.5,
-            "&:hover": { bgcolor: "rgba(255,255,255,0.05)", color: TEXT },
+            "&:hover": { bgcolor: goldA(0.06), color: TEXT },
           }}>
             Cancel
           </Button>
           <Button onClick={handleCheckout} variant="contained" disableElevation sx={{
             borderRadius: "10px", textTransform: "none",
-            fontWeight: 700, fontSize: 13.5, px: 2.8, color: "#000",
+            fontWeight: 700, fontSize: 13.5, px: 2.8, color: "#fff",
             background: `linear-gradient(135deg,${GOLD},${GOLD2})`,
             "&:hover": { background: `linear-gradient(135deg,#d4b05a,#9a6b20)`, boxShadow: "0 12px 28px rgba(201,168,76,0.25)" },
           }}>

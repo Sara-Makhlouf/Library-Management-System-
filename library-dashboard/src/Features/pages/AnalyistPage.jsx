@@ -10,6 +10,7 @@ import { getTotalPaidOrder, getTotalBorrows } from "../../Core/Redux/Thunks/Anal
 
 import { useAIChat } from "../Utils/useInsight";
 import AIChatCard from "../Utils/insightCard";
+import { GOLD, GOLD_DARK, GOLD_DEEP, INK, PAGE_BG, CARD_BG, CARD_BG_HOVER, inkA, goldA } from "../../Core/Constants/ColorsUse";
 
 
 function normalizeSeries(raw) {
@@ -160,14 +161,14 @@ export default function DashboardCommandCenter() {
       >
         <StatCard
           icon={<Receipt size={15} />}
-          accent="#7dd3c0"
+          accent="#2f9b7d"
           label="PAID ORDERS"
           value={totalOrdersCount ?? "—"}
           loading={loading}
         />
         <StatCard
           icon={<BookMarked size={15} />}
-          accent="#3b82f6"
+          accent="#2f9fd6"
           label="TOTAL BORROWS"
           value={borrowsBreakdown?.total ?? "—"}
           loading={loading}
@@ -179,7 +180,7 @@ export default function DashboardCommandCenter() {
         />
         <StatCard
           icon={<BookOpen size={15} />}
-          accent="#f472b6"
+          accent="#cf62c9"
           label="TRACKED TITLES"
           value={topSellingBooks?.length ?? "—"}
           loading={loading}
@@ -197,7 +198,7 @@ export default function DashboardCommandCenter() {
         <SeriesCard
           title="WEEKLY SALES"
           icon={<TrendingUp size={15} />}
-          accent="#c9a84c"
+          accent={GOLD_DARK}
           series={salesSeries}
           trend={salesTrend}
           loading={loading}
@@ -206,7 +207,7 @@ export default function DashboardCommandCenter() {
         <SeriesCard
           title="WEEKLY BORROWS"
           icon={<BookMarked size={15} />}
-          accent="#3b82f6"
+          accent="#2f9fd6"
           series={borrowsSeries}
           trend={borrowsTrend}
           loading={loading}
@@ -264,7 +265,7 @@ function TopBar({ loading, reportDate, onRefresh }) {
     <div style={styles.topBar}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div style={styles.logoMark}>
-          <Brain size={18} />
+          <Brain size={18} color="#fff" />
         </div>
         <div>
           <div style={styles.logoTitle}>Athenaeum</div>
@@ -292,15 +293,15 @@ function StatusPill({ loading, reportDate }) {
           width: 7,
           height: 7,
           borderRadius: 999,
-          background: loading ? "#c9a84c" : "#7dd3c0",
-          boxShadow: loading ? "0 0 8px #c9a84c" : "0 0 8px #7dd3c0",
+          background: loading ? GOLD : "#3fb873",
+          boxShadow: loading ? "0 0 8px rgba(201,168,76,.6)" : "0 0 8px rgba(63,184,115,.5)",
         }}
       />
       <span
         style={{
           fontFamily: "'JetBrains Mono', monospace",
           fontSize: 11.5,
-          color: "rgba(232,227,216,0.55)",
+          color: inkA(0.5),
         }}
       >
         {loading ? "SYNCING" : reportDate ? `LIVE · ${reportDate}` : "LIVE"}
@@ -312,8 +313,8 @@ function StatusPill({ loading, reportDate }) {
 function ErrorBanner({ message, onRetry }) {
   return (
     <div style={styles.errorBanner}>
-      <AlertCircle size={15} style={{ color: "#ff6b5e", flexShrink: 0 }} />
-      <span style={{ fontSize: 13, color: "rgba(232,227,216,0.75)", flex: 1 }}>
+      <AlertCircle size={15} style={{ color: "#e0655f", flexShrink: 0 }} />
+      <span style={{ fontSize: 13, color: inkA(0.65), flex: 1 }}>
         {message}
       </span>
       <button onClick={onRetry} style={styles.linkBtn}>
@@ -340,7 +341,7 @@ function StatCard({ icon, accent, label, value, loading, subtext }) {
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
                 fontSize: 10.5,
-                color: "rgba(232,227,216,0.4)",
+                color: inkA(0.4),
                 marginTop: 6,
               }}
             >
@@ -363,7 +364,7 @@ function SeriesCard({ title, icon, accent, series, trend, loading, emptyText }) 
         <span style={{ color: accent, display: "flex" }}>{icon}</span>
         <span style={styles.cardLabel}>{title}</span>
         {trend && (
-          <span style={{ marginLeft: "auto", color: trend === "down" ? "#ff6b5e" : "#7dd3c0", display: "flex" }}>
+          <span style={{ marginLeft: "auto", color: trend === "down" ? "#e0655f" : "#2f9b62", display: "flex" }}>
             <DirIcon size={14} />
           </span>
         )}
@@ -393,7 +394,7 @@ function SeriesCard({ title, icon, accent, series, trend, loading, emptyText }) 
                 style={{
                   fontFamily: "'JetBrains Mono', monospace",
                   fontSize: 10,
-                  color: "rgba(232,227,216,0.4)",
+                  color: inkA(0.4),
                   whiteSpace: "nowrap",
                 }}
               >
@@ -410,9 +411,9 @@ function SeriesCard({ title, icon, accent, series, trend, loading, emptyText }) 
 function TopSellingCard({ books, loading }) {
   const list = Array.isArray(books) ? books : [];
   return (
-    <div style={{ ...styles.systemCard, marginTop: 20, borderColor: "rgba(244,114,182,0.18)" }}>
+    <div style={{ ...styles.systemCard, marginTop: 20, borderColor: "rgba(207,98,201,0.2)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-        <span style={{ color: "#f472b6", display: "flex" }}>
+        <span style={{ color: "#cf62c9", display: "flex" }}>
           <Crown size={15} />
         </span>
         <span style={styles.cardLabel}>TOP SELLING BOOKS</span>
@@ -436,14 +437,14 @@ function TopSellingCard({ books, loading }) {
                 alignItems: "center",
                 gap: 12,
                 padding: "10px 0",
-                borderTop: i > 0 ? "1px solid rgba(255,255,255,0.06)" : "none",
+                borderTop: i > 0 ? `1px solid ${goldA(0.12)}` : "none",
               }}
             >
               <span
                 style={{
                   fontFamily: "'JetBrains Mono', monospace",
                   fontSize: 11,
-                  color: "rgba(232,227,216,0.35)",
+                  color: inkA(0.3),
                   width: 20,
                   flexShrink: 0,
                 }}
@@ -453,7 +454,7 @@ function TopSellingCard({ books, loading }) {
               <span
                 style={{
                   fontSize: 13.5,
-                  color: "rgba(232,227,216,0.9)",
+                  color: inkA(0.85),
                   flex: 1,
                   overflow: "hidden",
                   textOverflow: "ellipsis",
@@ -463,7 +464,7 @@ function TopSellingCard({ books, loading }) {
                 {b.book_title}
               </span>
               {b.is_active === false && (
-                <span style={{ ...styles.tag, color: "#888", background: "rgba(255,255,255,0.06)" }}>
+                <span style={{ ...styles.tag, color: inkA(0.4), background: goldA(0.08) }}>
                   inactive
                 </span>
               )}
@@ -484,8 +485,7 @@ function SkeletonBlock({ width, height }) {
         height,
         borderRadius: 6,
         marginBottom: 8,
-        background:
-          "linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.09), rgba(255,255,255,0.04))",
+        background: `linear-gradient(90deg, ${goldA(0.06)}, ${goldA(0.16)}, ${goldA(0.06)})`,
       }}
     />
   );
@@ -494,8 +494,8 @@ function SkeletonBlock({ width, height }) {
 const styles = {
   page: {
     minHeight: "100vh",
-    background: "radial-gradient(circle at 20% 0%, #14131c 0%, #0a0a0f 55%)",
-    color: "#e8e3d8",
+    background: `radial-gradient(circle at 20% 0%, ${CARD_BG_HOVER} 0%, ${PAGE_BG} 55%)`,
+    color: INK,
     fontFamily: "'Inter', sans-serif",
     padding: "28px 28px 80px",
     marginLeft:"-16px",
@@ -512,30 +512,29 @@ const styles = {
     width: 36,
     height: 36,
     borderRadius: 10,
-    background: "linear-gradient(135deg, #c9a84c, #7dd3c0)",
+    background: `linear-gradient(135deg, ${GOLD}, ${GOLD_DEEP})`,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#0a0a0f",
   },
-  logoTitle: { fontFamily: "'Fraunces', serif", fontSize: 19, fontWeight: 600, lineHeight: 1.1 },
-  logoSub: { fontSize: 11.5, color: "rgba(232,227,216,0.4)", marginTop: 2 },
+  logoTitle: { fontFamily: "'Fraunces', serif", fontSize: 19, fontWeight: 600, lineHeight: 1.1, color: INK },
+  logoSub: { fontSize: 11.5, color: inkA(0.4), marginTop: 2 },
   statusPill: {
     display: "flex",
     alignItems: "center",
     gap: 8,
     padding: "6px 12px",
     borderRadius: 999,
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.07)",
+    background: goldA(0.06),
+    border: `1px solid ${goldA(0.16)}`,
   },
   refreshBtn: {
     display: "flex",
     alignItems: "center",
     gap: 7,
-    background: "rgba(255,255,255,0.05)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    color: "#e8e3d8",
+    background: goldA(0.08),
+    border: `1px solid ${goldA(0.2)}`,
+    color: INK,
     padding: "8px 14px",
     borderRadius: 10,
     fontSize: 12.5,
@@ -548,41 +547,44 @@ const styles = {
     gap: 10,
     padding: "12px 16px",
     borderRadius: 12,
-    background: "rgba(255,107,94,0.08)",
-    border: "1px solid rgba(255,107,94,0.25)",
+    background: "rgba(224,101,95,0.08)",
+    border: "1px solid rgba(224,101,95,0.28)",
     marginBottom: 20,
   },
   statCard: {
     padding: "18px 20px",
     borderRadius: 16,
-    background: "#13121a",
-    border: "1px solid rgba(255,255,255,0.06)",
+    background: CARD_BG,
+    border: `1px solid ${goldA(0.15)}`,
+    boxShadow: "0 2px 14px rgba(201,168,76,.08)",
   },
   statValue: {
     fontFamily: "'Fraunces', serif",
     fontSize: 24,
     fontWeight: 600,
+    color: INK,
   },
   systemCard: {
     padding: "22px 22px",
     borderRadius: 18,
-    background: "#13121a",
-    border: "1px solid rgba(255,255,255,0.06)",
+    background: CARD_BG,
+    border: `1px solid ${goldA(0.15)}`,
+    boxShadow: "0 2px 14px rgba(201,168,76,.08)",
   },
   cardLabel: {
     fontFamily: "'JetBrains Mono', monospace",
     fontSize: 11,
     letterSpacing: 0.6,
-    color: "rgba(232,227,216,0.5)",
+    color: inkA(0.5),
     fontWeight: 500,
   },
-  cardBody: { fontSize: 12.5, lineHeight: 1.55, color: "rgba(232,227,216,0.55)", margin: 0 },
+  cardBody: { fontSize: 12.5, lineHeight: 1.55, color: inkA(0.55), margin: 0 },
   tag: {
     fontFamily: "'JetBrains Mono', monospace",
     fontSize: 10.5,
     fontWeight: 600,
-    color: "#f472b6",
-    background: "rgba(244,114,182,0.1)",
+    color: "#cf62c9",
+    background: "rgba(207,98,201,0.1)",
     padding: "4px 9px",
     borderRadius: 999,
     whiteSpace: "nowrap",
@@ -594,7 +596,7 @@ const styles = {
     gap: 4,
     background: "none",
     border: "none",
-    color: "#c9a84c",
+    color: GOLD_DARK,
     cursor: "pointer",
     fontSize: 13,
     padding: 0,

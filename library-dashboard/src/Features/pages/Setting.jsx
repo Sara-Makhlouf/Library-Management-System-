@@ -6,7 +6,11 @@ import { motion } from "framer-motion";
 import { User, Globe, Bell, Settings, Pencil, Save } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchSettings, updateSettingsThunk, sendNotification } from "../../Core/Redux/Thunks/SettingThunk";
-import { GOLD, MUTED, TEXT, BORDER, BG, GOLD2, fieldSx, SectionCard } from "../Utils/settingData";
+import { fieldSx, SectionCard } from "../Utils/settingData";
+import { GOLD, GOLD_DEEP as GOLD2, INK as TEXT, PAGE_BG as BG, inkA, goldA } from "../../Core/Constants/ColorsUse";
+
+const BORDER = goldA(0.15);
+const MUTED  = inkA(0.5);
 
 const display = { fontFamily: "'Fraunces', serif" };
 const mono    = { fontFamily: "'IBM Plex Mono', monospace" };
@@ -44,7 +48,7 @@ function SaveBtn({ onClick }) {
       onClick={onClick}
       sx={{
         borderRadius: "10px", textTransform: "none", fontWeight: 700, fontSize: 13,
-        color: "#000", py: 1,
+        color: "#fff", py: 1,
         background: `linear-gradient(135deg,${GOLD},${GOLD2})`,
         "&:hover": { background: "linear-gradient(135deg,#d4b562,#9e6c20)", boxShadow: "0 12px 28px rgba(201,168,76,0.25)" },
         transition: "all 0.25s",
@@ -62,7 +66,7 @@ function SectionHeader({ icon, label, iconBg, iconColor, onEdit }) {
         <Box sx={{ width: 28, height: 28, borderRadius: "8px", bgcolor: iconBg, color: iconColor, display: "flex", alignItems: "center", justifyContent: "center" }}>
           {icon}
         </Box>
-        <Typography sx={{ ...mono, fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: "0.8px", textTransform: "uppercase" }}>
+        <Typography sx={{ ...mono, fontSize: 10, fontWeight: 700, color: inkA(0.5), letterSpacing: "0.8px", textTransform: "uppercase" }}>
           {label}
         </Typography>
       </Box>
@@ -71,9 +75,9 @@ function SectionHeader({ icon, label, iconBg, iconColor, onEdit }) {
           onClick={onEdit}
           sx={{
             width: 30, height: 30, borderRadius: "8px",
-            bgcolor: "rgba(255,255,255,0.03)", border: `1px solid ${BORDER}`,
+            bgcolor: goldA(0.05), border: `1px solid ${BORDER}`,
             color: MUTED,
-            "&:hover": { bgcolor: "rgba(201,168,76,0.1)", borderColor: "rgba(201,168,76,0.3)", color: GOLD },
+            "&:hover": { bgcolor: goldA(0.1), borderColor: goldA(0.3), color: GOLD2 },
             transition: "all 0.2s",
           }}
         >
@@ -113,11 +117,12 @@ export default function LibrarySettings() {
       <Box sx={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         mb: 3, px: "20px", height: 60,
-        bgcolor: "rgba(255,255,255,0.04)",
+        bgcolor: "rgba(255,255,255,.75)",
         border: `1px solid ${BORDER}`,
         borderRadius: "16px",
         position: "sticky", top: 0, zIndex: 10,
         backdropFilter: "blur(16px)",
+        boxShadow: "0 2px 16px rgba(201,168,76,.08)",
       }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Box sx={{
@@ -136,30 +141,31 @@ export default function LibrarySettings() {
           ...mono,
           display: "inline-flex", alignItems: "center", gap: "6px",
           px: "12px", py: "5px", borderRadius: "8px",
-          bgcolor: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.2)",
-          fontSize: 11.5, fontWeight: 600, color: GOLD,
+          bgcolor: goldA(0.1), border: `1px solid ${goldA(0.24)}`,
+          fontSize: 11.5, fontWeight: 600, color: GOLD2,
         }}>
-          <Settings size={13} color={GOLD} /> Admin Panel
+          <Settings size={13} color={GOLD2} /> Admin Panel
         </Box>
       </Box>
 
       <Box sx={{
         p: { xs: 3, md: "32px 36px" },
         borderRadius: "20px",
-        background: "linear-gradient(135deg,#111118 0%,#1a1206 100%)",
-        border: "1px solid rgba(201,168,76,0.2)",
+        background: `linear-gradient(160deg, ${goldA(0.14)}, ${goldA(0.04)})`,
+        border: `1px solid ${goldA(0.3)}`,
         position: "relative", overflow: "hidden",
         mb: 2.5,
+        boxShadow: "0 4px 20px rgba(201,168,76,.12)",
       }}>
-        <Box sx={{ position: "absolute", top: -100, right: -80, width: 300, height: 300, background: "radial-gradient(circle,rgba(201,168,76,0.08) 0%,transparent 70%)", pointerEvents: "none" }} />
-        <Box sx={{ position: "absolute", bottom: -60, left: -40, width: 200, height: 200, background: "radial-gradient(circle,rgba(139,94,26,0.06) 0%,transparent 70%)", pointerEvents: "none" }} />
+        <Box sx={{ position: "absolute", top: -100, right: -80, width: 300, height: 300, background: "radial-gradient(circle,rgba(201,168,76,0.2) 0%,transparent 70%)", pointerEvents: "none" }} />
+        <Box sx={{ position: "absolute", bottom: -60, left: -40, width: 200, height: 200, background: "radial-gradient(circle,rgba(139,94,26,0.12) 0%,transparent 70%)", pointerEvents: "none" }} />
         <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg,transparent,rgba(201,168,76,0.4),transparent)" }} />
 
         <Box sx={{
           display: "inline-flex", alignItems: "center", gap: "6px",
           mb: 2.2, px: "12px", py: "4px", borderRadius: "20px",
-          bgcolor: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.2)",
-          fontSize: 11, fontWeight: 600, letterSpacing: 0.5, color: GOLD,
+          bgcolor: goldA(0.12), border: `1px solid ${goldA(0.3)}`,
+          fontSize: 11, fontWeight: 600, letterSpacing: 0.5, color: GOLD2,
         }}>
           ● Configuration
         </Box>
@@ -169,10 +175,10 @@ export default function LibrarySettings() {
           fontSize: { xs: 24, md: 30 }, fontWeight: 600,
           letterSpacing: -0.5, lineHeight: 1.15, mb: 1.3, color: TEXT,
         }}>
-          Platform <Box component="span" sx={{ color: GOLD, fontStyle: "italic" }}>configuration</Box>
+          Platform <Box component="span" sx={{ color: GOLD2, fontStyle: "italic" }}>configuration</Box>
         </Typography>
 
-        <Typography sx={{ fontSize: 13.5, color: "rgba(255,255,255,0.45)", lineHeight: 1.7, maxWidth: 420, mb: 2.5 }}>
+        <Typography sx={{ fontSize: 13.5, color: inkA(0.55), lineHeight: 1.7, maxWidth: 420, mb: 2.5 }}>
           Manage your library's global settings, social links, and notification preferences.
         </Typography>
 
@@ -182,8 +188,8 @@ export default function LibrarySettings() {
           onClick={() => dispatch(sendNotification({ title: "System Notification", message: "Our library closed on Friday" }))}
           sx={{
             borderRadius: "10px", textTransform: "none", fontWeight: 600, fontSize: 12.5,
-            borderColor: "#97c459", color: "#97c459",
-            "&:hover": { borderColor: "#97c459", bgcolor: "rgba(151,196,89,0.08)" },
+            borderColor: "#5f8e20", color: "#5f8e20",
+            "&:hover": { borderColor: "#5f8e20", bgcolor: "rgba(151,196,89,0.1)" },
           }}
         >
           🔔 Send Global Notification
@@ -192,12 +198,20 @@ export default function LibrarySettings() {
 
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 2, mb: 2 }}>
 
-        <SectionCard sx={{ cursor: "default", "&:hover": { borderColor: `${GOLD}40`, transform: "translateY(-2px)", bgcolor: "#151520" } }}>
+        <SectionCard
+          sx={{
+            cursor: "default",
+            background: `linear-gradient(160deg, ${goldA(0.1)}, ${goldA(0.03)})`,
+            border: `1px solid ${goldA(0.28)}`,
+            boxShadow: "0 2px 14px rgba(201,168,76,.1)",
+            "&:hover": { borderColor: goldA(0.45), transform: "translateY(-2px)", background: `linear-gradient(160deg, ${goldA(0.16)}, ${goldA(0.05)})` },
+          }}
+        >
           <SectionHeader
             icon={<User size={15} />}
             label="General Information"
-            iconBg={`${GOLD}18`}
-            iconColor={GOLD}
+            iconBg={goldA(0.14)}
+            iconColor={GOLD2}
             onEdit={() => setEditing(editing === "general" ? null : "general")}
           />
 
@@ -219,12 +233,20 @@ export default function LibrarySettings() {
           )}
         </SectionCard>
 
-        <SectionCard sx={{ cursor: "default", "&:hover": { borderColor: `${GOLD}40`, transform: "translateY(-2px)", bgcolor: "#151520" } }}>
+        <SectionCard
+          sx={{
+            cursor: "default",
+            background: `linear-gradient(160deg, ${goldA(0.1)}, ${goldA(0.03)})`,
+            border: `1px solid ${goldA(0.28)}`,
+            boxShadow: "0 2px 14px rgba(201,168,76,.1)",
+            "&:hover": { borderColor: goldA(0.45), transform: "translateY(-2px)", background: `linear-gradient(160deg, ${goldA(0.16)}, ${goldA(0.05)})` },
+          }}
+        >
           <SectionHeader
             icon={<Globe size={15} />}
             label="Social Media"
-            iconBg="rgba(127,119,221,0.18)"
-            iconColor="#7f77dd"
+            iconBg="rgba(127,119,221,0.16)"
+            iconColor="#6a61d1"
             onEdit={() => setEditing(editing === "social" ? null : "social")}
           />
 
@@ -242,12 +264,20 @@ export default function LibrarySettings() {
           )}
         </SectionCard>
 
-        <SectionCard sx={{ cursor: "default", "&:hover": { borderColor: "#97c45940", transform: "translateY(-2px)", bgcolor: "#151520" } }}>
+        <SectionCard
+          sx={{
+            cursor: "default",
+            background: `linear-gradient(160deg, ${goldA(0.1)}, ${goldA(0.03)})`,
+            border: `1px solid ${goldA(0.28)}`,
+            boxShadow: "0 2px 14px rgba(201,168,76,.1)",
+            "&:hover": { borderColor: goldA(0.45), transform: "translateY(-2px)", background: `linear-gradient(160deg, ${goldA(0.16)}, ${goldA(0.05)})` },
+          }}
+        >
           <SectionHeader
             icon={<Bell size={15} />}
             label="Notifications"
-            iconBg="rgba(151,196,89,0.18)"
-            iconColor="#97c459"
+            iconBg="rgba(151,196,89,0.16)"
+            iconColor="#5f8e20"
           />
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
@@ -261,7 +291,7 @@ export default function LibrarySettings() {
                   display: "flex", alignItems: "center", justifyContent: "space-between",
                   py: 1.2, px: 1, borderRadius: "10px",
                   transition: "all 0.2s",
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.04)" },
+                  "&:hover": { bgcolor: goldA(0.06) },
                 }}
               >
                 <Typography sx={{ fontSize: 13, color: TEXT, fontWeight: 500 }}>
@@ -271,9 +301,9 @@ export default function LibrarySettings() {
                   checked={formState[item.key] || false}
                   onChange={() => handleToggle(item.key)}
                   sx={{
-                    "& .MuiSwitch-switchBase.Mui-checked":                    { color: GOLD },
-                    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: GOLD, opacity: 0.4 },
-                    "& .MuiSwitch-track":                                      { backgroundColor: "rgba(255,255,255,0.15)" },
+                    "& .MuiSwitch-switchBase.Mui-checked":                    { color: GOLD2 },
+                    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: GOLD2, opacity: 0.5 },
+                    "& .MuiSwitch-track":                                      { backgroundColor: goldA(0.22) },
                   }}
                 />
               </Box>
@@ -287,10 +317,11 @@ export default function LibrarySettings() {
           animate={{ opacity: 1, y: 0 }}
           sx={{
             p: "24px", borderRadius: "18px",
-            background: "linear-gradient(135deg,#111118 0%,#1a1206 100%)",
-            border: "1px solid rgba(201,168,76,0.2)",
+            background: `linear-gradient(160deg, ${goldA(0.14)}, ${goldA(0.04)})`,
+            border: `1px solid ${goldA(0.32)}`,
             position: "relative", overflow: "hidden",
             display: "flex", flexDirection: "column", justifyContent: "center",
+            boxShadow: "0 4px 20px rgba(201,168,76,.12)",
           }}
         >
           <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg,transparent,rgba(201,168,76,0.4),transparent)" }} />
@@ -308,7 +339,7 @@ export default function LibrarySettings() {
             onClick={saveAll}
             sx={{
               borderRadius: "10px", textTransform: "none", fontWeight: 700, fontSize: 13.5,
-              color: "#000", py: 1.2,
+              color: "#fff", py: 1.2,
               background: `linear-gradient(135deg,${GOLD},${GOLD2})`,
               "&:hover": {
                 background: "linear-gradient(135deg,#d4b562,#9e6c20)",

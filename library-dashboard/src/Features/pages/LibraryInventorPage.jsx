@@ -35,8 +35,9 @@ import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 
 import { fetchBooks, deletBooks, updateBooks } from "../../Core/Redux/Thunks/BookThunk";
 import AddBookPage from "./AddNewBook";
-import {GOLD ,SURFACE,MUTED2,MUTED,TEXT,IMAGE_BASE_URL ,BORDER,BG,GOLD_DIM} from "../../Core/Constants/utils";
+import { IMAGE_BASE_URL } from "../../Core/Constants/utils";
 import {KPI,StockBar} from "../Utils/bookData";
+import {GOLD_DARK , MUTED,SURFACE,goldA,TEXT,GOLD,BG,BORDER,GOLD_DIM,SURFACE_HOV,inkA,MUTED2} from "../../Core/Constants/ColorsUse";
 
 
 const FONT_IMPORT_ID = "lib-fonts";
@@ -51,6 +52,9 @@ function injectFonts() {
   link.href = FONT_HREF;
   document.head.appendChild(link);
 }
+
+
+
 
 const display = { fontFamily: "'Fraunces', serif" };
 const mono = { fontFamily: "'IBM Plex Mono', monospace" };
@@ -157,11 +161,12 @@ const maxStock = filteredBooks.length > 0
         sx={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
           mb: 3, px: "20px", height: 60,
-          bgcolor: "rgba(255,255,255,0.04)",
+          bgcolor: "rgba(255,255,255,0.75)",
           border: `1px solid ${BORDER}`,
           borderRadius: "16px",
           position: "sticky", top: 0, zIndex: 10,
           backdropFilter: "blur(16px)",
+          boxShadow: "0 2px 16px rgba(201,168,76,.08)",
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -203,14 +208,15 @@ const maxStock = filteredBooks.length > 0
         sx={{
           p: { xs: 3, md: "36px 40px" },
           borderRadius: "20px",
-          background: "linear-gradient(135deg,#111118 0%,#1a1206 100%)",
-          border: "1px solid rgba(201,168,76,0.2)",
+          background: SURFACE,
+          border: `1px solid ${goldA(0.22)}`,
+          boxShadow: "0 4px 20px rgba(201,168,76,.1)",
           position: "relative", overflow: "hidden",
           mb: 2.5,
         }}
       >
-        <Box sx={{ position: "absolute", top: -100, right: -80, width: 300, height: 300, background: "radial-gradient(circle,rgba(201,168,76,0.08) 0%,transparent 70%)", pointerEvents: "none" }} />
-        <Box sx={{ position: "absolute", bottom: -60, left: -40, width: 200, height: 200, background: "radial-gradient(circle,rgba(139,94,26,0.06) 0%,transparent 70%)", pointerEvents: "none" }} />
+        <Box sx={{ position: "absolute", top: -100, right: -80, width: 300, height: 300, background: "radial-gradient(circle,rgba(201,168,76,0.16) 0%,transparent 70%)", pointerEvents: "none" }} />
+        <Box sx={{ position: "absolute", bottom: -60, left: -40, width: 200, height: 200, background: "radial-gradient(circle,rgba(139,94,26,0.08) 0%,transparent 70%)", pointerEvents: "none" }} />
         <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg,transparent,rgba(201,168,76,0.4),transparent)" }} />
 
         <Chip
@@ -220,7 +226,7 @@ const maxStock = filteredBooks.length > 0
             mb: 2.5,
             bgcolor: "rgba(201,168,76,0.1)",
             border: "1px solid rgba(201,168,76,0.2)",
-            color: GOLD, fontWeight: 600, fontSize: 11,
+            color: GOLD_DARK, fontWeight: 600, fontSize: 11,
             letterSpacing: 0.5, height: 24, borderRadius: "20px",
             "& .MuiChip-label": { px: 1.5 },
           }}
@@ -234,10 +240,10 @@ const maxStock = filteredBooks.length > 0
             color: TEXT,
           }}
         >
-          Manage your <Box component="span" sx={{ color: GOLD, fontStyle: "italic" }}>book collection</Box>
+          Manage your <Box component="span" sx={{ color: GOLD_DARK, fontStyle: "italic" }}>book collection</Box>
         </Typography>
 
-        <Typography sx={{ fontSize: 14, color: "rgba(255,255,255,0.45)", lineHeight: 1.7, maxWidth: 440 }}>
+        <Typography sx={{ fontSize: 14, color: inkA(0.58), lineHeight: 1.7, maxWidth: 440 }}>
           Search, filter, edit, and track stock levels across your entire library in one unified view.
         </Typography>
       </Box>
@@ -256,13 +262,14 @@ const maxStock = filteredBooks.length > 0
             transition={{ duration: 0.35, delay: i * 0.06 }}
             sx={{
               p: "20px", borderRadius: "18px",
-              bgcolor: SURFACE, border: `1px solid ${BORDER}`,
+              bgcolor: SURFACE, border: `1px solid ${goldA(0.15)}`,
+              boxShadow: "0 2px 14px rgba(201,168,76,.08)",
               cursor: "pointer", transition: "all 0.25s",
-              "&:hover": { borderColor: `${item.accent}40`, transform: "translateY(-3px)", bgcolor: "#151520" },
+              "&:hover": { borderColor: `${item.accent}40`, transform: "translateY(-3px)", bgcolor: SURFACE_HOV, boxShadow: "0 10px 26px rgba(201,168,76,.16)" },
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-              <Typography sx={{ fontSize: 11, fontWeight: 600, color: MUTED, letterSpacing: "0.8px", textTransform: "uppercase" }}>
+              <Typography sx={{ fontSize: 11, fontWeight: 600, color: inkA(0.4), letterSpacing: "0.8px", textTransform: "uppercase" }}>
                 {item.label}
               </Typography>
               <Box sx={{ width: 28, height: 28, borderRadius: "8px", bgcolor: `${item.accent}18`, color: item.accent, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -285,7 +292,8 @@ const maxStock = filteredBooks.length > 0
           p: "14px 18px", mb: 2.5,
           borderRadius: "16px",
           bgcolor: SURFACE,
-          border: `1px solid ${BORDER}`,
+          border: `1px solid ${goldA(0.15)}`,
+          boxShadow: "0 2px 14px rgba(201,168,76,.08)",
           display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center",
         }}
       >
@@ -297,7 +305,7 @@ const maxStock = filteredBooks.length > 0
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ fontSize: 17, color: MUTED2 }} />
+                <SearchIcon sx={{ fontSize: 17, color: inkA(0.4) }} />
               </InputAdornment>
             ),
           }}
@@ -305,12 +313,12 @@ const maxStock = filteredBooks.length > 0
             flex: { xs: "100%", md: 2 },
             "& .MuiOutlinedInput-root": {
               borderRadius: "10px", fontSize: 13.5,
-              bgcolor: "rgba(255,255,255,0.04)", color: TEXT,
+              bgcolor: goldA(0.05), color: TEXT,
               "& fieldset": { borderColor: BORDER },
-              "&:hover fieldset": { borderColor: "rgba(255,255,255,0.12)" },
+              "&:hover fieldset": { borderColor: goldA(0.32) },
               "&.Mui-focused fieldset": { borderColor: `${GOLD}60` },
             },
-            "& input::placeholder": { color: MUTED, opacity: 1 },
+            "& input::placeholder": { color: MUTED2, opacity: 1 },
             "& input": { color: TEXT },
           }}
         />
@@ -320,16 +328,16 @@ const maxStock = filteredBooks.length > 0
           value={genre}
           onChange={(e) => setGenre(e.target.value)}
           displayEmpty
-          startAdornment={<CategoryOutlinedIcon sx={{ fontSize: 16, color: MUTED2, mr: 0.5 }} />}
+          startAdornment={<CategoryOutlinedIcon sx={{ fontSize: 16, color: inkA(0.4), mr: 0.5 }} />}
           sx={{
             flex: { xs: "100%", sm: 1 },
             borderRadius: "10px", fontSize: 13.5,
-            bgcolor: "rgba(255,255,255,0.04)", color: TEXT,
+            bgcolor: goldA(0.05), color: TEXT,
             "& fieldset": { borderColor: BORDER },
-            "& .MuiSelect-icon": { color: MUTED2 },
-            "&:hover fieldset": { borderColor: "rgba(255,255,255,0.12)" },
+            "& .MuiSelect-icon": { color: inkA(0.4) },
+            "&:hover fieldset": { borderColor: goldA(0.32) },
           }}
-          MenuProps={{ PaperProps: { sx: { bgcolor: "#1a1a24", border: `1px solid ${BORDER}`, color: TEXT } } }}
+          MenuProps={{ PaperProps: { sx: { bgcolor: SURFACE, border: `1px solid ${BORDER}`, color: TEXT } } }}
         >
           <MenuItem value="">All Genres</MenuItem>
           <MenuItem value="روايات">Novels / روايات</MenuItem>
@@ -356,7 +364,8 @@ const maxStock = filteredBooks.length > 0
                 sx={{
                   borderRadius: "18px",
                   bgcolor: SURFACE,
-                  border: `1px solid ${BORDER}`,
+                  border: `1px solid ${goldA(0.15)}`,
+                  boxShadow: "0 2px 14px rgba(201,168,76,.08)",
                   overflow: "hidden",
                   display: "flex", flexDirection: "column",
                   transition: "all 0.25s",
@@ -364,7 +373,8 @@ const maxStock = filteredBooks.length > 0
                   "&:hover": {
                     borderColor: `${GOLD}40`,
                     transform: "translateY(-3px)",
-                    bgcolor: "#151520",
+                    bgcolor: SURFACE_HOV,
+                    boxShadow: "0 10px 26px rgba(201,168,76,.16)",
                   },
                 }}
               >
@@ -372,7 +382,7 @@ const maxStock = filteredBooks.length > 0
                   onClick={() => handleOpenView(book)}
                   sx={{
                     aspectRatio: "3/2",
-                    bgcolor: "rgba(255,255,255,0.02)",
+                    bgcolor: goldA(0.04),
                     position: "relative",
                     overflow: "hidden",
                     cursor: book.file_path ? "pointer" : "default",
@@ -387,10 +397,10 @@ const maxStock = filteredBooks.length > 0
                     sx={{
                       position: "absolute", top: 10, right: 10,
                       px: 1.2, py: 0.3, borderRadius: "6px",
-                      bgcolor: book.stock > 0 ? "rgba(74,222,128,0.12)" : "rgba(239,68,68,0.12)",
+                      bgcolor: book.stock > 0 ? "rgba(74,222,128,0.14)" : "rgba(239,68,68,0.14)",
                     }}
                   >
-                    <Typography sx={{ ...mono, fontSize: 9.5, fontWeight: 600, letterSpacing: 0.4, color: book.stock > 0 ? "#4ade80" : "#f87171" }}>
+                    <Typography sx={{ ...mono, fontSize: 9.5, fontWeight: 600, letterSpacing: 0.4, color: book.stock > 0 ? "#2f9b62" : "#c8433d" }}>
                       {book.stock > 0 ? `STOCK ${book.stock}` : "OUT OF STOCK"}
                     </Typography>
                   </Box>
@@ -412,12 +422,12 @@ const maxStock = filteredBooks.length > 0
                         border: "1px solid rgba(201,168,76,0.15)",
                       }}
                     >
-                      <Typography sx={{ fontSize: 10, fontWeight: 700, color: GOLD, letterSpacing: 0.4 }}>
+                      <Typography sx={{ fontSize: 10, fontWeight: 700, color: GOLD_DARK, letterSpacing: 0.4 }}>
                         {book.category?.name || "General"}
                       </Typography>
                     </Box>
 
-                    <Typography sx={{ ...mono, fontSize: 13, fontWeight: 600, color: GOLD, letterSpacing: -0.2 }}>
+                    <Typography sx={{ ...mono, fontSize: 13, fontWeight: 600, color: GOLD_DARK, letterSpacing: -0.2 }}>
                       {Number(book.sale_price).toLocaleString()}
                       <Box component="span" sx={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 400, color: MUTED, ml: 0.4 }}>SAR</Box>
                     </Typography>
@@ -432,7 +442,7 @@ const maxStock = filteredBooks.length > 0
                   <Box
                     sx={{
                       display: "flex", gap: 1, mt: 2,
-                      pt: 1.5, borderTop: "1px solid rgba(255,255,255,0.05)",
+                      pt: 1.5, borderTop: `1px solid ${inkA(0.08)}`,
                     }}
                   >
                     <Button
@@ -442,10 +452,10 @@ const maxStock = filteredBooks.length > 0
                       sx={{
                         flex: 1, borderRadius: "8px", textTransform: "none",
                         fontSize: 12, fontWeight: 600,
-                        color: "rgba(255,255,255,0.5)",
+                        color: inkA(0.5),
                         border: `1px solid ${BORDER}`,
-                        bgcolor: "rgba(255,255,255,0.03)",
-                        "&:hover": { bgcolor: "rgba(255,255,255,0.07)", color: TEXT, borderColor: "rgba(255,255,255,0.12)" },
+                        bgcolor: goldA(0.04),
+                        "&:hover": { bgcolor: goldA(0.09), color: TEXT, borderColor: goldA(0.3) },
                         transition: "all 0.2s",
                       }}
                     >
@@ -459,7 +469,7 @@ const maxStock = filteredBooks.length > 0
                         sx={{
                           borderRadius: "8px",
                           border: `1px solid ${BORDER}`,
-                          bgcolor: "rgba(255,255,255,0.03)",
+                          bgcolor: goldA(0.04),
                           color: "#7f77dd",
                           "&:hover": { bgcolor: "rgba(127,119,221,0.1)", borderColor: "rgba(127,119,221,0.3)" },
                           transition: "all 0.2s",
@@ -476,9 +486,9 @@ const maxStock = filteredBooks.length > 0
                         sx={{
                           borderRadius: "8px",
                           border: `1px solid ${BORDER}`,
-                          bgcolor: "rgba(255,255,255,0.03)",
-                          color: "#f87171",
-                          "&:hover": { bgcolor: "rgba(248,113,113,0.1)", borderColor: "rgba(248,113,113,0.3)" },
+                          bgcolor: goldA(0.04),
+                          color: "#c8433d",
+                          "&:hover": { bgcolor: "rgba(248,113,113,0.12)", borderColor: "rgba(248,113,113,0.35)" },
                           transition: "all 0.2s",
                         }}
                       >
@@ -504,7 +514,7 @@ const maxStock = filteredBooks.length > 0
               ...mono,
               borderRadius: "8px", fontWeight: 600, fontSize: 13,
               color: MUTED, border: `1px solid ${BORDER}`, bgcolor: SURFACE,
-              "&:hover": { bgcolor: "rgba(255,255,255,0.07)", borderColor: "rgba(255,255,255,0.12)", color: TEXT },
+              "&:hover": { bgcolor: goldA(0.09), borderColor: goldA(0.3), color: TEXT },
               transition: "all 0.2s",
             },
             "& .Mui-selected": {
@@ -532,9 +542,9 @@ const maxStock = filteredBooks.length > 0
         PaperProps={{
           sx: {
             borderRadius: "18px", p: 1, minWidth: "360px",
-            bgcolor: "#1a1a24",
-            border: "1px solid rgba(201,168,76,0.15)",
-            boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+            bgcolor: SURFACE,
+            border: "1px solid rgba(201,168,76,0.2)",
+            boxShadow: "0 24px 60px rgba(43,36,22,0.18)",
           },
         }}
       >
@@ -559,13 +569,13 @@ const maxStock = filteredBooks.length > 0
               sx={{
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "10px", fontSize: 13.5, color: TEXT,
-                  bgcolor: "rgba(255,255,255,0.04)",
+                  bgcolor: goldA(0.05),
                   "& fieldset": { borderColor: BORDER },
-                  "&:hover fieldset": { borderColor: "rgba(255,255,255,0.12)" },
+                  "&:hover fieldset": { borderColor: goldA(0.32) },
                   "&.Mui-focused fieldset": { borderColor: `${GOLD}60` },
                 },
-                "& .MuiInputLabel-root": { fontSize: 13.5, color: MUTED },
-                "& .MuiInputLabel-root.Mui-focused": { color: GOLD },
+                "& .MuiInputLabel-root": { fontSize: 13.5, color: inkA(0.45) },
+                "& .MuiInputLabel-root.Mui-focused": { color: GOLD_DARK },
                 "& input": { color: TEXT },
               }}
             />
@@ -579,7 +589,7 @@ const maxStock = filteredBooks.length > 0
               borderRadius: "10px", textTransform: "none", fontWeight: 600,
               fontSize: 13.5, color: MUTED,
               border: `1px solid ${BORDER}`, px: 2.5,
-              "&:hover": { bgcolor: "rgba(255,255,255,0.05)", color: TEXT },
+              "&:hover": { bgcolor: goldA(0.06), color: TEXT },
             }}
           >
             Cancel
@@ -615,9 +625,9 @@ const maxStock = filteredBooks.length > 0
             borderRadius: "20px",
             minWidth: "380px",
             maxWidth: "420px",
-            bgcolor: "#1a1a24",
-            border: "1px solid rgba(248,113,113,0.18)",
-            boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+            bgcolor: SURFACE,
+            border: "1px solid rgba(248,113,113,0.25)",
+            boxShadow: "0 24px 60px rgba(43,36,22,0.18)",
           },
         }}
       >
@@ -625,18 +635,18 @@ const maxStock = filteredBooks.length > 0
           <Box
             sx={{
               width: 44, height: 44, borderRadius: "12px",
-              bgcolor: "rgba(248,113,113,0.12)",
+              bgcolor: "rgba(248,113,113,0.14)",
               display: "flex", alignItems: "center", justifyContent: "center",
               mb: 2,
             }}
           >
-            <WarningAmberRoundedIcon sx={{ fontSize: 22, color: "#f87171" }} />
+            <WarningAmberRoundedIcon sx={{ fontSize: 22, color: "#c8433d" }} />
           </Box>
 
           <Typography sx={{ ...display, fontSize: 17, fontWeight: 600, color: TEXT, mb: 0.8 }}>
             Delete this book?
           </Typography>
-          <Typography sx={{ fontSize: 13, color: MUTED, lineHeight: 1.6, mb: 2.2 }}>
+          <Typography sx={{ fontSize: 13, color: inkA(0.55), lineHeight: 1.6, mb: 2.2 }}>
             This removes it from the inventory permanently. This can't be undone.
           </Typography>
 
@@ -645,7 +655,7 @@ const maxStock = filteredBooks.length > 0
               sx={{
                 display: "flex", alignItems: "center", gap: 1.4,
                 p: "10px 12px", borderRadius: "12px",
-                bgcolor: "rgba(255,255,255,0.03)",
+                bgcolor: goldA(0.05),
                 border: `1px solid ${BORDER}`,
               }}
             >
@@ -674,7 +684,7 @@ const maxStock = filteredBooks.length > 0
               borderRadius: "10px", textTransform: "none", fontWeight: 600,
               fontSize: 13.5, color: MUTED,
               border: `1px solid ${BORDER}`, px: 2.5,
-              "&:hover": { bgcolor: "rgba(255,255,255,0.05)", color: TEXT },
+              "&:hover": { bgcolor: goldA(0.06), color: TEXT },
             }}
           >
             Cancel
@@ -710,9 +720,9 @@ const maxStock = filteredBooks.length > 0
         PaperProps={{
           sx: {
             borderRadius: "18px",
-            bgcolor: "#1a1a24",
-            border: "1px solid rgba(201,168,76,0.15)",
-            boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+            bgcolor: SURFACE,
+            border: "1px solid rgba(201,168,76,0.2)",
+            boxShadow: "0 24px 60px rgba(43,36,22,0.18)",
             height: "85vh",
           },
         }}

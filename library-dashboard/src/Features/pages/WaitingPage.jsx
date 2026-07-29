@@ -15,7 +15,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Hourglass, Phone, Calendar, Trash2, TrendingUp, TriangleAlert, BookMarked } from "lucide-react";
 
 import { getBooksInvaliable, deleteFromWatingList, getTopWaitingList } from "../../Core/Redux/Thunks/WaitingListThunk";
-import {GOLD ,SURFACE,MUTED2,MUTED,TEXT,IMAGE_BASE_URL ,BORDER,BG,GOLD2} from "../../Core/Constants/utils";
+import { IMAGE_BASE_URL } from "../../Core/Constants/utils";
+import { GOLD, GOLD_DEEP as GOLD2, INK as TEXT, PAGE_BG as BG, CARD_BG as SURFACE, inkA, goldA } from "../../Core/Constants/ColorsUse";
+
+const BORDER = goldA(0.15);
+const MUTED  = inkA(0.5);
+const MUTED2 = inkA(0.3);
 
 
 const FONT_IMPORT_ID = "lib-fonts";
@@ -103,11 +108,12 @@ export default function WaitingListPage() {
         sx={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
           mb: 3, px: "20px", height: 60,
-          bgcolor: "rgba(255,255,255,0.04)",
+          bgcolor: "rgba(255,255,255,.75)",
           border: `1px solid ${BORDER}`,
           borderRadius: "16px",
           position: "sticky", top: 0, zIndex: 10,
           backdropFilter: "blur(16px)",
+          boxShadow: "0 2px 16px rgba(201,168,76,.08)",
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -128,8 +134,8 @@ export default function WaitingListPage() {
         <Box sx={{
           ...mono,
           px: "12px", py: "5px", borderRadius: "8px",
-          bgcolor: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.2)",
-          fontSize: 11.5, fontWeight: 600, color: GOLD,
+          bgcolor: goldA(0.1), border: `1px solid ${goldA(0.24)}`,
+          fontSize: 11.5, fontWeight: 600, color: GOLD2,
         }}>
           {pagination?.total ?? items?.length ?? 0} waiting
         </Box>
@@ -146,19 +152,20 @@ export default function WaitingListPage() {
           sx={{
             p: { xs: 3, md: "32px 36px" },
             borderRadius: "20px",
-            background: "linear-gradient(135deg,#111118 0%,#1a1206 100%)",
-            border: "1px solid rgba(201,168,76,0.2)",
+            background: `linear-gradient(160deg, ${goldA(0.14)}, ${goldA(0.04)})`,
+            border: `1px solid ${goldA(0.3)}`,
             position: "relative", overflow: "hidden",
+            boxShadow: "0 4px 20px rgba(201,168,76,.1)",
           }}
         >
-          <Box sx={{ position: "absolute", top: -100, right: -80, width: 300, height: 300, background: "radial-gradient(circle,rgba(201,168,76,0.08) 0%,transparent 70%)", pointerEvents: "none" }} />
+          <Box sx={{ position: "absolute", top: -100, right: -80, width: 300, height: 300, background: "radial-gradient(circle,rgba(201,168,76,0.2) 0%,transparent 70%)", pointerEvents: "none" }} />
           <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg,transparent,rgba(201,168,76,0.4),transparent)" }} />
 
           <Box sx={{
             display: "inline-flex", alignItems: "center", gap: "6px",
             mb: 2.2, px: "12px", py: "4px", borderRadius: "20px",
-            bgcolor: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.2)",
-            fontSize: 11, fontWeight: 600, letterSpacing: 0.5, color: GOLD,
+            bgcolor: goldA(0.12), border: `1px solid ${goldA(0.3)}`,
+            fontSize: 11, fontWeight: 600, letterSpacing: 0.5, color: GOLD2,
           }}>
             ● Pending Borrows
           </Box>
@@ -171,10 +178,10 @@ export default function WaitingListPage() {
               color: TEXT,
             }}
           >
-            Customers waiting <Box component="span" sx={{ color: GOLD, fontStyle: "italic" }}>for books</Box>
+            Customers waiting <Box component="span" sx={{ color: GOLD2, fontStyle: "italic" }}>for books</Box>
           </Typography>
 
-          <Typography sx={{ fontSize: 13.5, color: "rgba(255,255,255,0.45)", lineHeight: 1.7, maxWidth: 420 }}>
+          <Typography sx={{ fontSize: 13.5, color: inkA(0.55), lineHeight: 1.7, maxWidth: 420 }}>
             Ordered by who's been waiting longest. Remove an entry once it's resolved.
           </Typography>
         </Box>
@@ -187,13 +194,14 @@ export default function WaitingListPage() {
             sx={{
               p: "18px", borderRadius: "18px",
               bgcolor: SURFACE, border: `1px solid ${BORDER}`,
+              boxShadow: "0 2px 14px rgba(201,168,76,.08)",
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-              <Box sx={{ width: 24, height: 24, borderRadius: "7px", bgcolor: "rgba(201,168,76,0.18)", color: GOLD, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Box sx={{ width: 24, height: 24, borderRadius: "7px", bgcolor: goldA(0.16), color: GOLD2, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <TrendingUp size={13} />
               </Box>
-              <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: 0.4, textTransform: "uppercase" }}>
+              <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: inkA(0.6), letterSpacing: 0.4, textTransform: "uppercase" }}>
                 Most Waited-For
               </Typography>
             </Box>
@@ -208,12 +216,12 @@ export default function WaitingListPage() {
                       <Typography sx={{ fontSize: 12, fontWeight: 600, color: TEXT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 190 }}>
                         {top.book?.title}
                       </Typography>
-                      <Typography sx={{ ...mono, fontSize: 11, color: i === 0 ? GOLD : MUTED2, flexShrink: 0, ml: 1 }}>
+                      <Typography sx={{ ...mono, fontSize: 11, color: i === 0 ? GOLD2 : MUTED2, flexShrink: 0, ml: 1 }}>
                         {top.waiting_count}
                       </Typography>
                     </Box>
-                    <Box sx={{ height: 3, borderRadius: 2, bgcolor: "rgba(255,255,255,0.07)", overflow: "hidden" }}>
-                      <Box sx={{ height: "100%", width: `${pct}%`, bgcolor: i === 0 ? GOLD : "rgba(255,255,255,0.2)", borderRadius: 2 }} />
+                    <Box sx={{ height: 3, borderRadius: 2, bgcolor: goldA(0.1), overflow: "hidden" }}>
+                      <Box sx={{ height: "100%", width: `${pct}%`, bgcolor: i === 0 ? GOLD2 : goldA(0.35), borderRadius: 2 }} />
                     </Box>
                   </Box>
                 );
@@ -224,14 +232,14 @@ export default function WaitingListPage() {
       </Box>
 
       {sortedItems.length > 0 ? (
-        <Box sx={{ bgcolor: SURFACE, border: `1px solid ${BORDER}`, borderRadius: "18px", overflow: "hidden" }}>
+        <Box sx={{ bgcolor: SURFACE, border: `1px solid ${BORDER}`, borderRadius: "18px", overflow: "hidden", boxShadow: "0 2px 14px rgba(201,168,76,.08)" }}>
           <Box sx={{
             display: "grid", gridTemplateColumns: "32px 1fr 1fr 110px 40px",
             px: "18px", py: "10px", gap: 1.5,
-            bgcolor: "rgba(255,255,255,0.02)", borderBottom: `1px solid ${BORDER}`,
+            bgcolor: goldA(0.05), borderBottom: `1px solid ${BORDER}`,
           }}>
             {["#", "Book", "Customer", "Waiting since", ""].map((h) => (
-              <Typography key={h} sx={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.25)", letterSpacing: "0.8px", textTransform: "uppercase" }}>
+              <Typography key={h} sx={{ fontSize: 10, fontWeight: 600, color: inkA(0.4), letterSpacing: "0.8px", textTransform: "uppercase" }}>
                 {h}
               </Typography>
             ))}
@@ -254,7 +262,7 @@ export default function WaitingListPage() {
                     px: "18px", py: "12px", gap: 1.5, alignItems: "center",
                     borderBottom: i < sortedItems.length - 1 ? `1px solid ${BORDER}` : "none",
                     transition: "background .15s",
-                    "&:hover": { bgcolor: "rgba(255,255,255,0.02)" },
+                    "&:hover": { bgcolor: goldA(0.04) },
                   }}
                 >
                   <Typography sx={{ ...mono, fontSize: 11.5, color: MUTED2, fontWeight: 600 }}>
@@ -265,14 +273,14 @@ export default function WaitingListPage() {
                     <Box
                       component="img"
                       src={entry.book?.cover ? `${IMAGE_BASE_URL}${entry.book.cover}` : "/history book.jpg"}
-                      sx={{ width: 30, height: 40, objectFit: "cover", borderRadius: "5px", flexShrink: 0, boxShadow: "0 4px 10px rgba(0,0,0,0.3)" }}
+                      sx={{ width: 30, height: 40, objectFit: "cover", borderRadius: "5px", flexShrink: 0, boxShadow: "0 4px 10px rgba(201,168,76,0.2)" }}
                     />
                     <Box sx={{ minWidth: 0 }}>
                       <Typography sx={{ ...display, fontWeight: 600, fontSize: 13, color: TEXT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {entry.book?.title}
                       </Typography>
                       {entry.book?.is_digital && (
-                        <Typography sx={{ ...mono, fontSize: 9, fontWeight: 600, letterSpacing: 0.4, color: "#7f77dd" }}>
+                        <Typography sx={{ ...mono, fontSize: 9, fontWeight: 600, letterSpacing: 0.4, color: "#6a61d1" }}>
                           DIGITAL
                         </Typography>
                       )}
@@ -303,7 +311,7 @@ export default function WaitingListPage() {
                       <Calendar size={11} /> {formatDate(entry.created_at)}
                     </Typography>
                     {wait !== null && (
-                      <Typography sx={{ ...mono, fontSize: 9.5, color: wait > 14 ? "#f87171" : MUTED2, mt: 0.2 }}>
+                      <Typography sx={{ ...mono, fontSize: 9.5, color: wait > 14 ? "#c1503f" : MUTED2, mt: 0.2 }}>
                         {wait}d
                       </Typography>
                     )}
@@ -315,8 +323,8 @@ export default function WaitingListPage() {
                       onClick={() => setDeleteEntry(entry)}
                       sx={{
                         borderRadius: "8px",
-                        color: "rgba(248,113,113,0.6)",
-                        "&:hover": { bgcolor: "rgba(248,113,113,0.12)", color: "#f87171" },
+                        color: "rgba(224,101,95,0.7)",
+                        "&:hover": { bgcolor: "rgba(224,101,95,0.12)", color: "#e0655f" },
                         transition: "all 0.2s",
                       }}
                     >
@@ -330,10 +338,10 @@ export default function WaitingListPage() {
         </Box>
       ) : (
         <Box sx={{ textAlign: "center", py: 8 }}>
-          <Box sx={{ display: "inline-flex", width: 44, height: 44, borderRadius: "12px", bgcolor: "rgba(255,255,255,0.04)", alignItems: "center", justifyContent: "center", mb: 1.5 }}>
+          <Box sx={{ display: "inline-flex", width: 44, height: 44, borderRadius: "12px", bgcolor: goldA(0.06), alignItems: "center", justifyContent: "center", mb: 1.5 }}>
             <BookMarked size={20} color={MUTED2} />
           </Box>
-          <Typography sx={{ ...display, fontSize: 15, fontWeight: 600, color: "rgba(255,255,255,0.35)", mb: 0.5 }}>
+          <Typography sx={{ ...display, fontSize: 15, fontWeight: 600, color: inkA(0.4), mb: 0.5 }}>
             No one's waiting
           </Typography>
           <Typography sx={{ fontSize: 12, color: MUTED2 }}>
@@ -350,9 +358,9 @@ export default function WaitingListPage() {
             borderRadius: "20px",
             minWidth: "380px",
             maxWidth: "420px",
-            bgcolor: "#1a1a24",
-            border: "1px solid rgba(248,113,113,0.18)",
-            boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+            bgcolor: SURFACE,
+            border: "1px solid rgba(224,101,95,0.22)",
+            boxShadow: "0 24px 60px rgba(224,101,95,.16)",
           },
         }}
       >
@@ -360,12 +368,12 @@ export default function WaitingListPage() {
           <Box
             sx={{
               width: 44, height: 44, borderRadius: "12px",
-              bgcolor: "rgba(248,113,113,0.12)",
+              bgcolor: "rgba(224,101,95,0.12)",
               display: "flex", alignItems: "center", justifyContent: "center",
               mb: 2,
             }}
           >
-            <TriangleAlert size={20} color="#f87171" />
+            <TriangleAlert size={20} color="#e0655f" />
           </Box>
 
           <Typography sx={{ ...display, fontSize: 17, fontWeight: 600, color: TEXT, mb: 0.8 }}>
@@ -380,7 +388,7 @@ export default function WaitingListPage() {
               sx={{
                 display: "flex", alignItems: "center", gap: 1.4,
                 p: "10px 12px", borderRadius: "12px",
-                bgcolor: "rgba(255,255,255,0.03)",
+                bgcolor: goldA(0.04),
                 border: `1px solid ${BORDER}`,
               }}
             >
@@ -409,7 +417,7 @@ export default function WaitingListPage() {
               borderRadius: "10px", textTransform: "none", fontWeight: 600,
               fontSize: 13.5, color: MUTED,
               border: `1px solid ${BORDER}`, px: 2.5,
-              "&:hover": { bgcolor: "rgba(255,255,255,0.05)", color: TEXT },
+              "&:hover": { bgcolor: goldA(0.06), color: TEXT },
             }}
           >
             Cancel
@@ -424,12 +432,12 @@ export default function WaitingListPage() {
               borderRadius: "10px", textTransform: "none",
               fontWeight: 700, fontSize: 13.5, px: 2.8,
               color: "#fff",
-              background: "linear-gradient(135deg,#f87171,#c83737)",
+              background: "linear-gradient(135deg,#e0655f,#a83a30)",
               "&:hover": {
-                background: "linear-gradient(135deg,#fb8585,#d94545)",
-                boxShadow: "0 12px 28px rgba(248,113,113,0.25)",
+                background: "linear-gradient(135deg,#e87c76,#b8483d)",
+                boxShadow: "0 12px 28px rgba(224,101,95,0.25)",
               },
-              "&.Mui-disabled": { color: "rgba(255,255,255,0.6)" },
+              "&.Mui-disabled": { color: "rgba(255,255,255,0.7)" },
             }}
           >
             {deleting ? <CircularProgress size={16} sx={{ color: "#fff" }} /> : "Remove"}

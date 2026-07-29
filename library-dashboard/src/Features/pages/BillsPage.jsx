@@ -2,15 +2,11 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Box, Typography, CircularProgress, Collapse } from "@mui/material";
 import { fetchBills, fetchBillDetails } from "../../Core/Redux/Thunks/BillThunk";
+import { GOLD, GOLD_DEEP as GOLD2, INK as TEXT, PAGE_BG as BG, CARD_BG as SURFACE, inkA, goldA } from "../../Core/Constants/ColorsUse";
 
-const BG      = "#0a0a0f";
-const SURFACE = "#111118";
-const GOLD    = "#c9a84c";
-const GOLD2   = "#8b5e1a";
-const BORDER  = "rgba(255,255,255,0.06)";
-const TEXT    = "#fff";
-const MUTED   = "rgba(255,255,255,0.35)";
-const MUTED2  = "rgba(255,255,255,0.20)";
+const BORDER = goldA(0.15);
+const MUTED  = inkA(0.5);
+const MUTED2 = inkA(0.3);
 
 const display = { fontFamily: "'Fraunces', serif" };
 const mono    = { fontFamily: "'IBM Plex Mono', monospace" };
@@ -53,7 +49,7 @@ function Avatar({ name, index, size = 30, radius = "9px" }) {
       width: size, height: size, minWidth: size, borderRadius: radius,
       background: GRADIENTS[index % GRADIENTS.length],
       display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: size * 0.37, fontWeight: 700, color: TEXT,
+      fontSize: size * 0.37, fontWeight: 700, color: "#fff",
     }}>
       {initials(name)}
     </Box>
@@ -65,7 +61,7 @@ function StatusChip({ status }) {
     <Box sx={{
       display: "inline-flex", alignItems: "center", gap: "4px",
       px: "8px", py: "3px", borderRadius: "6px", fontSize: 11, fontWeight: 600,
-      bgcolor: "rgba(29,158,117,0.1)", border: "1px solid rgba(29,158,117,0.2)", color: "#1d9e75",
+      bgcolor: "rgba(29,158,117,0.1)", border: "1px solid rgba(29,158,117,0.22)", color: "#1a8a68",
     }}>
       <Box sx={{ width: 5, height: 5, borderRadius: "50%", bgcolor: "currentColor" }} />
       {status}
@@ -80,8 +76,8 @@ function PaymentChip({ method }) {
       display: "inline-flex", alignItems: "center", gap: "4px",
       px: "8px", py: "3px", borderRadius: "6px", fontSize: 11, fontWeight: 600,
       ...(isOnline
-        ? { bgcolor: "rgba(127,119,221,0.1)", border: "1px solid rgba(127,119,221,0.2)", color: "#7f77dd" }
-        : { bgcolor: "rgba(201,168,76,0.1)",  border: "1px solid rgba(201,168,76,0.2)",  color: GOLD }),
+        ? { bgcolor: "rgba(127,119,221,0.1)", border: "1px solid rgba(127,119,221,0.22)", color: "#6a61d1" }
+        : { bgcolor: "rgba(201,168,76,0.1)",  border: "1px solid rgba(201,168,76,0.22)",  color: GOLD2 }),
     }}>
       {isOnline ? "🌐 Online" : "💵 Cash"}
     </Box>
@@ -102,9 +98,9 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
         onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
         sx={{
           ...btnBase, px: "14px", height: 36, cursor: currentPage === 1 ? "not-allowed" : "pointer",
-          bgcolor: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`,
+          bgcolor: goldA(0.05), border: `1px solid ${BORDER}`,
           color: currentPage === 1 ? MUTED2 : MUTED,
-          "&:hover": currentPage > 1 ? { bgcolor: "rgba(255,255,255,0.08)", color: TEXT } : {},
+          "&:hover": currentPage > 1 ? { bgcolor: goldA(0.09), color: TEXT } : {},
         }}
       >
         ← Prev
@@ -117,10 +113,10 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
           sx={{
             ...btnBase, width: 36, height: 36, cursor: "pointer",
             ...(page === currentPage
-              ? { background: `linear-gradient(135deg,${GOLD},${GOLD2})`, color: "#000" }
+              ? { background: `linear-gradient(135deg,${GOLD},${GOLD2})`, color: "#fff" }
               : {
-                  bgcolor: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, color: MUTED,
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.08)", color: TEXT },
+                  bgcolor: goldA(0.05), border: `1px solid ${BORDER}`, color: MUTED,
+                  "&:hover": { bgcolor: goldA(0.09), color: TEXT },
                 }),
           }}
         >
@@ -133,9 +129,9 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
         sx={{
           ...btnBase, px: "14px", height: 36,
           cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-          bgcolor: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`,
+          bgcolor: goldA(0.05), border: `1px solid ${BORDER}`,
           color: currentPage === totalPages ? MUTED2 : MUTED,
-          "&:hover": currentPage < totalPages ? { bgcolor: "rgba(255,255,255,0.08)", color: TEXT } : {},
+          "&:hover": currentPage < totalPages ? { bgcolor: goldA(0.09), color: TEXT } : {},
         }}
       >
         Next →
@@ -158,23 +154,23 @@ function BillDetailPanel({ bill }) {
   return (
     <Box sx={{ mx: "16px", mb: "14px" }}>
       <Box sx={{
-        bgcolor: "rgba(255,255,255,0.02)",
+        bgcolor: goldA(0.03),
         border: `1px solid ${BORDER}`,
         borderRadius: "12px", overflow: "hidden",
       }}>
         <Box sx={{
           display: "grid", gridTemplateColumns: "repeat(4,1fr)",
-          bgcolor: "rgba(201,168,76,0.03)",
-          borderBottom: `1px solid rgba(255,255,255,0.05)`,
+          bgcolor: goldA(0.05),
+          borderBottom: `1px solid ${goldA(0.1)}`,
         }}>
           {summaryItems.map(({ label, value, gold }) => (
             <Box key={label} sx={{
               px: "16px", py: "12px",
-              borderRight: `1px solid rgba(255,255,255,0.04)`,
+              borderRight: `1px solid ${goldA(0.08)}`,
               "&:last-child": { borderRight: "none" },
             }}>
               <Typography sx={{ ...mono, fontSize: 10, color: MUTED, mb: "4px" }}>{label}</Typography>
-              <Typography sx={{ ...display, fontSize: 14, fontWeight: 700, color: gold ? GOLD : TEXT }}>{value}</Typography>
+              <Typography sx={{ ...display, fontSize: 14, fontWeight: 700, color: gold ? GOLD2 : TEXT }}>{value}</Typography>
             </Box>
           ))}
         </Box>
@@ -182,7 +178,7 @@ function BillDetailPanel({ bill }) {
         <Box sx={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
           px: "16px", py: "12px",
-          borderBottom: `1px solid rgba(255,255,255,0.05)`,
+          borderBottom: `1px solid ${goldA(0.1)}`,
         }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <Avatar name={c.name} index={0} size={36} radius="10px" />
@@ -197,8 +193,8 @@ function BillDetailPanel({ bill }) {
             ...mono,
             display: "inline-flex", alignItems: "center", gap: "3px",
             px: "8px", py: "2px", borderRadius: "5px",
-            bgcolor: "rgba(201,168,76,0.08)", fontSize: 10, fontWeight: 600,
-            color: "rgba(201,168,76,0.7)",
+            bgcolor: goldA(0.1), fontSize: 10, fontWeight: 600,
+            color: GOLD2,
           }}>
             ⭐ {c.points_balance} pts
           </Box>
@@ -216,11 +212,11 @@ function BillDetailPanel({ bill }) {
           <Box key={item.id} sx={{
             display: "flex", alignItems: "center", gap: "12px",
             px: "16px", py: "10px",
-            borderTop: `1px solid rgba(255,255,255,0.04)`,
+            borderTop: `1px solid ${goldA(0.08)}`,
           }}>
             <Box sx={{
               width: 34, height: 44, borderRadius: "6px",
-              bgcolor: "rgba(255,255,255,0.06)",
+              bgcolor: goldA(0.08),
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 16, flexShrink: 0,
             }}>
@@ -237,7 +233,7 @@ function BillDetailPanel({ bill }) {
                 {item.book.is_digital && (
                   <Box sx={{
                     display: "inline-flex", px: "6px", py: "1px", borderRadius: "4px",
-                    bgcolor: "rgba(127,119,221,0.1)", fontSize: 10, color: "#7f77dd",
+                    bgcolor: "rgba(127,119,221,0.12)", fontSize: 10, color: "#6a61d1",
                     fontWeight: 600, flexShrink: 0,
                   }}>
                     Digital
@@ -248,7 +244,7 @@ function BillDetailPanel({ bill }) {
                 ISBN: {item.book.ISBN} · {item.book.total_pages} pages · Qty: {item.quantity}
               </Typography>
             </Box>
-            <Typography sx={{ ...display, fontSize: 13, fontWeight: 700, color: GOLD, whiteSpace: "nowrap", ml: "auto" }}>
+            <Typography sx={{ ...display, fontSize: 13, fontWeight: 700, color: GOLD2, whiteSpace: "nowrap", ml: "auto" }}>
               {fmt(item.unit_price)} ل.س
             </Typography>
           </Box>
@@ -260,11 +256,11 @@ function BillDetailPanel({ bill }) {
 
 function StatCard({ label, value, unit, gold = false }) {
   return (
-    <Box sx={{ bgcolor: SURFACE, border: `1px solid ${BORDER}`, borderRadius: "16px", p: "18px 20px" }}>
+    <Box sx={{ bgcolor: SURFACE, border: `1px solid ${BORDER}`, borderRadius: "16px", p: "18px 20px", boxShadow: "0 2px 14px rgba(201,168,76,.08)" }}>
       <Typography sx={{ ...mono, fontSize: 10, fontWeight: 600, letterSpacing: "0.7px", color: MUTED2, textTransform: "uppercase", mb: "8px" }}>
         {label}
       </Typography>
-      <Typography sx={{ ...display, fontSize: 26, fontWeight: 600, color: gold ? GOLD : TEXT, letterSpacing: "-0.5px" }}>
+      <Typography sx={{ ...display, fontSize: 26, fontWeight: 600, color: gold ? GOLD2 : TEXT, letterSpacing: "-0.5px" }}>
         {value}
       </Typography>
       {unit && <Typography sx={{ ...mono, fontSize: 10, color: MUTED2, mt: "2px" }}>{unit}</Typography>}
@@ -319,11 +315,12 @@ export default function BillsPage() {
       <Box sx={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         mb: 3, px: "20px", height: 60,
-        bgcolor: "rgba(255,255,255,0.04)",
+        bgcolor: "rgba(255,255,255,.75)",
         border: `1px solid ${BORDER}`,
         borderRadius: "16px",
         position: "sticky", top: 0, zIndex: 10,
         backdropFilter: "blur(16px)",
+        boxShadow: "0 2px 16px rgba(201,168,76,.08)",
       }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Box sx={{
@@ -340,8 +337,8 @@ export default function BillsPage() {
 
         <Box sx={{
           ...mono, px: "12px", py: "5px", borderRadius: "8px",
-          bgcolor: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.2)",
-          fontSize: 11.5, fontWeight: 600, color: GOLD,
+          bgcolor: goldA(0.1), border: `1px solid ${goldA(0.24)}`,
+          fontSize: 11.5, fontWeight: 600, color: GOLD2,
         }}>
           {totalCount} {totalCount === 1 ? "bill" : "bills"}
         </Box>
@@ -359,13 +356,13 @@ export default function BillsPage() {
         Page {currentPage} of {totalPages} — {totalCount} total · Tap any row to view details
       </Typography>
 
-      <Box sx={{ bgcolor: "#0d0d14", border: `1px solid ${BORDER}`, borderRadius: "18px", overflow: "hidden" }}>
+      <Box sx={{ bgcolor: SURFACE, border: `1px solid ${BORDER}`, borderRadius: "18px", overflow: "hidden", boxShadow: "0 2px 14px rgba(201,168,76,.08)" }}>
 
         <Box sx={{
           display: "grid", gridTemplateColumns: COL,
           px: "20px", py: "10px", gap: "12px",
-          bgcolor: "rgba(255,255,255,0.02)",
-          borderBottom: `1px solid rgba(255,255,255,0.05)`,
+          bgcolor: goldA(0.05),
+          borderBottom: `1px solid ${goldA(0.1)}`,
         }}>
           {["#", "Customer", "Total", "Status", "Payment", "Date"].map((h) => (
             <Typography key={h} sx={{ ...mono, fontSize: 10, fontWeight: 600, color: MUTED2, letterSpacing: "0.8px", textTransform: "uppercase" }}>
@@ -385,7 +382,7 @@ export default function BillsPage() {
             const isThisLoading = isOpen && detailLoading;
 
             return (
-              <Box key={bill.id} sx={{ borderBottom: i < bills.length - 1 ? `1px solid rgba(255,255,255,0.04)` : "none" }}>
+              <Box key={bill.id} sx={{ borderBottom: i < bills.length - 1 ? `1px solid ${goldA(0.08)}` : "none" }}>
 
                 <Box
                   onClick={() => handleToggle(bill.id)}
@@ -393,15 +390,15 @@ export default function BillsPage() {
                     display: "grid", gridTemplateColumns: COL,
                     px: "20px", py: "13px", gap: "12px",
                     alignItems: "center", cursor: "pointer",
-                    bgcolor: isOpen ? "rgba(201,168,76,0.03)" : "transparent",
+                    bgcolor: isOpen ? goldA(0.05) : "transparent",
                     transition: "background .15s",
-                    "&:hover": { bgcolor: isOpen ? "rgba(201,168,76,0.04)" : "rgba(255,255,255,0.02)" },
+                    "&:hover": { bgcolor: isOpen ? goldA(0.06) : goldA(0.03) },
                   }}
                 >
                   <Box sx={{ display: "flex", alignItems: "center", gap: "6px" }}>
                     <Typography sx={{ ...mono, fontSize: 12, fontWeight: 700, color: MUTED2 }}>#{bill.id}</Typography>
                     <Box sx={{
-                      fontSize: 11, color: isOpen ? GOLD : MUTED2,
+                      fontSize: 11, color: isOpen ? GOLD2 : MUTED2,
                       transition: "transform .25s",
                       transform: isOpen ? "rotate(180deg)" : "none",
                     }}>▾</Box>

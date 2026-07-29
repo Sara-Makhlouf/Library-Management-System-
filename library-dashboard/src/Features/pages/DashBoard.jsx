@@ -25,6 +25,7 @@ import {
   getWeeklyBorrows,
 } from "../../Core/Redux/Thunks/DashboardThunk";
 import { ADS, STAT_META } from "../Utils/dashboardData";
+import {GOLD_DARK ,goldA,inkA,CARD_BG,CARD_BG_HOVER,GOLD,INK,PAGE_BG,GOLD_DEEP} from "../../Core/Constants/ColorsUse";
 
 
 const FONT_IMPORT_ID = "lib-fonts";
@@ -40,6 +41,8 @@ function injectFonts() {
   document.head.appendChild(link);
 }
 
+
+
 const KEYFRAMES = `
   @keyframes fadeSlideUp   { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
   @keyframes fadeSlideDown { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
@@ -49,6 +52,10 @@ const KEYFRAMES = `
   @keyframes slideInRight  { from{opacity:0;transform:translateX(8px)} to{opacity:1;transform:translateX(0)} }
   @keyframes barGrow       { from{width:0} to{width:var(--target-w)} }
   @keyframes ringPulse     { 0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.35)} 70%{box-shadow:0 0 0 8px rgba(201,168,76,0)} }
+  @keyframes floatBlobA    { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(30px,-24px) scale(1.08)} }
+  @keyframes floatBlobB    { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-26px,20px) scale(1.06)} }
+  @keyframes shimmerSweep  { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+  @keyframes iconGlow      { 0%,100%{filter:drop-shadow(0 0 0 rgba(201,168,76,0))} 50%{filter:drop-shadow(0 0 6px rgba(201,168,76,.55))} }
 `;
 
 function injectKeyframes() {
@@ -67,14 +74,14 @@ function CategoryBar({ name, count, max, color, delay = 0 }) {
   return (
     <Box sx={{ mb: 1.5 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.6 }}>
-        <Typography sx={{ fontSize: 12.5, color: "rgba(255,255,255,0.75)", fontWeight: 600 }}>
+        <Typography sx={{ fontSize: 12.5, color: inkA(0.78), fontWeight: 600 }}>
           {name}
         </Typography>
-        <Typography sx={{ ...mono, fontSize: 11.5, color: "rgba(255,255,255,0.35)", fontWeight: 600 }}>
+        <Typography sx={{ ...mono, fontSize: 11.5, color: inkA(0.42), fontWeight: 600 }}>
           {count}
         </Typography>
       </Box>
-      <Box sx={{ height: 5, borderRadius: 3, bgcolor: "rgba(255,255,255,0.05)", overflow: "hidden" }}>
+      <Box sx={{ height: 5, borderRadius: 3, bgcolor: goldA(0.1), overflow: "hidden" }}>
         <Box
           sx={{
             height: "100%",
@@ -95,23 +102,29 @@ function StatCard({ title, value, meta, delay = 0 }) {
       sx={{
         p: "18px",
         borderRadius: "20px",
-        bgcolor: "#111118",
+        bgcolor: CARD_BG,
         border: "1px solid transparent",
-        backgroundImage: `linear-gradient(#111118,#111118), linear-gradient(135deg,${meta.accent}28,transparent)`,
+        backgroundImage: `linear-gradient(${CARD_BG},${CARD_BG}), linear-gradient(135deg,${meta.accent}40,${goldA(0.12)})`,
         backgroundOrigin: "border-box",
         backgroundClip: "padding-box, border-box",
+        boxShadow: "0 2px 14px rgba(201,168,76,.08)",
         position: "relative",
         overflow: "hidden",
         cursor: "pointer",
         animation: `fadeSlideUp .5s ${delay}s ease both`,
-        transition: "transform .25s, background-image .25s",
+        transition: "transform .25s, background-image .25s, box-shadow .25s",
         "&:hover": {
           transform: "translateY(-4px)",
-          backgroundImage: `linear-gradient(#151520,#151520), linear-gradient(135deg,${meta.accent}55,transparent)`,
+          boxShadow: "0 10px 26px rgba(201,168,76,.18)",
+          backgroundImage: `linear-gradient(${CARD_BG_HOVER},${CARD_BG_HOVER}), linear-gradient(135deg,${meta.accent}70,${goldA(0.3)})`,
+        },
+        "&:hover .stat-icon": {
+          animation: "iconGlow 1.4s ease infinite",
         },
       }}
     >
       <Box
+        className="stat-icon"
         sx={{
           width: 30, height: 30,
           borderRadius: "9px",
@@ -124,10 +137,10 @@ function StatCard({ title, value, meta, delay = 0 }) {
         <Box sx={{ fontSize: 14, display: "flex" }}>{meta.icon}</Box>
       </Box>
 
-      <Typography sx={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,.32)", letterSpacing: ".7px", textTransform: "uppercase", mb: 0.6 }}>
+      <Typography sx={{ fontSize: 10, fontWeight: 600, color: inkA(0.4), letterSpacing: ".7px", textTransform: "uppercase", mb: 0.6 }}>
         {title}
       </Typography>
-      <Typography sx={{ ...display, fontSize: 27, fontWeight: 600, letterSpacing: -0.5, color: "#fff", mb: 0.4 }}>
+      <Typography sx={{ ...display, fontSize: 27, fontWeight: 600, letterSpacing: -0.5, color: INK, mb: 0.4 }}>
         {Number(value).toLocaleString()}
       </Typography>
       <Typography sx={{ fontSize: 10.5, color: meta.accent, display: "flex", alignItems: "center", gap: 0.4, fontWeight: 600 }}>
@@ -135,7 +148,7 @@ function StatCard({ title, value, meta, delay = 0 }) {
       </Typography>
 
      
-      <Box sx={{ position: "absolute", bottom: 12, right: 14, opacity: 0.55 }}>
+      <Box sx={{ position: "absolute", bottom: 12, right: 14, opacity: 0.7 }}>
         <svg width="48" height="20" viewBox="0 0 48 20" fill="none">
           <path
             d="M1 16 L10 12 L18 14 L26 7 L34 9 L47 2"
@@ -159,15 +172,15 @@ function UserRow({ user, delay = 0 }) {
         borderRadius: "10px",
         animation: `slideInLeft .4s ${delay}s ease both`,
         transition: "background .2s",
-        "&:hover": { bgcolor: "rgba(255,255,255,.04)" },
+        "&:hover": { bgcolor: goldA(0.07) },
       }}
     >
       <Box
         sx={{
           width: 30, height: 30,
           borderRadius: "9px",
-          bgcolor: "rgba(127,119,221,.15)",
-          color: "#7f77dd",
+          bgcolor: "rgba(127,119,221,.14)",
+          color: "#6a61d1",
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 12, fontWeight: 700, flexShrink: 0,
           ...display,
@@ -176,21 +189,21 @@ function UserRow({ user, delay = 0 }) {
         {user.name?.charAt(0) || "?"}
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ fontSize: 12.5, fontWeight: 600, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <Typography sx={{ fontSize: 12.5, fontWeight: 600, color: INK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {user.name}
         </Typography>
-        <Typography sx={{ fontSize: 10.5, color: "rgba(255,255,255,.28)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <Typography sx={{ fontSize: 10.5, color: inkA(0.42), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {user.email}
         </Typography>
       </Box>
-      <Typography sx={{ ...mono, fontSize: 9.5, color: "rgba(255,255,255,.2)", flexShrink: 0 }}>
+      <Typography sx={{ ...mono, fontSize: 9.5, color: inkA(0.3), flexShrink: 0 }}>
         {user.joined_at || "—"}
       </Typography>
     </Box>
   );
 }
 
-const BOOK_SPINE_COLORS = ["#c9a84c", "#7f77dd", "#4ade80", "#f97373", "#38bdf8", "#fb923c", "#e879f9"];
+const BOOK_SPINE_COLORS = ["#c9a84c", "#7f77dd", "#3fb873", "#e0655f", "#2f9fd6", "#e08a3c", "#cf62c9"];
 
 function BookRow({ book, index, delay = 0 }) {
   const spineColor = BOOK_SPINE_COLORS[index % BOOK_SPINE_COLORS.length];
@@ -202,27 +215,27 @@ function BookRow({ book, index, delay = 0 }) {
         borderRadius: "10px",
         animation: `slideInRight .4s ${delay}s ease both`,
         transition: "background .2s",
-        "&:hover": { bgcolor: "rgba(255,255,255,.04)" },
+        "&:hover": { bgcolor: goldA(0.07) },
       }}
     >
-      <Box sx={{ width: 5, alignSelf: "stretch", minHeight: 32, borderRadius: "2px 0 0 2px", bgcolor: `${spineColor}66`, flexShrink: 0 }} />
+      <Box sx={{ width: 5, alignSelf: "stretch", minHeight: 32, borderRadius: "2px 0 0 2px", bgcolor: `${spineColor}80`, flexShrink: 0 }} />
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography sx={{ ...display, fontSize: 13, fontWeight: 600, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={book.title}>
+        <Typography sx={{ ...display, fontSize: 13, fontWeight: 600, color: INK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={book.title}>
           {book.title}
         </Typography>
-        <Typography sx={{ fontSize: 10.5, color: "rgba(255,255,255,.28)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <Typography sx={{ fontSize: 10.5, color: inkA(0.42), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {book.authors?.join(", ") || "Unknown author"}
         </Typography>
       </Box>
       {book.average_rate > 0 && (
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.3, flexShrink: 0 }}>
-          <StarRateRoundedIcon sx={{ fontSize: 13, color: "#c9a84c" }} />
-          <Typography sx={{ ...mono, fontSize: 11, color: "rgba(255,255,255,.4)", fontWeight: 600 }}>
+          <StarRateRoundedIcon sx={{ fontSize: 13, color: GOLD }} />
+          <Typography sx={{ ...mono, fontSize: 11, color: inkA(0.5), fontWeight: 600 }}>
             {book.average_rate}
           </Typography>
         </Box>
       )}
-      <Typography sx={{ ...mono, fontSize: 11.5, color: "#c9a84c", fontWeight: 600, flexShrink: 0, minWidth: 56, textAlign: "right" }}>
+      <Typography sx={{ ...mono, fontSize: 11.5, color: GOLD_DARK, fontWeight: 700, flexShrink: 0, minWidth: 56, textAlign: "right" }}>
         {Number(book.sale_price).toLocaleString()}
       </Typography>
     </Box>
@@ -233,19 +246,20 @@ function AdCard({ ad, adIndex }) {
   return (
     <Box
       sx={{
-        bgcolor: "#111118",
-        border: "1px solid rgba(255,255,255,.06)",
+        bgcolor: CARD_BG,
+        border: `1px solid ${goldA(0.16)}`,
         borderRadius: "22px",
         overflow: "hidden",
         display: "flex", flexDirection: "column",
-        transition: "border-color .3s",
-        "&:hover": { borderColor: "rgba(201,168,76,.2)" },
+        boxShadow: "0 2px 14px rgba(201,168,76,.08)",
+        transition: "border-color .3s, box-shadow .3s",
+        "&:hover": { borderColor: goldA(0.4), boxShadow: "0 10px 26px rgba(201,168,76,.16)" },
       }}
     >
       <Box
         sx={{
           height: 168,
-          bgcolor: "rgba(255,255,255,.02)",
+          bgcolor: goldA(0.06),
           display: "flex", alignItems: "center", justifyContent: "center",
           position: "relative",
           fontSize: 46,
@@ -255,8 +269,8 @@ function AdCard({ ad, adIndex }) {
       </Box>
 
       <Box sx={{ p: "14px 16px", flex: 1 }}>
-        <Typography sx={{ ...display, fontWeight: 600, fontSize: 14.5, color: "#fff", mb: 0.5 }}>{ad.title}</Typography>
-        <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,.38)", lineHeight: 1.5 }}>{ad.desc}</Typography>
+        <Typography sx={{ ...display, fontWeight: 600, fontSize: 14.5, color: INK, mb: 0.5 }}>{ad.title}</Typography>
+        <Typography sx={{ fontSize: 12, color: inkA(0.52), lineHeight: 1.5 }}>{ad.desc}</Typography>
       </Box>
 
       <Box sx={{ display: "flex", justifyContent: "center", gap: "5px", pb: 1.5 }}>
@@ -266,7 +280,7 @@ function AdCard({ ad, adIndex }) {
             sx={{
               height: 4, borderRadius: "2px",
               width: i === adIndex ? 20 : 8,
-              bgcolor: i === adIndex ? "#c9a84c" : "rgba(255,255,255,.14)",
+              bgcolor: i === adIndex ? GOLD : goldA(0.22),
               transition: "all .4s ease",
             }}
           />
@@ -277,8 +291,8 @@ function AdCard({ ad, adIndex }) {
 }
 
 const EXTRA_STAT_META = {
-  "Active Members":   { icon: <GroupOutlinedIcon sx={{ fontSize: 15 }} />, accent: "#4ade80", trend: "Currently active" },
-  "Current Borrowed": { icon: <MenuBookOutlinedIcon sx={{ fontSize: 15 }} />, accent: "#f97373", trend: "Books out on loan" },
+  "Active Members":   { icon: <GroupOutlinedIcon sx={{ fontSize: 15 }} />, accent: "#3fb873", trend: "Currently active" },
+  "Current Borrowed": { icon: <MenuBookOutlinedIcon sx={{ fontSize: 15 }} />, accent: "#e0655f", trend: "Books out on loan" },
 };
 
 export default function Dashboard() {
@@ -287,9 +301,7 @@ export default function Dashboard() {
 const [, setNotifications] = useState([]);
     //
     useEffect(() => {
-        // تأكد من أن window.Echo قد تم تعريفه من ملف echo.js
         if (window.Echo) {
-            // استبدل '1' بـ ID المستخدم الحقيقي (يمكنك جلبه من الـ Redux أو الـ Auth state)
             const userId = 1; 
             
             window.Echo.private(`App.Models.User.${userId}`)
@@ -343,14 +355,14 @@ const [, setNotifications] = useState([]);
   );
 }, [dashboardStats?.books_per_category]);
 
-  const categoryColors = ["#c9a84c", "#7f77dd", "#4ade80", "#f97373", "#38bdf8", "#fb923c", "#e879f9"];
+  const categoryColors = ["#c9a84c", "#7f77dd", "#3fb873", "#e0655f", "#2f9fd6", "#e08a3c", "#cf62c9"];
 
   const currentAd = ADS[adIndex];
 
   if (loading) {
     return (
-      <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "#0a0a0f" }}>
-        <CircularProgress sx={{ color: "#c9a84c" }} />
+      <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", bgcolor: PAGE_BG }}>
+        <CircularProgress sx={{ color: GOLD }} />
       </Box>
     );
   }
@@ -359,21 +371,43 @@ const [, setNotifications] = useState([]);
     <Box
       sx={{
         minHeight: "100vh",
-        bgcolor: "#0a0a0f",
+        bgcolor: PAGE_BG,
         p: { xs: 2, md: "20px 24px" },
         fontFamily: "Inter, sans-serif",
         animation: "fadeSlideDown .45s ease both",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
+      <Box sx={{
+        position: "fixed", top: -120, right: -100, width: 380, height: 380,
+        borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(201,168,76,.18) 0%, transparent 70%)",
+        filter: "blur(10px)",
+        animation: "floatBlobA 9s ease-in-out infinite",
+        pointerEvents: "none", zIndex: 0,
+      }} />
+      <Box sx={{
+        position: "fixed", bottom: -140, left: -100, width: 420, height: 420,
+        borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(201,168,76,.14) 0%, transparent 70%)",
+        filter: "blur(10px)",
+        animation: "floatBlobB 11s ease-in-out infinite",
+        pointerEvents: "none", zIndex: 0,
+      }} />
+
+      <Box sx={{ position: "relative", zIndex: 1 }}>
+
       <Box
         sx={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
           mb: 2.5, px: "18px", height: 58,
-          bgcolor: "rgba(255,255,255,.04)",
-          border: "1px solid rgba(255,255,255,.07)",
+          bgcolor: "rgba(255,255,255,.75)",
+          border: `1px solid ${goldA(0.2)}`,
           borderRadius: "22px",
           position: "sticky", top: 0, zIndex: 10,
           backdropFilter: "blur(16px)",
+          boxShadow: "0 2px 16px rgba(201,168,76,.08)",
           animation: "fadeSlideDown .4s ease both",
         }}
       >
@@ -384,11 +418,11 @@ const [, setNotifications] = useState([]);
               sx={{
                 position: "absolute", inset: 0,
                 borderRadius: "8px",
-                background: "linear-gradient(135deg,#c9a84c,#8b5e1a)",
+                background: `linear-gradient(135deg,${GOLD},${GOLD_DEEP})`,
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}
             >
-              <Box sx={{ width: 1, height: 22, bgcolor: "rgba(10,10,15,.35)" }} />
+              <Box sx={{ width: 1, height: 22, bgcolor: "rgba(255,255,255,.4)" }} />
             </Box>
             <Box
               sx={{
@@ -402,10 +436,10 @@ const [, setNotifications] = useState([]);
             />
           </Box>
           <Box>
-            <Typography sx={{ ...display, fontWeight: 600, fontSize: 16, color: "#fff", letterSpacing: -.2, lineHeight: 1.1 }}>
+            <Typography sx={{ ...display, fontWeight: 600, fontSize: 16, color: INK, letterSpacing: -.2, lineHeight: 1.1 }}>
               Hiber &amp; Waraq
             </Typography>
-            <Typography sx={{ fontSize: 9.5, color: "rgba(255,255,255,.32)", letterSpacing: ".6px", textTransform: "uppercase", fontWeight: 600 }}>
+            <Typography sx={{ fontSize: 9.5, color: inkA(0.4), letterSpacing: ".6px", textTransform: "uppercase", fontWeight: 600 }}>
               Library Dashboard
             </Typography>
           </Box>
@@ -418,10 +452,10 @@ const [, setNotifications] = useState([]);
               sx={{
                 width: 32, height: 32,
                 borderRadius: "50%",
-                bgcolor: "rgba(255,255,255,.06)",
-                border: "1px solid rgba(255,255,255,.07)",
-                color: "#888",
-                "&:hover": { bgcolor: "rgba(255,255,255,.12)", color: "#fff" },
+                bgcolor: goldA(0.08),
+                border: `1px solid ${goldA(0.18)}`,
+                color: inkA(0.55),
+                "&:hover": { bgcolor: goldA(0.16), color: INK },
                 transition: "all .2s",
               }}
             >
@@ -432,7 +466,7 @@ const [, setNotifications] = useState([]);
             sx={{
               width: 32, height: 32,
               borderRadius: "50%",
-              background: "linear-gradient(135deg,#c9a84c,#8b5e1a)",
+              background: `linear-gradient(135deg,${GOLD},${GOLD_DEEP})`,
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 11, fontWeight: 700, color: "#fff",
               ...display,
@@ -457,22 +491,23 @@ const [, setNotifications] = useState([]);
           sx={{
             p: { xs: 3, md: "36px 40px" },
             borderRadius: "26px",
-            background: "#111118",
-            border: "1px solid rgba(201,168,76,.15)",
+            background: CARD_BG,
+            border: `1px solid ${goldA(0.22)}`,
+            boxShadow: "0 4px 20px rgba(201,168,76,.1)",
             position: "relative",
             overflow: "hidden",
           }}
         >
-          <Box sx={{ position: "absolute", top: -80, right: -60, width: 280, height: 280, background: "radial-gradient(circle,rgba(201,168,76,.1) 0%,transparent 70%)", pointerEvents: "none" }} />
+          <Box sx={{ position: "absolute", top: -80, right: -60, width: 280, height: 280, background: "radial-gradient(circle,rgba(201,168,76,.16) 0%,transparent 70%)", pointerEvents: "none" }} />
 
           <Chip
             label="● Live System"
             size="small"
             sx={{
               mb: 2.5,
-              bgcolor: "rgba(201,168,76,.1)",
-              border: "1px solid rgba(201,168,76,.2)",
-              color: "#c9a84c",
+              bgcolor: goldA(0.12),
+              border: `1px solid ${goldA(0.28)}`,
+              color: GOLD_DARK,
               fontWeight: 600, fontSize: 11, letterSpacing: .5,
               height: 24, borderRadius: "20px",
               "& .MuiChip-label": { px: 1.5, display: "flex", alignItems: "center", gap: "5px" },
@@ -485,14 +520,14 @@ const [, setNotifications] = useState([]);
               fontSize: { xs: 28, md: 38 },
               fontWeight: 600, letterSpacing: -0.5, lineHeight: 1.08,
               mb: 1.5,
-              color: "#fff",
+              color: INK,
             }}
           >
             Welcome back,<br />
-            <Box component="span" sx={{ color: "#c9a84c", fontStyle: "italic" }}>Library Admin</Box>
+            <Box component="span" sx={{ color: GOLD_DARK, fontStyle: "italic" }}>Library Admin</Box>
           </Typography>
 
-          <Typography sx={{ fontSize: 13.5, color: "rgba(255,255,255,.45)", lineHeight: 1.7, maxWidth: 400, mb: 3.5 }}>
+          <Typography sx={{ fontSize: 13.5, color: inkA(0.58), lineHeight: 1.7, maxWidth: 400, mb: 3.5 }}>
             Monitor performance, track engagement, and manage your entire library
             ecosystem from a unified intelligent dashboard.
           </Typography>
@@ -504,12 +539,13 @@ const [, setNotifications] = useState([]);
               borderRadius: "12px",
               fontWeight: 700, textTransform: "none", fontSize: 13.5,
               color: "#fff",
-              background: "linear-gradient(135deg,#c9a84c,#8b5e1a)",
+              background: `linear-gradient(135deg,${GOLD},${GOLD_DEEP})`,
+              backgroundSize: "200% 100%",
               letterSpacing: .2,
               "&:hover": {
-                background: "linear-gradient(135deg,#d4b562,#9e6c20)",
+                backgroundPosition: "100% 0",
                 transform: "translateY(-2px)",
-                boxShadow: "0 14px 28px rgba(201,168,76,.25)",
+                boxShadow: "0 14px 28px rgba(201,168,76,.3)",
               },
               transition: "all .25s",
             }}
@@ -529,7 +565,7 @@ const [, setNotifications] = useState([]);
         }}
       >
         {statsCards.map((s, i) => {
-          const meta = STAT_META[s.title] || EXTRA_STAT_META[s.title] || { icon: null, accent: "#888", trend: "" };
+          const meta = STAT_META[s.title] || EXTRA_STAT_META[s.title] || { icon: null, accent: GOLD_DARK, trend: "" };
           return <StatCard key={s.title} title={s.title} value={s.value} meta={meta} delay={0.2 + i * 0.05} />;
         })}
       </Box>
@@ -538,25 +574,31 @@ const [, setNotifications] = useState([]);
         sx={{
           p: { xs: 2.5, md: "24px 26px" },
           borderRadius: "26px",
-          bgcolor: "#111118",
-          border: "1px solid rgba(255,255,255,.06)",
+          bgcolor: CARD_BG,
+          border: `1px solid ${goldA(0.15)}`,
+          boxShadow: "0 4px 20px rgba(201,168,76,.08)",
           position: "relative",
           overflow: "hidden",
           animation: "fadeSlideUp .5s .5s ease both",
         }}
       >
-        <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg,transparent,rgba(201,168,76,.45),transparent)" }} />
+        <Box sx={{
+          position: "absolute", top: 0, left: 0, right: 0, height: 2,
+          background: "linear-gradient(90deg,transparent,rgba(201,168,76,.15),rgba(201,168,76,.85),rgba(201,168,76,.15),transparent)",
+          backgroundSize: "200% 100%",
+          animation: "shimmerSweep 5s linear infinite",
+        }} />
 
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
           <Box>
-            <Typography sx={{ ...display, fontSize: 16.5, fontWeight: 600, color: "#fff", letterSpacing: -.2 }}>Library Insights</Typography>
-            <Typography sx={{ fontSize: 11.5, color: "rgba(255,255,255,.3)", mt: 0.3 }}>Categories, new members, and latest additions</Typography>
+            <Typography sx={{ ...display, fontSize: 16.5, fontWeight: 600, color: INK, letterSpacing: -.2 }}>Library Insights</Typography>
+            <Typography sx={{ fontSize: 11.5, color: inkA(0.4), mt: 0.3 }}>Categories, new members, and latest additions</Typography>
           </Box>
           <Chip
             label="● Live"
             size="small"
             sx={{
-              bgcolor: "rgba(74,222,128,.1)", color: "#4ade80",
+              bgcolor: "rgba(63,184,115,.12)", color: "#2f9b62",
               fontWeight: 700, fontSize: 10.5, letterSpacing: .5,
               height: 22, borderRadius: "20px",
               "& .MuiChip-label": { px: 1.2, display: "flex", alignItems: "center", gap: "4px" },
@@ -568,10 +610,10 @@ const [, setNotifications] = useState([]);
 
           <Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-              <Box sx={{ width: 26, height: 26, borderRadius: "8px", bgcolor: "rgba(201,168,76,.12)", color: "#c9a84c", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Box sx={{ width: 26, height: 26, borderRadius: "8px", bgcolor: goldA(0.14), color: GOLD_DARK, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <LocalLibraryOutlinedIcon sx={{ fontSize: 14 }} />
               </Box>
-              <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: "rgba(255,255,255,.55)", letterSpacing: .3 }}>Books per Category</Typography>
+              <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: inkA(0.62), letterSpacing: .3 }}>Books per Category</Typography>
             </Box>
             {booksPerCategory.length > 0
               ? booksPerCategory.map((cat, i) => (
@@ -584,40 +626,42 @@ const [, setNotifications] = useState([]);
                     delay={0.6 + i * 0.06}
                   />
                 ))
-              : <Typography sx={{ color: "rgba(255,255,255,.2)", fontSize: 12.5 }}>No categories yet</Typography>
+              : <Typography sx={{ color: inkA(0.3), fontSize: 12.5 }}>No categories yet</Typography>
             }
           </Box>
 
           <Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-              <Box sx={{ width: 26, height: 26, borderRadius: "8px", bgcolor: "rgba(127,119,221,.12)", color: "#7f77dd", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Box sx={{ width: 26, height: 26, borderRadius: "8px", bgcolor: "rgba(127,119,221,.13)", color: "#6a61d1", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <PersonAddAltOutlinedIcon sx={{ fontSize: 14 }} />
               </Box>
-              <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: "rgba(255,255,255,.55)", letterSpacing: .3 }}>Recent Members</Typography>
+              <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: inkA(0.62), letterSpacing: .3 }}>Recent Members</Typography>
             </Box>
             {recentUsers.length > 0
               ? recentUsers.map((u, i) => <UserRow key={u.id} user={u} delay={0.65 + i * 0.08} />)
-              : <Typography sx={{ color: "rgba(255,255,255,.2)", fontSize: 12.5 }}>No recent members</Typography>
+              : <Typography sx={{ color: inkA(0.3), fontSize: 12.5 }}>No recent members</Typography>
             }
           </Box>
 
           <Box>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Box sx={{ width: 26, height: 26, borderRadius: "8px", bgcolor: "rgba(74,222,128,.12)", color: "#4ade80", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Box sx={{ width: 26, height: 26, borderRadius: "8px", bgcolor: "rgba(63,184,115,.13)", color: "#2f9b62", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <AutoStoriesOutlinedIcon sx={{ fontSize: 14 }} />
                 </Box>
-                <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: "rgba(255,255,255,.55)", letterSpacing: .3 }}>Latest Books</Typography>
+                <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: inkA(0.62), letterSpacing: .3 }}>Latest Books</Typography>
               </Box>
-              <Typography sx={{ fontSize: 11, color: "#c9a84c", fontWeight: 600, cursor: "pointer" }}>View all →</Typography>
+              <Typography sx={{ fontSize: 11, color: GOLD_DARK, fontWeight: 700, cursor: "pointer" }}>View all →</Typography>
             </Box>
             {latestBooks.length > 0
               ? latestBooks.map((book, i) => <BookRow key={book.id} book={book} index={i} delay={0.7 + i * 0.08} />)
-              : <Typography sx={{ color: "rgba(255,255,255,.2)", fontSize: 12.5 }}>No books yet</Typography>
+              : <Typography sx={{ color: inkA(0.3), fontSize: 12.5 }}>No books yet</Typography>
             }
           </Box>
 
         </Box>
+      </Box>
+
       </Box>
     </Box>
   );

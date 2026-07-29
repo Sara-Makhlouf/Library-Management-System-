@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useEffect } from "react";
 import {
   Box,
   Button,
@@ -22,26 +23,69 @@ import loginAdmin from "../Redux/Thunks/AuthThunk";
 import { useNavigate } from "react-router-dom";
 import { GoogleIcon, FacebookIcon } from "./Cunstom";
 
-const GOLD = "#c9a84c";
-const TEXT = "#ffffff";
-const MUTED = "rgba(255,255,255,0.45)";
-const BORDER = "rgba(255,255,255,0.08)";
+const GOLD      = "#c9a84c";
+const GOLD_DARK = "#a8822f"; 
+const TEXT      = "#2b2416"; 
+const inkA = (a) => `rgba(43,36,22,${a})`;
+const goldA = (a) => `rgba(201,168,76,${a})`;
+const MUTED  = inkA(0.55);
+const BORDER = goldA(0.18);
+
+const FONT_IMPORT_ID = "lib-fonts";
+const FONT_HREF =
+  "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap";
+
+function injectFonts() {
+  if (document.getElementById(FONT_IMPORT_ID)) return;
+  const link = document.createElement("link");
+  link.id = FONT_IMPORT_ID;
+  link.rel = "stylesheet";
+  link.href = FONT_HREF;
+  document.head.appendChild(link);
+}
+
+const display = { fontFamily: "'Fraunces', serif" };
+const mono    = { fontFamily: "'IBM Plex Mono', monospace" };
+
+const KEYFRAMES = {
+  "@keyframes cardPop": {
+    "0%":   { opacity: 0, transform: "translateY(24px) scale(0.96)" },
+    "100%": { opacity: 1, transform: "translateY(0) scale(1)" },
+  },
+  "@keyframes fadeSlideUp": {
+    from: { opacity: 0, transform: "translateY(14px)" },
+    to:   { opacity: 1, transform: "translateY(0)" },
+  },
+  "@keyframes glowPulse": {
+    "0%, 100%": { boxShadow: "0 12px 30px rgba(201,168,76,0.25)" },
+    "50%":      { boxShadow: "0 12px 34px rgba(201,168,76,0.4)" },
+  },
+};
+
+const fadeIn = (delay) => ({
+  opacity: 0,
+  animation: `fadeSlideUp .55s ${delay}s cubic-bezier(.25,.8,.25,1) both`,
+  ...KEYFRAMES,
+});
 
 const fieldSx = {
+  fontFamily: "Inter, sans-serif",
   "& .MuiInputLabel-root": {
-    color: "rgba(255,255,255,0.55)",
+    color: inkA(0.6),
     fontSize: "14px",
     fontWeight: 500,
+    fontFamily: "Inter, sans-serif",
   },
 
   "& .MuiInputLabel-root.Mui-focused": {
-    color: GOLD,
+    color: GOLD_DARK,
   },
 
   "& .MuiOutlinedInput-root": {
     borderRadius: "14px",
-    color: "#fff",
-    bgcolor: "rgba(255,255,255,0.04)",
+    color: TEXT,
+    bgcolor: goldA(0.05),
+    fontFamily: "Inter, sans-serif",
     transition: "all 0.25s ease",
 
     "& fieldset": {
@@ -49,7 +93,7 @@ const fieldSx = {
     },
 
     "&:hover": {
-      bgcolor: "rgba(255,255,255,0.06)",
+      bgcolor: goldA(0.08),
     },
 
     "&:hover fieldset": {
@@ -66,11 +110,11 @@ const fieldSx = {
   },
 
   "& input": {
-    color: "#fff",
+    color: TEXT,
   },
 
   "& .MuiFormHelperText-root": {
-    color: "#f87171",
+    color: "#c8433d",
   },
 };
 
@@ -88,6 +132,8 @@ export default function SignInCard() {
   const [errors, setErrors] = React.useState({});
   const [open, setOpen] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
+
+  useEffect(() => { injectFonts(); }, []);
 
   const handleChange = (e) => {
     setForm({
@@ -140,10 +186,11 @@ export default function SignInCard() {
         p: 3,
         position: "relative",
         overflow: "hidden",
+        fontFamily: "Inter, sans-serif",
         background: `
-          radial-gradient(circle at top left, rgba(201,168,76,0.15), transparent 35%),
-          radial-gradient(circle at bottom right, rgba(59,130,246,0.10), transparent 30%),
-          linear-gradient(135deg, #08080c 0%, #0f0f15 50%, #09090d 100%)
+          radial-gradient(circle at top left, rgba(201,168,76,0.18), transparent 35%),
+          radial-gradient(circle at bottom right, rgba(59,130,246,0.08), transparent 30%),
+          linear-gradient(135deg, #FBF7ED 0%, #FFF9EE 50%, #FBF7ED 100%)
         `,
       }}
     >
@@ -157,7 +204,7 @@ export default function SignInCard() {
           borderRadius: "50%",
           background: GOLD,
           filter: "blur(140px)",
-          opacity: 0.12,
+          opacity: 0.14,
         }}
       />
 
@@ -184,16 +231,20 @@ export default function SignInCard() {
           overflow: "hidden",
           zIndex: 1,
 
-          bgcolor: "rgba(17,17,24,0.75)",
+          bgcolor: "rgba(255,255,255,0.85)",
           backdropFilter: "blur(24px)",
 
-          border: "1px solid rgba(255,255,255,0.08)",
+          border: `1px solid ${goldA(0.2)}`,
 
           boxShadow: `
-            0 20px 80px rgba(0,0,0,0.5),
-            0 0 40px rgba(201,168,76,0.08),
-            inset 0 1px 0 rgba(255,255,255,0.06)
+            0 20px 80px rgba(43,36,22,0.12),
+            0 0 40px rgba(201,168,76,0.1),
+            inset 0 1px 0 rgba(255,255,255,0.6)
           `,
+
+          opacity: 0,
+          animation: "cardPop .6s cubic-bezier(.22,1,.36,1) both",
+          ...KEYFRAMES,
         }}
       >
         <Box
@@ -204,21 +255,23 @@ export default function SignInCard() {
             width: 240,
             height: 240,
             background:
-              "radial-gradient(circle, rgba(201,168,76,0.10) 0%, transparent 70%)",
+              "radial-gradient(circle, rgba(201,168,76,0.14) 0%, transparent 70%)",
             pointerEvents: "none",
           }}
         />
 
         <Typography
           sx={{
+            ...display,
             textAlign: "center",
-            fontWeight: 800,
+            fontWeight: 600,
             mb: 1,
             fontSize: 32,
             letterSpacing: "-1px",
-            background: `linear-gradient(135deg, #ffffff 0%, ${GOLD} 100%)`,
+            background: `linear-gradient(135deg, ${TEXT} 0%, ${GOLD} 100%)`,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
+            ...fadeIn(0.15),
           }}
         >
           Welcome Back
@@ -230,6 +283,7 @@ export default function SignInCard() {
             color: MUTED,
             mb: 4,
             fontSize: 14,
+            ...fadeIn(0.22),
           }}
         >
           Sign in to continue to your dashboard
@@ -244,55 +298,59 @@ export default function SignInCard() {
             gap: 2,
           }}
         >
-          <TextField
-            label="Email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            error={!!errors.email}
-            helperText={errors.email}
-            fullWidth
-            sx={fieldSx}
-          />
+          <Box sx={fadeIn(0.3)}>
+            <TextField
+              label="Email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              error={!!errors.email}
+              helperText={errors.email}
+              fullWidth
+              sx={fieldSx}
+            />
+          </Box>
 
-          <TextField
-            label="Password"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            value={form.password}
-            onChange={handleChange}
-            error={!!errors.password}
-            helperText={errors.password}
-            fullWidth
-            sx={fieldSx}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setShowPassword(!showPassword)}
-                    sx={{
-                      color: MUTED,
-                      "&:hover": {
-                        color: GOLD,
-                      },
-                    }}
-                  >
-                    {showPassword ? (
-                      <VisibilityOff />
-                    ) : (
-                      <Visibility />
-                    )}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
+          <Box sx={fadeIn(0.37)}>
+            <TextField
+              label="Password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              value={form.password}
+              onChange={handleChange}
+              error={!!errors.password}
+              helperText={errors.password}
+              fullWidth
+              sx={fieldSx}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      sx={{
+                        color: MUTED,
+                        "&:hover": {
+                          color: GOLD_DARK,
+                        },
+                      }}
+                    >
+                      {showPassword ? (
+                        <VisibilityOff />
+                      ) : (
+                        <Visibility />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
 
           {error && (
             <Typography
               sx={{
                 textAlign: "center",
-                color: "#f87171",
+                color: "#c8433d",
                 fontSize: 13.5,
               }}
             >
@@ -304,13 +362,16 @@ export default function SignInCard() {
             component="button"
             onClick={() => setOpen(true)}
             sx={{
+              ...mono,
               textAlign: "right",
-              fontSize: 13.5,
-              color: GOLD,
+              fontSize: 12.5,
+              fontWeight: 600,
+              color: GOLD_DARK,
               textDecoration: "none",
+              ...fadeIn(0.44),
 
               "&:hover": {
-                color: "#e7c96a",
+                color: GOLD,
               },
             }}
           >
@@ -323,16 +384,18 @@ export default function SignInCard() {
                 sx={{
                   color: MUTED,
                   "&.Mui-checked": {
-                    color: GOLD,
+                    color: GOLD_DARK,
                   },
                 }}
               />
             }
             label="Remember me"
             sx={{
+              ...fadeIn(0.5),
               "& .MuiFormControlLabel-label": {
                 fontSize: 13.5,
-                color: "rgba(255,255,255,0.7)",
+                color: inkA(0.72),
+                fontFamily: "Inter, sans-serif",
               },
             }}
           />
@@ -354,14 +417,17 @@ export default function SignInCard() {
               fontWeight: 700,
               textTransform: "none",
               fontSize: 15,
+              fontFamily: "Inter, sans-serif",
 
               color: "#111",
 
               background: `linear-gradient(135deg, #e7c96a 0%, ${GOLD} 100%)`,
 
-              boxShadow: "0 12px 30px rgba(201,168,76,0.25)",
+              animation: "fadeSlideUp .55s .58s cubic-bezier(.25,.8,.25,1) both, glowPulse 2.8s ease-in-out 1.2s infinite",
+              opacity: 0,
+              ...KEYFRAMES,
 
-              transition: "all 0.3s ease",
+              transition: "transform 0.25s ease, box-shadow 0.25s ease",
 
               "&:hover": {
                 transform: "translateY(-2px)",
@@ -387,10 +453,13 @@ export default function SignInCard() {
 
         <Divider
           sx={{
+            ...mono,
             my: 3,
             borderColor: BORDER,
             color: MUTED,
-            fontSize: 12.5,
+            fontSize: 11,
+            letterSpacing: 0.3,
+            ...fadeIn(0.65),
           }}
         >
           or continue with
@@ -401,6 +470,7 @@ export default function SignInCard() {
             display: "flex",
             flexDirection: "column",
             gap: 1.5,
+            ...fadeIn(0.72),
           }}
         >
           <Button
@@ -413,19 +483,20 @@ export default function SignInCard() {
               textTransform: "none",
               fontWeight: 600,
               fontSize: 13.5,
+              fontFamily: "Inter, sans-serif",
 
               color: TEXT,
 
-              bgcolor: "rgba(255,255,255,0.04)",
+              bgcolor: goldA(0.05),
               backdropFilter: "blur(10px)",
 
-              border: "1px solid rgba(255,255,255,0.08)",
+              border: `1px solid ${goldA(0.18)}`,
 
               transition: "all 0.25s ease",
 
               "&:hover": {
-                bgcolor: "rgba(255,255,255,0.07)",
-                borderColor: "rgba(201,168,76,0.25)",
+                bgcolor: goldA(0.09),
+                borderColor: "rgba(201,168,76,0.3)",
                 transform: "translateY(-2px)",
                 color: TEXT,
               },
@@ -444,19 +515,20 @@ export default function SignInCard() {
               textTransform: "none",
               fontWeight: 600,
               fontSize: 13.5,
+              fontFamily: "Inter, sans-serif",
 
               color: TEXT,
 
-              bgcolor: "rgba(255,255,255,0.04)",
+              bgcolor: goldA(0.05),
               backdropFilter: "blur(10px)",
 
-              border: "1px solid rgba(255,255,255,0.08)",
+              border: `1px solid ${goldA(0.18)}`,
 
               transition: "all 0.25s ease",
 
               "&:hover": {
-                bgcolor: "rgba(255,255,255,0.07)",
-                borderColor: "rgba(201,168,76,0.25)",
+                bgcolor: goldA(0.09),
+                borderColor: "rgba(201,168,76,0.3)",
                 transform: "translateY(-2px)",
                 color: TEXT,
               },

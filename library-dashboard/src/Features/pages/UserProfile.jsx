@@ -6,13 +6,18 @@ import { Users, Award, Phone, UserCircle } from "lucide-react";
 
 import { fetchUsers, getAllOperationForUser } from "../../Core/Redux/Thunks/UserThunk";
 
-const BG      = "#0a0a0f";
-const SURFACE = "#111118";
-const GOLD    = "#c9a84c";
-const GOLD2   = "#8b5e1a";
-const BORDER  = "rgba(255,255,255,0.06)";
-const TEXT    = "#fff";
-const MUTED   = "rgba(255,255,255,0.35)";
+const BG        = "#FBF7ED"; 
+const SURFACE   = "#FFFFFF"; 
+const SURFACE_HOV = "#FFFCF3";
+const GOLD      = "#c9a84c";
+const GOLD2     = "#8b5e1a"; 
+const GOLD_DARK = "#a8822f"; 
+const TEXT      = "#2b2416"; // ink
+const inkA = (a) => `rgba(43,36,22,${a})`;
+const goldA = (a) => `rgba(201,168,76,${a})`;
+const BORDER  = goldA(0.18);
+const MUTED   = inkA(0.5);
+// ---------------------------------------------
 
 const display = { fontFamily: "'Fraunces', serif" };
 const mono    = { fontFamily: "'IBM Plex Mono', monospace" };
@@ -40,8 +45,9 @@ function ProfileCard({ profile }) {
       sx={{
         p: "20px", borderRadius: "18px",
         bgcolor: SURFACE, border: `1px solid ${BORDER}`,
+        boxShadow: "0 2px 14px rgba(201,168,76,.08)",
         transition: "all 0.25s",
-        "&:hover": { borderColor: `${GOLD}40`, transform: "translateY(-2px)", bgcolor: "#151520" },
+        "&:hover": { borderColor: `${GOLD}40`, transform: "translateY(-2px)", bgcolor: SURFACE_HOV, boxShadow: "0 10px 26px rgba(201,168,76,.16)" },
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
@@ -73,7 +79,7 @@ function ProfileCard({ profile }) {
             sx={{
               bgcolor: "rgba(201,168,76,0.1)",
               border: "1px solid rgba(201,168,76,0.2)",
-              color: GOLD, fontWeight: 700, fontSize: 11,
+              color: GOLD_DARK, fontWeight: 700, fontSize: 11,
               height: 24, borderRadius: "8px",
               fontFamily: "'IBM Plex Mono', monospace",
             }}
@@ -82,8 +88,8 @@ function ProfileCard({ profile }) {
 
         {profile?.points !== undefined && (
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <Award size={14} color="#97c459" />
-            <Typography sx={{ ...mono, fontSize: 13, fontWeight: 600, color: "#97c459" }}>
+            <Award size={14} color="#5f8e20" />
+            <Typography sx={{ ...mono, fontSize: 13, fontWeight: 600, color: "#5f8e20" }}>
               {profile.points} pts
             </Typography>
           </Box>
@@ -136,11 +142,12 @@ export default function UserProfilePage() {
       <Box sx={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         mb: 3, px: "20px", height: 60,
-        bgcolor: "rgba(255,255,255,0.04)",
+        bgcolor: "rgba(255,255,255,0.75)",
         border: `1px solid ${BORDER}`,
         borderRadius: "16px",
         position: "sticky", top: 0, zIndex: 10,
         backdropFilter: "blur(16px)",
+        boxShadow: "0 2px 16px rgba(201,168,76,.08)",
       }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Box sx={{
@@ -159,7 +166,7 @@ export default function UserProfilePage() {
           ...mono,
           px: "12px", py: "5px", borderRadius: "8px",
           bgcolor: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.2)",
-          fontSize: 11.5, fontWeight: 600, color: GOLD,
+          fontSize: 11.5, fontWeight: 600, color: GOLD_DARK,
         }}>
           {profiles.length} loaded
         </Box>
@@ -168,20 +175,21 @@ export default function UserProfilePage() {
       <Box sx={{
         p: { xs: 3, md: "36px 40px" },
         borderRadius: "20px",
-        background: "linear-gradient(135deg,#111118 0%,#1a1206 100%)",
-        border: "1px solid rgba(201,168,76,0.2)",
+        background: SURFACE,
+        border: `1px solid ${goldA(0.22)}`,
+        boxShadow: "0 4px 20px rgba(201,168,76,.1)",
         position: "relative", overflow: "hidden",
         mb: 2.5,
       }}>
-        <Box sx={{ position: "absolute", top: -100, right: -80, width: 300, height: 300, background: "radial-gradient(circle,rgba(201,168,76,0.08) 0%,transparent 70%)", pointerEvents: "none" }} />
-        <Box sx={{ position: "absolute", bottom: -60, left: -40, width: 200, height: 200, background: "radial-gradient(circle,rgba(139,94,26,0.06) 0%,transparent 70%)", pointerEvents: "none" }} />
+        <Box sx={{ position: "absolute", top: -100, right: -80, width: 300, height: 300, background: "radial-gradient(circle,rgba(201,168,76,0.16) 0%,transparent 70%)", pointerEvents: "none" }} />
+        <Box sx={{ position: "absolute", bottom: -60, left: -40, width: 200, height: 200, background: "radial-gradient(circle,rgba(139,94,26,0.08) 0%,transparent 70%)", pointerEvents: "none" }} />
         <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg,transparent,rgba(201,168,76,0.4),transparent)" }} />
 
         <Box sx={{
           display: "inline-flex", alignItems: "center", gap: "6px",
           mb: 2.2, px: "12px", py: "4px", borderRadius: "20px",
           bgcolor: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.2)",
-          fontSize: 11, fontWeight: 600, letterSpacing: 0.5, color: GOLD,
+          fontSize: 11, fontWeight: 600, letterSpacing: 0.5, color: GOLD_DARK,
         }}>
           ● Community
         </Box>
@@ -192,10 +200,10 @@ export default function UserProfilePage() {
           letterSpacing: -0.5, lineHeight: 1.15, mb: 1.5,
           color: TEXT,
         }}>
-          All member <Box component="span" sx={{ color: GOLD, fontStyle: "italic" }}>profiles</Box>
+          All member <Box component="span" sx={{ color: GOLD_DARK, fontStyle: "italic" }}>profiles</Box>
         </Typography>
 
-        <Typography sx={{ fontSize: 13.5, color: "rgba(255,255,255,0.45)", lineHeight: 1.7, maxWidth: 440 }}>
+        <Typography sx={{ fontSize: 13.5, color: inkA(0.58), lineHeight: 1.7, maxWidth: 440 }}>
           Browse profile details, membership type, and loyalty points for every registered member.
         </Typography>
       </Box>
