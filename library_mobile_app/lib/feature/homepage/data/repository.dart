@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:library_mobile_app/core/constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'model.dart';
 
 class HomeRepository {
@@ -9,11 +10,25 @@ class HomeRepository {
     final dio = Dio(
       BaseOptions(
         baseUrl: '$baseUrl/',
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
+        connectTimeout: const Duration(seconds: 20),
+        receiveTimeout: const Duration(seconds: 20),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
+        },
+      ),
+    );
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final prefs = await SharedPreferences.getInstance();
+          final token = prefs.getString(tokenKey) ?? '';
+
+          if (token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+
+          return handler.next(options);
         },
       ),
     );
@@ -24,10 +39,10 @@ class HomeRepository {
   Future<List<CategoryModel>> fetchCategories() async {
     final fullUrl = Uri.parse(
       _dio.options.baseUrl,
-    ).resolve('categories/list').toString();
+    ).resolve('categories').toString();
     try {
       print('🟡 fetchCategories request URL: $fullUrl');
-      final response = await _dio.get('categories/list');
+      final response = await _dio.get('categories');
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = response.data;
         if (responseData['status'] == 'success') {

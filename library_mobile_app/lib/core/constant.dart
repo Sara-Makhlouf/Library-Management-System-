@@ -11,4 +11,5 @@ class Routes {
   static const String book = '/book';
   static const String bookDetails = '/bookDetails';
   static const String settings = '/settings';
+  static const String favorites = '/favorites';
 }

@@ -1,16 +1,26 @@
-abstract class CheckoutState {}
+abstract class PaymentState {}
 
-class CheckoutInitial extends CheckoutState {}
+class PaymentInitial extends PaymentState {
+  final String selectedPayment;
+  final bool wantsDelivery;
 
-class CheckoutLoading extends CheckoutState {}
-
-class CheckoutSuccess extends CheckoutState {
-  final String orderId;
-  final String date;
-  CheckoutSuccess({required this.orderId, required this.date});
+  PaymentInitial({this.selectedPayment = 'cash', this.wantsDelivery = true});
 }
 
-class CheckoutFailure extends CheckoutState {
+class PaymentLoading extends PaymentState {}
+
+class PaymentSuccess extends PaymentState {
+  final Map<String, dynamic> responseData;
+  late final String orderId;
+  late final String date;
+
+  PaymentSuccess(this.responseData) {
+    orderId = responseData['bill_id']?.toString() ?? 'N/A';
+    date = DateTime.now().toString().substring(0, 10);
+  }
+}
+
+class PaymentFailure extends PaymentState {
   final String error;
-  CheckoutFailure(this.error);
+  PaymentFailure(this.error);
 }

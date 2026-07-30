@@ -3,14 +3,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:library_mobile_app/core/constant.dart';
+import 'package:library_mobile_app/feature/books/presentation/book.dart';
+import 'package:library_mobile_app/feature/books/presentation/book_details_screen.dart';
 import 'package:library_mobile_app/feature/cart/bloc/cart_bloc.dart';
+import 'package:library_mobile_app/feature/favourite/bloc/favbloc.dart';
+import 'package:library_mobile_app/feature/favourite/bloc/favevent.dart';
+import 'package:library_mobile_app/feature/favourite/data/repository.dart';
+import 'package:library_mobile_app/feature/favourite/presentation/favourit_screen.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
 import 'package:library_mobile_app/feature/homepage/data/model.dart';
 import 'package:library_mobile_app/feature/homepage/data/repository.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/screens/home_page.dart';
 import 'package:library_mobile_app/feature/notifications/notifications_screen.dart';
-import 'package:library_mobile_app/feature/presentation/books/book.dart';
-import 'package:library_mobile_app/feature/presentation/books/book_details_screen.dart';
 import 'package:library_mobile_app/feature/presentation/profile.dart';
 import 'package:library_mobile_app/feature/presentation/splash_screen.dart';
 import 'package:library_mobile_app/feature/seeting_screen/presentation/seeting_screen.dart';
@@ -52,9 +56,9 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => Book(category: category));
 
       case Routes.bookDetails:
-        final imagePath = settings.arguments as String;
+        final bookId = settings.arguments.toString();
         return MaterialPageRoute(
-          builder: (_) => BookDetailsScreen(imagePath: imagePath),
+          builder: (_) => BookDetailsScreen(bookId: bookId),
         );
 
       case Routes.payment:
@@ -63,6 +67,16 @@ class AppRouter {
           builder: (_) => BlocProvider.value(
             value: existingCartBloc,
             child: const CheckoutScreen(),
+          ),
+        );
+      case Routes.favorites:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => FavoriteBloc(FavoriteRepository())
+              ..add(
+                GetFavoritesEvent(),
+              ), // استبدل الحدث بالاسم الصحيح لديك لجلب المفضلة إن وجد
+            child: const FavoriteScreen(), // تأكد من اسم شاشة المفضلة لديك
           ),
         );
 

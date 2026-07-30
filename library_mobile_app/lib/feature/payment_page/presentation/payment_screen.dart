@@ -1,29 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart'; // استيراد حزمة الأنميشن
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:library_mobile_app/core/theme.dart';
-import 'package:library_mobile_app/feature/cart/bloc/cart_bloc.dart';
-import 'package:library_mobile_app/feature/cart/bloc/cart_state.dart';
-import 'package:library_mobile_app/l10n/app_localizations.dart'; // ─── استيراد حزمة الترجمة ───
-
+import 'package:library_mobile_app/feature/payment_page/data/repository.dart';
+import 'package:library_mobile_app/l10n/app_localizations.dart';
 import '../bloc/payment_bloc.dart';
 import '../bloc/payment_event.dart';
 import '../bloc/payment_state.dart';
 
-class CheckoutScreen extends StatefulWidget {
+// 1. الشاشة الرئيسية تغلف بالـ BlocProvider من الأعلى مرة واحدة فقط
+class CheckoutScreen extends StatelessWidget {
   const CheckoutScreen({super.key});
 
   @override
-  _CheckoutScreenState createState() => _CheckoutScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => PaymentBloc(paymentRepository: PaymentRepository()),
+      child: const CheckoutViewContent(),
+    );
+  }
 }
 
-class _CheckoutScreenState extends State<CheckoutScreen> {
+// 2. محتوى الشاشة الفعلي
+class CheckoutViewContent extends StatefulWidget {
+  const CheckoutViewContent({super.key});
+
+  @override
+  _CheckoutViewContentState createState() => _CheckoutViewContentState();
+}
+
+class _CheckoutViewContentState extends State<CheckoutViewContent> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
-
-  String _selectedPayment = 'card';
-  bool _wantsDelivery = true;
 
   @override
   void dispose() {
@@ -33,343 +41,286 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     super.dispose();
   }
 
+  // دالة لإظهار تنبيه من الأعلى
+  void _showTopNotification(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.only(
+          top: MediaQuery.of(context).padding.top + 10,
+          left: 16,
+          right: 16,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // ─── تعريف متغير الترجمة ───
     final localizations = AppLocalizations.of(context)!;
 
-    final cartState = context.read<CartBloc>().state;
     int buyingCount = 0;
     int borrowingCount = 0;
     double totalPrice = 0.0;
 
-    if (cartState is CartLoaded) {
-      buyingCount = cartState.cartItems
-          .where((item) => item.isBorrow != true)
-          .length;
-      borrowingCount = cartState.cartItems
-          .where((item) => item.isBorrow == true)
-          .length;
-      totalPrice = cartState.totalAmount;
-    }
-
-    return BlocProvider(
-      create: (context) => CheckoutBloc(),
-      child: Scaffold(
-        backgroundColor: isDark
-            ? AppColors.backgroundDark
-            : const Color(0xFFEFE3D3),
-        appBar: AppBar(
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(25)),
-          ),
-          title: Text(
-            localizations.checkoutAndPayment, // ─── ترجمة العنوان ───
-            style: TextStyle(
-              color: isDark
-                  ? AppColors.primary
-                  : const Color.fromARGB(255, 96, 82, 50),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          backgroundColor: isDark
-              ? AppColors.darkCard
-              : const Color.fromARGB(255, 189, 170, 127),
-          centerTitle: true,
-          iconTheme: IconThemeData(
+    return Scaffold(
+      backgroundColor: isDark
+          ? AppColors.backgroundDark
+          : const Color(0xFFEFE3D3),
+      appBar: AppBar(
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(25)),
+        ),
+        title: Text(
+          localizations.checkoutAndPayment,
+          style: TextStyle(
             color: isDark
                 ? AppColors.primary
                 : const Color.fromARGB(255, 96, 82, 50),
+            fontWeight: FontWeight.bold,
           ),
         ),
-        body: BlocConsumer<CheckoutBloc, CheckoutState>(
-          listener: (context, state) {
-            if (state is CheckoutSuccess) {
-              _showSuccessDialog(
-                context,
-                state,
-                buyingCount,
-                borrowingCount,
-                isDark,
-                localizations, // تمرير الترجمة للدايالوج
-              );
-            } else if (state is CheckoutFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.error),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          },
-          builder: (context, state) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // --- 1. Order Summary / Invoice ---
-                  _buildSection(
-                    localizations.invoiceSummary, // ─── ملخص الفاتورة ───
-                    [
-                      _buildSummaryRow(
-                        localizations.buyingBooks, // ─── كتب الشراء ───
-                        "$buyingCount Items",
-                        isDark,
+        backgroundColor: isDark
+            ? AppColors.darkCard
+            : const Color.fromARGB(255, 189, 170, 127),
+        centerTitle: true,
+      ),
+      body: BlocConsumer<PaymentBloc, PaymentState>(
+        listener: (context, state) {
+          if (state is PaymentSuccess) {
+            _showSuccessDialog(context, state, isDark, localizations);
+          } else if (state is PaymentFailure) {
+            _showTopNotification(context, state.error);
+          }
+        },
+        builder: (context, state) {
+          // قراءة القيم الحالية مباشرة من الـ State المستقر في الـ Bloc
+          String currentPayment = 'cash';
+          bool currentDelivery = true;
+
+          if (state is PaymentInitial) {
+            currentPayment = state.selectedPayment;
+            currentDelivery = state.wantsDelivery;
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                _buildSection(localizations.invoiceSummary, [
+                  _buildSummaryRow(
+                    localizations.buyingBooks,
+                    "$buyingCount Items",
+                    isDark,
+                  ),
+                  _buildSummaryRow(
+                    localizations.borrowingBooks,
+                    "$borrowingCount Items",
+                    isDark,
+                  ),
+                  Divider(
+                    color: isDark
+                        ? AppColors.textGrey.withOpacity(0.3)
+                        : Colors.grey.withOpacity(0.5),
+                  ),
+                  _buildSummaryRow(
+                    localizations.totalPrice,
+                    "${totalPrice.toStringAsFixed(0)} ل.س",
+                    isDark,
+                    isTotal: true,
+                  ),
+                ], isDark: isDark),
+                const SizedBox(height: 16),
+                _buildSection(localizations.personalInformation, [
+                  _buildTextField(
+                    localizations.fullName,
+                    _nameController,
+                    isDark: isDark,
+                  ),
+                  _buildTextField(
+                    localizations.phoneNumber,
+                    _phoneController,
+                    isPhone: true,
+                    isDark: isDark,
+                  ),
+                  _buildTextField(
+                    localizations.detailedAddress,
+                    _addressController,
+                    isDark: isDark,
+                  ),
+                ], isDark: isDark),
+                const SizedBox(height: 16),
+                _buildSection(localizations.deliveryService, [
+                  RadioListTile<bool>(
+                    title: Text(
+                      localizations.yesWantsDelivery,
+                      style: TextStyle(
+                        color: isDark ? AppColors.textDark : Colors.black87,
                       ),
-                      _buildSummaryRow(
-                        localizations.borrowingBooks, // ─── كتب الاستعارة ───
-                        "$borrowingCount Items",
-                        isDark,
+                    ),
+                    secondary: Icon(
+                      Icons.delivery_dining,
+                      color: isDark
+                          ? AppColors.primary
+                          : const Color.fromARGB(255, 96, 82, 50),
+                    ),
+                    activeColor: isDark
+                        ? AppColors.primary
+                        : const Color.fromARGB(255, 96, 82, 50),
+                    value: true,
+                    groupValue: currentDelivery,
+                    onChanged: (v) {
+                      if (v != null) {
+                        context.read<PaymentBloc>().add(UpdateDeliveryEvent(v));
+                      }
+                    },
+                  ),
+                  RadioListTile<bool>(
+                    title: Text(
+                      localizations.noStorePickup,
+                      style: TextStyle(
+                        color: isDark ? AppColors.textDark : Colors.black87,
                       ),
-                      Divider(
+                    ),
+                    secondary: Icon(
+                      Icons.store,
+                      color: isDark
+                          ? AppColors.primary
+                          : const Color.fromARGB(255, 96, 82, 50),
+                    ),
+                    activeColor: isDark
+                        ? AppColors.primary
+                        : const Color.fromARGB(255, 96, 82, 50),
+                    value: false,
+                    groupValue: currentDelivery,
+                    onChanged: (v) {
+                      if (v != null) {
+                        context.read<PaymentBloc>().add(UpdateDeliveryEvent(v));
+                      }
+                    },
+                  ),
+                ], isDark: isDark),
+                const SizedBox(height: 16),
+                _buildSection(localizations.paymentMethod, [
+                  RadioListTile<String>(
+                    title: Text(
+                      localizations.creditCard,
+                      style: TextStyle(
+                        color: isDark ? AppColors.textDark : Colors.black87,
+                      ),
+                    ),
+                    secondary: Icon(
+                      Icons.credit_card,
+                      color: isDark
+                          ? AppColors.primary
+                          : const Color.fromARGB(255, 96, 82, 50),
+                    ),
+                    activeColor: isDark
+                        ? AppColors.primary
+                        : const Color.fromARGB(255, 96, 82, 50),
+                    value: 'online',
+                    groupValue: currentPayment,
+                    onChanged: (v) {
+                      if (v != null) {
+                        context.read<PaymentBloc>().add(
+                          UpdatePaymentMethodEvent(v),
+                        );
+                      }
+                    },
+                  ),
+                  RadioListTile<String>(
+                    title: Text(
+                      localizations.cashOnDelivery,
+                      style: TextStyle(
+                        color: isDark ? AppColors.textDark : Colors.black87,
+                      ),
+                    ),
+                    secondary: Icon(
+                      Icons.money,
+                      color: isDark
+                          ? AppColors.primary
+                          : const Color.fromARGB(255, 96, 82, 50),
+                    ),
+                    activeColor: isDark
+                        ? AppColors.primary
+                        : const Color.fromARGB(255, 96, 82, 50),
+                    value: 'cash',
+                    groupValue: currentPayment,
+                    onChanged: (v) {
+                      if (v != null) {
+                        context.read<PaymentBloc>().add(
+                          UpdatePaymentMethodEvent(v),
+                        );
+                      }
+                    },
+                  ),
+                ], isDark: isDark),
+                const SizedBox(height: 30),
+                state is PaymentLoading
+                    ? CircularProgressIndicator(
                         color: isDark
-                            ? AppColors.textGrey.withOpacity(0.3)
-                            : Colors.grey.withOpacity(0.5),
-                      ),
-                      _buildSummaryRow(
-                        localizations.totalPrice, // ─── السعر الإجمالي ───
-                        "${totalPrice.toStringAsFixed(0)} ل.س",
-                        isDark,
-                        isTotal: true,
-                      ),
-                    ],
-                    index: 0,
-                    isDark: isDark,
-                    localizations: localizations,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // --- 2. Personal Information ---
-                  _buildSection(
-                    localizations.personalInformation, // ─── معلومات شخصية ───
-                    [
-                      _buildTextField(
-                        localizations.fullName, // ─── الاسم الكامل ───
-                        _nameController,
-                        isDark: isDark,
-                      ),
-                      _buildTextField(
-                        localizations.phoneNumber, // ─── رقم الهاتف ───
-                        _phoneController,
-                        isPhone: true,
-                        isDark: isDark,
-                      ),
-                      _buildTextField(
-                        localizations
-                            .detailedAddress, // ─── العنوان التفصيلي ───
-                        _addressController,
-                        isDark: isDark,
-                      ),
-                    ],
-                    index: 1,
-                    isDark: isDark,
-                    localizations: localizations,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // --- 3. Delivery Service ---
-                  _buildSection(
-                    localizations.deliveryService, // ─── خدمة التوصيل ───
-                    [
-                      RadioListTile<bool>(
-                        title: Text(
-                          localizations
-                              .yesWantsDelivery, // ─── نعم، أريد التوصيل ───
-                          style: TextStyle(
-                            color: isDark ? AppColors.textDark : Colors.black87,
-                          ),
-                        ),
-                        secondary: Icon(
-                          Icons.delivery_dining,
-                          color: isDark
-                              ? AppColors.primary
-                              : const Color.fromARGB(255, 96, 82, 50),
-                        ),
-                        activeColor: isDark
                             ? AppColors.primary
                             : const Color.fromARGB(255, 96, 82, 50),
-                        value: true,
-                        groupValue: _wantsDelivery,
-                        onChanged: (v) => setState(() => _wantsDelivery = v!),
-                      ),
-                      RadioListTile<bool>(
-                        title: Text(
-                          localizations
-                              .noStorePickup, // ─── لا، سأستلمها من المكتبة ───
-                          style: TextStyle(
-                            color: isDark ? AppColors.textDark : Colors.black87,
+                      )
+                    : ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 55),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
                           ),
+                          backgroundColor: isDark
+                              ? AppColors.inputDark
+                              : const Color.fromARGB(255, 189, 170, 127),
                         ),
-                        secondary: Icon(
-                          Icons.store,
-                          color: isDark
-                              ? AppColors.primary
-                              : const Color.fromARGB(255, 96, 82, 50),
-                        ),
-                        activeColor: isDark
-                            ? AppColors.primary
-                            : const Color.fromARGB(255, 96, 82, 50),
-                        value: false,
-                        groupValue: _wantsDelivery,
-                        onChanged: (v) => setState(() => _wantsDelivery = v!),
-                      ),
-                    ],
-                    index: 2,
-                    isDark: isDark,
-                    localizations: localizations,
-                  ),
+                        onPressed: () {
+                          // 1. التحقق من الحقول النصية إن كانت فارغة
+                          if (_nameController.text.trim().isEmpty ||
+                              _phoneController.text.trim().isEmpty ||
+                              _addressController.text.trim().isEmpty) {
+                            _showTopNotification(
+                              context,
+                              'الرجاء تعبئة جميع معلوماتك الشخصية قبل التأكيد',
+                            );
+                            return; // إيقاف التنفيذ وعدم إرسال الطلب
+                          }
 
-                  const SizedBox(height: 16),
+                          // 2. التحقق من الاختيارات (الـ Radio موجودة ومضبوطة مسبقاً بقيم افتراضية في الـ State، لذا الحقول معباة دائماً)
 
-                  // --- 4. Payment Method ---
-                  _buildSection(
-                    localizations.paymentMethod, // ─── طريقة الدفع ───
-                    [
-                      RadioListTile(
-                        title: Text(
-                          localizations.creditCard, // ─── بطاقة ائتمان ───
-                          style: TextStyle(
-                            color: isDark ? AppColors.textDark : Colors.black87,
-                          ),
-                        ),
-                        secondary: Icon(
-                          Icons.credit_card,
-                          color: isDark
-                              ? AppColors.primary
-                              : const Color.fromARGB(255, 96, 82, 50),
-                        ),
-                        activeColor: isDark
-                            ? AppColors.primary
-                            : const Color.fromARGB(255, 96, 82, 50),
-                        value: 'card',
-                        groupValue: _selectedPayment,
-                        onChanged: (v) =>
-                            setState(() => _selectedPayment = v.toString()),
-                      ),
-                      RadioListTile(
-                        title: Text(
-                          localizations
-                              .cashOnDelivery, // ─── الدفع عند الاستلام ───
-                          style: TextStyle(
-                            color: isDark ? AppColors.textDark : Colors.black87,
-                          ),
-                        ),
-                        secondary: Icon(
-                          Icons.money,
-                          color: isDark
-                              ? AppColors.primary
-                              : const Color.fromARGB(255, 96, 82, 50),
-                        ),
-                        activeColor: isDark
-                            ? AppColors.primary
-                            : const Color.fromARGB(255, 96, 82, 50),
-                        value: 'cash',
-                        groupValue: _selectedPayment,
-                        onChanged: (v) =>
-                            setState(() => _selectedPayment = v.toString()),
-                      ),
-                    ],
-                    index: 3,
-                    isDark: isDark,
-                    localizations: localizations,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // --- 5. Borrowing Terms Note ---
-                  _buildSection(
-                    localizations.borrowingTerms, // ─── شروط الاستعارة ───
-                    [
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(
-                          Icons.info_outline,
-                          color: Colors.orange,
-                          size: 28,
-                        ),
-                        title: Text(
-                          localizations
-                              .importantNoteBorrow, // ─── ملاحظة هامة للكتب المستعارة ───
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: isDark ? AppColors.textDark : Colors.black87,
-                          ),
-                        ),
-                        subtitle: Text(
-                          localizations
-                              .borrowPeriodNotice, // ─── الحد الأقصى للاستعارة 7 أيام... ───
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: isDark ? AppColors.textGrey : Colors.black54,
-                          ),
-                        ),
-                      ),
-                    ],
-                    index: 4,
-                    isDark: isDark,
-                    localizations: localizations,
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  // --- Submit Button ---
-                  state is CheckoutLoading
-                      ? CircularProgressIndicator(
-                          color: isDark
-                              ? AppColors.primary
-                              : const Color.fromARGB(255, 96, 82, 50),
-                        )
-                      : ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                minimumSize: const Size(double.infinity, 55),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
-                                backgroundColor: isDark
-                                    ? AppColors.inputDark
-                                    : const Color.fromARGB(255, 189, 170, 127),
-                              ),
-                              onPressed: () {
-                                context.read<CheckoutBloc>().add(
-                                  ConfirmPaymentEvent(
-                                    name: _nameController.text,
-                                    phone: _phoneController.text,
-                                    address: _addressController.text,
-                                    paymentMethod: _selectedPayment,
-                                    wantsDelivery: _wantsDelivery,
-                                  ),
-                                );
-                              },
-                              child: Text(
-                                localizations
-                                    .confirmOrderAndPay, // ─── تأكيد الطلب والدفع ───
-                                style: TextStyle(
-                                  color: isDark
-                                      ? AppColors.primary
-                                      : const Color.fromARGB(255, 96, 82, 50),
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            )
-                            .animate()
-                            .fadeIn(delay: 400.ms, duration: 400.ms)
-                            .slideY(
-                              begin: 0.2,
-                              end: 0,
-                              curve: Curves.easeOutCubic,
+                          // إذا كل شيء تمام، يتم إرسال الحدث للـ Bloc
+                          context.read<PaymentBloc>().add(
+                            ConfirmPaymentEvent(
+                              name: _nameController.text,
+                              phone: _phoneController.text,
+                              address: _addressController.text,
                             ),
-                ],
-              ),
-            );
-          },
-        ),
+                          );
+                        },
+                        child: Text(
+                          localizations.confirmOrderAndPay,
+                          style: TextStyle(
+                            color: isDark
+                                ? AppColors.primary
+                                : const Color.fromARGB(255, 96, 82, 50),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -412,11 +363,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   void _showSuccessDialog(
     BuildContext context,
-    CheckoutSuccess state,
-    int buyingCount,
-    int borrowingCount,
+    PaymentSuccess state,
     bool isDark,
-    AppLocalizations localizations, // تمرير الترجمة
+    AppLocalizations localizations,
   ) {
     showDialog(
       context: context,
@@ -425,7 +374,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         backgroundColor: isDark ? AppColors.darkCard : const Color(0xFFEFE3D3),
         icon: const Icon(Icons.check_circle, color: Colors.green, size: 60),
         title: Text(
-          localizations.orderReceived, // ─── تم استلام الطلب ───
+          localizations.orderReceived,
           style: TextStyle(color: isDark ? AppColors.textDark : Colors.black87),
         ),
         content: Column(
@@ -433,32 +382,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "${localizations.orderId}: ${state.orderId}", // ─── رقم الطلب ───
+              "${localizations.orderId}: ${state.orderId}",
               style: TextStyle(
                 color: isDark ? AppColors.textDark : Colors.black87,
               ),
             ),
             Text(
-              "${localizations.date}: ${state.date}", // ─── التاريخ ───
-              style: TextStyle(
-                color: isDark ? AppColors.textDark : Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 5),
-            Text(
-              "${localizations.buyingItems}: $buyingCount", // ─── عناصر الشراء ───
-              style: TextStyle(
-                color: isDark ? AppColors.textDark : Colors.black87,
-              ),
-            ),
-            Text(
-              "${localizations.borrowingItems}: $borrowingCount", // ─── عناصر الاستعارة ───
-              style: TextStyle(
-                color: isDark ? AppColors.textDark : Colors.black87,
-              ),
-            ),
-            Text(
-              "${localizations.deliveryService}: ${_wantsDelivery ? localizations.requested : localizations.storePickup}",
+              "${localizations.date}: ${state.date}",
               style: TextStyle(
                 color: isDark ? AppColors.textDark : Colors.black87,
               ),
@@ -467,19 +397,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ),
         actions: [
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isDark
-                  ? AppColors.inputDark
-                  : const Color.fromARGB(255, 189, 170, 127),
-              foregroundColor: isDark
-                  ? AppColors.primary
-                  : const Color.fromARGB(255, 96, 82, 50),
-            ),
             onPressed: () {
               Navigator.pop(context);
               Navigator.pop(context);
             },
-            child: Text(localizations.backToHome), // ─── العودة للرئيسية ───
+            child: Text(localizations.backToHome),
           ),
         ],
       ),
@@ -489,57 +411,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget _buildSection(
     String title,
     List<Widget> children, {
-    int index = 0,
     required bool isDark,
-    required AppLocalizations localizations,
   }) {
     return Card(
-          color: isDark ? AppColors.darkCard : AppColors.accent,
-          surfaceTintColor: isDark ? AppColors.darkCard : AppColors.accent,
-          elevation: isDark ? 2 : 8,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-            side: isDark
-                ? BorderSide(color: AppColors.textGrey.withOpacity(0.1))
-                : BorderSide.none,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(15),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17,
-                    color: isDark
-                        ? AppColors.primary
-                        : const Color.fromARGB(255, 96, 82, 50),
-                  ),
-                ),
-                Divider(
-                  color: isDark
-                      ? AppColors.textGrey.withOpacity(0.2)
-                      : Colors.grey.withOpacity(0.4),
-                ),
-                ...children,
-              ],
+      color: isDark ? AppColors.darkCard : AppColors.accent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.all(15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 17,
+                color: isDark
+                    ? AppColors.primary
+                    : const Color.fromARGB(255, 96, 82, 50),
+              ),
             ),
-          ),
-        )
-        .animate()
-        .fadeIn(
-          delay: Duration(milliseconds: 100 * index),
-          duration: 500.ms,
-          curve: Curves.easeOutCubic,
-        )
-        .slideY(
-          begin: 0.15,
-          end: 0,
-          duration: 500.ms,
-          curve: Curves.easeOutCubic,
-        );
+            Divider(
+              color: isDark
+                  ? AppColors.textGrey.withOpacity(0.2)
+                  : Colors.grey.withOpacity(0.4),
+            ),
+            ...children,
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildTextField(
@@ -551,9 +452,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextField(
-        cursorColor: isDark
-            ? AppColors.primary
-            : const Color.fromARGB(255, 234, 226, 218),
         controller: controller,
         style: TextStyle(color: isDark ? AppColors.textDark : Colors.black87),
         keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
@@ -561,26 +459,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           filled: true,
           fillColor: isDark ? AppColors.inputDark : const Color(0xFFEFE3D3),
           labelText: label,
-          labelStyle: TextStyle(
-            color: isDark ? AppColors.textGrey : Colors.black54,
-          ),
           prefixIcon: Icon(
             isPhone ? Icons.phone : Icons.edit,
             color: isDark ? AppColors.primary : Colors.black54,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(50),
-            borderSide: BorderSide(
-              color: isDark ? AppColors.primary : Colors.grey,
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(50),
-            borderSide: BorderSide(
-              color: isDark
-                  ? AppColors.textGrey.withOpacity(0.3)
-                  : Colors.grey.withOpacity(0.5),
-            ),
           ),
         ),
       ),

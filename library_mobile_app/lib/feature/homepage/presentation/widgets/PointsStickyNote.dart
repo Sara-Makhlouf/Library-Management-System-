@@ -3,111 +3,133 @@ import 'dart:math' as math;
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/l10n/app_localizations.dart';
+import 'package:library_mobile_app/feature/profile/data/customer_repository.dart';
 
 class PointsStickyNote extends StatelessWidget {
-  final int points;
+  final CustomerRepository _repository = CustomerRepository();
 
-  const PointsStickyNote({Key? key, this.points = 150}) : super(key: key);
+  PointsStickyNote({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     final localizations = AppLocalizations.of(context)!;
 
-    return Stack(
-          alignment: Alignment.topCenter,
-          clipBehavior: Clip.none,
-          children: [
-            Transform.rotate(
-              angle: 2.5 * math.pi / 180,
-              child: CustomPaint(
-                size: const Size(120, 125),
-                painter: RealisticCurledPaperPainter(
-                  paperColor: isDark
-                      ? AppColors.darkCard
-                      : const Color(0xFFEFE3D3),
-                  borderColor: isDark
-                      ? AppColors.accentDark
-                      : const Color(0xFFC6B49C),
-                ),
-                child: Container(
-                  width: 120,
-                  height: 115,
-                  padding: const EdgeInsets.fromLTRB(8, 24, 8, 12),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        localizations.myPoints(points),
-                        style: const TextStyle(
-                          fontFamily: 'Cairo',
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Stack(
-                        alignment: Alignment.center,
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _repository.getProfile(),
+      builder: (context, snapshot) {
+        int points = 0;
+
+        if (snapshot.hasData && snapshot.data != null) {
+          final responseData = snapshot.data!['data'];
+          points = responseData['points'] ?? 0;
+        }
+
+        return Stack(
+              alignment: Alignment.topCenter,
+              clipBehavior: Clip.none,
+              children: [
+                Transform.rotate(
+                  angle: 2.5 * math.pi / 180,
+                  child: CustomPaint(
+                    size: const Size(120, 125),
+                    painter: RealisticCurledPaperPainter(
+                      paperColor: isDark
+                          ? AppColors.darkCard
+                          : const Color(0xFFEFE3D3),
+                      borderColor: isDark
+                          ? AppColors.accentDark
+                          : const Color(0xFFC6B49C),
+                    ),
+                    child: Container(
+                      width: 120,
+                      height: 115,
+                      padding: const EdgeInsets.fromLTRB(8, 24, 8, 12),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          Positioned(
-                            top: 0,
-                            child: Icon(
-                              Icons.auto_awesome,
-                              size: 14,
-                              color: isDark
-                                  ? AppColors.primary.withOpacity(0.8)
-                                  : const Color(0xFF8C7355).withOpacity(0.8),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: Icon(
-                              Icons.monetization_on_outlined,
-                              size: 32,
-                              color: isDark
-                                  ? AppColors.primary
-                                  : const Color(0xFF8C7355),
-                            ),
+                          snapshot.connectionState == ConnectionState.waiting
+                              ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  localizations.myPoints(points),
+                                  style: const TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                          const SizedBox(height: 8),
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Positioned(
+                                top: 0,
+                                child: Icon(
+                                  Icons.star_rounded,
+                                  size: 14,
+                                  color: isDark
+                                      ? AppColors.primary.withOpacity(0.8)
+                                      : const Color(
+                                          0xFF8C7355,
+                                        ).withOpacity(0.8),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10),
+                                child: Icon(
+                                  Icons.star_rounded,
+                                  size: 32,
+                                  color: isDark
+                                      ? AppColors.primary
+                                      : const Color(0xFF8C7355),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-            Positioned(
-              top: -12,
-              left: 48,
-              child: Transform.rotate(
-                angle: -12 * math.pi / 180,
-                child: Icon(
-                  Icons.attach_file,
-                  size: 26,
-                  color: isDark
-                      ? const Color(0xFFD1D1D1)
-                      : const Color(0xFF5A5A5A),
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withOpacity(0.2),
-                      offset: const Offset(1, 2),
-                      blurRadius: 2,
+                Positioned(
+                  top: -12,
+                  left: 48,
+                  child: Transform.rotate(
+                    angle: -12 * math.pi / 180,
+                    child: Icon(
+                      Icons.attach_file,
+                      size: 26,
+                      color: isDark
+                          ? const Color(0xFFD1D1D1)
+                          : const Color(0xFF5A5A5A),
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.2),
+                          offset: const Offset(1, 2),
+                          blurRadius: 2,
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ],
-        )
-        .animate()
-        .fadeIn(duration: 500.ms, curve: Curves.easeOutCubic)
-        .slideX(
-          begin: 0.4,
-          end: 0,
-          duration: 500.ms,
-          curve: Curves.easeOutCubic,
-        );
+              ],
+            )
+            .animate()
+            .fadeIn(duration: 500.ms, curve: Curves.easeOutCubic)
+            .slideX(
+              begin: 0.4,
+              end: 0,
+              duration: 500.ms,
+              curve: Curves.easeOutCubic,
+            );
+      },
+    );
   }
 }
 

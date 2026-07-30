@@ -1,55 +1,75 @@
-class CartBookModel {
-  final String id;
-  final String title;
-  final String author;
-  final double price;
-  final String imageUrl;
-  final bool isBorrow;
-  int quantity;
+import 'package:library_mobile_app/feature/homepage/data/model.dart';
 
-  CartBookModel({
+class CartModel {
+  final int id;
+  final int customerId;
+  final String totalPrice;
+  final List<CartItemModel> details;
+
+  CartModel({
     required this.id,
-    required this.title,
-    required this.author,
-    required this.price,
-    required this.imageUrl,
-    this.isBorrow = false,
-    this.quantity = 1,
+    required this.customerId,
+    required this.totalPrice,
+    required this.details,
   });
-
-  factory CartBookModel.fromJson(Map<String, dynamic> json) {
-    return CartBookModel(
-      id: json['id'] ?? '',
-      title: json['title'] ?? '',
-      author: json['author'] ?? '',
-      price: (json['price'] as num).toDouble(),
-      imageUrl: json['image_url'] ?? '',
-      isBorrow: json['is_borrow'] ?? false,
-      quantity: json['quantity'] ?? 1,
+  CartModel copyWith({
+    int? id,
+    int? customerId,
+    String? totalPrice,
+    List<CartItemModel>? details,
+  }) {
+    return CartModel(
+      id: id ?? this.id,
+      customerId: customerId ?? this.customerId,
+      totalPrice: totalPrice ?? this.totalPrice,
+      details: details ?? this.details,
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'author': author,
-      'price': price,
-      'image_url': imageUrl,
-      'is_borrow': isBorrow,
-      'quantity': quantity,
-    };
-  }
+  factory CartModel.fromJson(Map<String, dynamic> json) {
+    var detailsList = json['details'] as List? ?? [];
+    List<CartItemModel> parsedDetails = detailsList
+        .map((item) => CartItemModel.fromJson(item))
+        .toList();
 
-  CartBookModel copyWith({int? quantity}) {
-    return CartBookModel(
-      id: this.id,
-      title: this.title,
-      author: this.author,
-      price: this.price,
-      imageUrl: this.imageUrl,
-      isBorrow: isBorrow ?? this.isBorrow,
-      quantity: quantity ?? this.quantity,
+    return CartModel(
+      id: json['id'] ?? 0,
+      customerId: json['customer_id'] ?? 0,
+      totalPrice: json['total_price']?.toString() ?? '0.00',
+      details: parsedDetails,
+    );
+  }
+}
+
+class CartItemModel {
+  final int id;
+  final int cartId;
+  final int bookId;
+  final String price;
+  final String type;
+  final String? dueAt;
+  final BookModel? book; // استخدام BookModel الأساسي مباشرة هنا!
+
+  CartItemModel({
+    required this.id,
+    required this.cartId,
+    required this.bookId,
+    required this.price,
+    required this.type,
+    this.dueAt,
+    this.book,
+  });
+
+  factory CartItemModel.fromJson(Map<String, dynamic> json) {
+    return CartItemModel(
+      id: json['id'] ?? 0,
+      cartId: json['cart_id'] ?? 0,
+      bookId: json['book_id'] ?? 0,
+      price: json['price']?.toString() ?? '0.00',
+      type: json['type'] ?? '',
+      dueAt: json['due_at'],
+      // هنا يتم استدعاء BookModel الأساسي الذي يعالج رابط الصورة تلقائياً
+      book: json['book'] != null ? BookModel.fromJson(json['book']) : null,
     );
   }
 }

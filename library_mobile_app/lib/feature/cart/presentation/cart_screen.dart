@@ -25,8 +25,6 @@ class _CartScreenState extends State<CartScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // 2️⃣ استدعاء كلاس الترجمة للوصول لجميع المفاتيح
     final localizations = AppLocalizations.of(context)!;
 
     return DefaultTabController(
@@ -40,7 +38,7 @@ class _CartScreenState extends State<CartScreen> {
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(25)),
           ),
           title: Text(
-            localizations.shoppingCart, // 🔄 تم استبدال "Shopping Cart"
+            localizations.shoppingCart,
             style: TextStyle(
               color: isDark ? AppColors.textDark : Colors.black87,
               fontWeight: FontWeight.bold,
@@ -61,36 +59,41 @@ class _CartScreenState extends State<CartScreen> {
             unselectedLabelColor: isDark ? AppColors.textGrey : Colors.white70,
             indicatorSize: TabBarIndicatorSize.label,
             tabs: [
-              Tab(text: localizations.buyingTab), // 🔄 تم استبدال "Buying"
-              Tab(
-                text: localizations.borrowingTab,
-              ), // 🔄 تم استبدال "Borrowing"
+              Tab(text: localizations.buyingTab),
+              Tab(text: localizations.borrowingTab),
             ],
           ),
         ),
         body: BlocBuilder<CartBloc, CartState>(
           builder: (context, state) {
             if (state is CartLoaded) {
+              final buyingItems = state.cart.details
+                  .where((item) => item.type != 'borrow')
+                  .toList();
+
+              final borrowingItems = state.cart.details
+                  .where((item) => item.type == 'borrow')
+                  .toList();
+
+              // التحقق من أن السلة فارغة
+              final bool isCartEmpty = state.cart.details.isEmpty;
+
               return Column(
                 children: [
                   Expanded(
                     child: TabBarView(
                       children: [
                         _buildCartList(
-                          state.cartItems
-                              .where(
-                                (item) => (item.isBorrow ?? false) == false,
-                              )
-                              .toList(),
+                          buyingItems,
                           isDark,
-                          localizations, // مررنا متغير الترجمة هنا
+                          localizations,
+                          'buying_list',
                         ),
                         _buildCartList(
-                          state.cartItems
-                              .where((item) => (item.isBorrow ?? false) == true)
-                              .toList(),
+                          borrowingItems,
                           isDark,
-                          localizations, // مررنا متغير الترجمة هنا
+                          localizations,
+                          'borrowing_list',
                         ),
                       ],
                     ),
@@ -124,6 +127,20 @@ class _CartScreenState extends State<CartScreen> {
                           elevation: 2,
                         ),
                         onPressed: () {
+                          // الشرط: إذا كانت السلة فارغة، أظهر تنبيه ولا تنتقل
+                          if (isCartEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "عذراً، سلة المشتريات فارغة تماماً، لا يمكن إتمام الطلب.",
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+
+                          // الانتقال لصفحة الدفع
                           Navigator.pushNamed(
                             context,
                             Routes.payment,
@@ -131,8 +148,7 @@ class _CartScreenState extends State<CartScreen> {
                           );
                         },
                         child: Text(
-                          localizations
-                              .confirmOrderAndPay, // 🔄 تم استبدال "Confirm Order & Pay"
+                          localizations.confirmOrderAndPay,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -157,17 +173,17 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  // 💡 أضفنا AppLocalizations كمعامل فرعي لتحديث نص الحالة الفارغة تلقائياً
   Widget _buildCartList(
     List<dynamic> items,
     bool isDark,
     AppLocalizations localizations,
+    String listKey,
   ) {
     if (items.isEmpty) {
       return Center(
+        key: ValueKey('${listKey}_empty'),
         child: Text(
-          localizations
-              .noItemsInSection, // 🔄 تحويلها لديناميكية بدلاً من ثابتة
+          localizations.noItemsInSection,
           style: TextStyle(
             color: isDark ? AppColors.textGrey : Colors.grey,
             fontSize: 16,
@@ -176,6 +192,7 @@ class _CartScreenState extends State<CartScreen> {
       );
     }
     return ListView.builder(
+      key: ValueKey(listKey),
       padding: const EdgeInsets.only(bottom: 20, top: 15, left: 10, right: 10),
       itemCount: items.length,
       itemBuilder: (context, index) => CartItemCard(item: items[index]),

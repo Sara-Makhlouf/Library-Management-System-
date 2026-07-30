@@ -1,17 +1,23 @@
-abstract class CheckoutEvent {}
+abstract class PaymentEvent {}
 
-class ConfirmPaymentEvent extends CheckoutEvent {
+class UpdatePaymentMethodEvent extends PaymentEvent {
+  final String paymentMethod;
+  UpdatePaymentMethodEvent(this.paymentMethod);
+}
+
+class UpdateDeliveryEvent extends PaymentEvent {
+  final bool wantsDelivery;
+  UpdateDeliveryEvent(this.wantsDelivery);
+}
+
+class ConfirmPaymentEvent extends PaymentEvent {
   final String name;
   final String phone;
   final String address;
-  final String paymentMethod;
-  final bool wantsDelivery;
 
   ConfirmPaymentEvent({
     required this.name,
     required this.phone,
     required this.address,
-    required this.paymentMethod,
-    required this.wantsDelivery,
   });
 }

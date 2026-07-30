@@ -20,7 +20,7 @@ class HomeState {
   final String errorMessage;
 
   HomeState({
-    this.tabIndex = 0,
+    this.tabIndex = 1,
     this.popularBooks = const [],
     this.searchBooks = const [],
     this.categoryBooks = const [],

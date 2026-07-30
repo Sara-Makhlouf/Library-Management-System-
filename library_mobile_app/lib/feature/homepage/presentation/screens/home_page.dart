@@ -3,6 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:library_mobile_app/core/constant.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/cart/presentation/cart_screen.dart';
+import 'package:library_mobile_app/feature/favourite/bloc/favbloc.dart';
+import 'package:library_mobile_app/feature/favourite/bloc/favevent.dart';
+import 'package:library_mobile_app/feature/favourite/data/repository.dart';
+import 'package:library_mobile_app/feature/favourite/presentation/favourit_screen.dart';
+// تأكد من استيراد الـ Bloc والـ Repository الخاص بالمفضلة:
+// import 'package:library_mobile_app/feature/favourite/bloc/favorite_bloc.dart';
+// import 'package:library_mobile_app/feature/favourite/data/favorite_repository.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/BottomNav.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/PointsStickyNote.dart';
@@ -26,7 +33,8 @@ class HomeScreen extends StatelessWidget {
           extendBody: true,
           backgroundColor: isDark
               ? AppColors.backgroundDark
-              : const Color(0xFFEFE3D3),
+              : AppColors.backgroundLight,
+          // : const Color(0xFFEFE3D3),
           appBar: state.tabIndex == 1
               ? AppBar(
                   backgroundColor: isDark
@@ -56,7 +64,6 @@ class HomeScreen extends StatelessWidget {
                   actions: [CustomNotificationButton()],
                 )
               : null,
-
           drawer: Drawer(
             backgroundColor: isDark
                 ? AppColors.backgroundDark
@@ -83,17 +90,26 @@ class HomeScreen extends StatelessWidget {
                           : const Color(0xFFF5EFEB),
                     ),
                   ),
-                  accountName: const Text(
-                    'Ghufran Ibrahim',
+                  accountName: Text(
+                    'غفران محمد ابراهيم',
                     style: TextStyle(
-                      color: Color(0xFF2C2518),
+                      fontFamily: 'Cairo',
+                      color: isDark
+                          ? AppColors.textDark
+                          : const Color(0xFF2C2518),
                       fontWeight: FontWeight.bold,
-                      fontSize: 18,
+                      fontSize: 16,
                     ),
                   ),
-                  accountEmail: const Text(
-                    'ghufran@example.com',
-                    style: TextStyle(color: Color(0xFF605232), fontSize: 14),
+                  accountEmail: Text(
+                    'ghufranmohamad234@gmail.com',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      color: isDark
+                          ? AppColors.textGrey
+                          : const Color(0xFF605232),
+                      fontSize: 13,
+                    ),
                   ),
                 ),
 
@@ -111,6 +127,7 @@ class HomeScreen extends StatelessWidget {
                         title: Text(
                           localizations.orderHistory,
                           style: TextStyle(
+                            fontFamily: 'Cairo',
                             color: isDark
                                 ? AppColors.textDark
                                 : const Color(0xFF2C2518),
@@ -138,6 +155,7 @@ class HomeScreen extends StatelessWidget {
                         title: Text(
                           localizations.deliveryService,
                           style: TextStyle(
+                            fontFamily: 'Cairo',
                             color: isDark
                                 ? AppColors.textDark
                                 : const Color(0xFF2C2518),
@@ -165,6 +183,7 @@ class HomeScreen extends StatelessWidget {
                         title: Text(
                           localizations.profile,
                           style: TextStyle(
+                            fontFamily: 'Cairo',
                             color: isDark
                                 ? AppColors.textDark
                                 : const Color(0xFF2C2518),
@@ -203,6 +222,7 @@ class HomeScreen extends StatelessWidget {
                         title: Text(
                           localizations.settings,
                           style: TextStyle(
+                            fontFamily: 'Cairo',
                             color: isDark
                                 ? AppColors.textDark
                                 : const Color(0xFF2C2518),
@@ -223,6 +243,7 @@ class HomeScreen extends StatelessWidget {
                         title: Text(
                           localizations.contactUs,
                           style: TextStyle(
+                            fontFamily: 'Cairo',
                             color: isDark
                                 ? AppColors.textDark
                                 : const Color(0xFF2C2518),
@@ -252,6 +273,7 @@ class HomeScreen extends StatelessWidget {
                   title: Text(
                     localizations.logout,
                     style: const TextStyle(
+                      fontFamily: 'Cairo',
                       color: Color(0xFFB33A3A),
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -280,13 +302,10 @@ class HomeScreen extends StatelessWidget {
   Widget buildBody(int tabIndex, bool isDark, AppLocalizations localizations) {
     switch (tabIndex) {
       case 0:
-        return Center(
-          child: Text(
-            localizations.favouritePage,
-            style: TextStyle(
-              color: isDark ? AppColors.textDark : Colors.black87,
-            ),
-          ),
+        return BlocProvider(
+          create: (context) =>
+              FavoriteBloc(FavoriteRepository())..add(GetFavoritesEvent()),
+          child: const FavoriteScreen(),
         );
 
       case 1:
@@ -312,10 +331,10 @@ class HomeScreen extends StatelessWidget {
                         const Search(),
 
                         if (!hasSearchQuery)
-                          const Positioned(
+                          Positioned(
                             right: 15,
                             top: 40,
-                            child: PointsStickyNote(points: 150),
+                            child: PointsStickyNote(),
                           ),
                       ],
                     ),

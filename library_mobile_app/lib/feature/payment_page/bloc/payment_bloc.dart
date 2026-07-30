@@ -1,23 +1,64 @@
-import 'dart:math';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:library_mobile_app/feature/payment_page/data/payment_mode.dart';
+import 'package:library_mobile_app/feature/payment_page/data/repository.dart';
 import 'payment_event.dart';
 import 'payment_state.dart';
 
-class CheckoutBloc extends Bloc<CheckoutEvent, CheckoutState> {
-  CheckoutBloc() : super(CheckoutInitial()) {
+class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
+  final PaymentRepository paymentRepository;
+
+  PaymentBloc({required this.paymentRepository}) : super(PaymentInitial()) {
+    // تحديث طريقة الدفع
+    on<UpdatePaymentMethodEvent>((event, emit) {
+      final currentState = state;
+      if (currentState is PaymentInitial) {
+        emit(
+          PaymentInitial(
+            selectedPayment: event.paymentMethod,
+            wantsDelivery: currentState.wantsDelivery,
+          ),
+        );
+      }
+    });
+
+    // تحديث خيار التوصيل
+    on<UpdateDeliveryEvent>((event, emit) {
+      final currentState = state;
+      if (currentState is PaymentInitial) {
+        emit(
+          PaymentInitial(
+            selectedPayment: currentState.selectedPayment,
+            wantsDelivery: event.wantsDelivery,
+          ),
+        );
+      }
+    });
+
+    // تأكيد وإرسال الطلب للباك إند
     on<ConfirmPaymentEvent>((event, emit) async {
-      emit(CheckoutLoading());
-      await Future.delayed(const Duration(seconds: 2));
+      emit(PaymentLoading());
+      try {
+        final currentState = state;
+        String paymentMethod = 'cash';
+        bool wantsDelivery = true;
 
-      bool isSuccess = true;
+        if (currentState is PaymentInitial) {
+          paymentMethod = currentState.selectedPayment;
+          wantsDelivery = currentState.wantsDelivery;
+        }
 
-      if (isSuccess) {
-        String mockOrderId = "LIB-${Random().nextInt(99999)}";
-        String mockDate = DateTime.now().toString().split('.')[0];
+        PaymentModel paymentModel = PaymentModel(
+          name: event.name,
+          phone: event.phone,
+          address: event.address,
+          paymentMethod: paymentMethod,
+          wantsDelivery: wantsDelivery,
+        );
 
-        emit(CheckoutSuccess(orderId: mockOrderId, date: mockDate));
-      } else {
-        emit(CheckoutFailure("فشل الاتصال بالسيرفر، حاول مجدداً"));
+        final response = await paymentRepository.submitCheckout(paymentModel);
+        emit(PaymentSuccess(response));
+      } catch (e) {
+        emit(PaymentFailure(e.toString().replaceAll('Exception: ', '')));
       }
     });
   }

@@ -2,17 +2,12 @@ abstract class CartEvent {}
 
 class LoadCartEvent extends CartEvent {}
 
-class IncreaseQuantityEvent extends CartEvent {
-  final String bookId;
-  IncreaseQuantityEvent(this.bookId);
-}
-
-class DecreaseQuantityEvent extends CartEvent {
-  final String bookId;
-  DecreaseQuantityEvent(this.bookId);
-}
-
 class RemoveBookEvent extends CartEvent {
-  final String bookId;
-  RemoveBookEvent(this.bookId);
+  final int itemId; // الـ id الخاص بعنصر السلة (Cart Item ID) وليس الـ bookId
+  RemoveBookEvent(this.itemId);
+}
+
+class RemoveBookFromCartEvent extends CartEvent {
+  final int cartItemId;
+  RemoveBookFromCartEvent(this.cartItemId);
 }

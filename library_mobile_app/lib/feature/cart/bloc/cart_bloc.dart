@@ -1,80 +1,50 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:library_mobile_app/feature/cart/bloc/cart_event.dart';
 import 'package:library_mobile_app/feature/cart/bloc/cart_state.dart';
-import 'package:library_mobile_app/feature/cart/data/model/book_model.dart';
+import 'package:library_mobile_app/feature/cart/data/repository.dart';
 
 class CartBloc extends Bloc<CartEvent, CartState> {
-  final List<CartBookModel> _cartItems = [
-    // --- كتب الشراء ---
-    CartBookModel(
-      id: '1',
-      title: 'كتاب تعلم فلتر وبناء التطبيقات',
-      author: 'أحمد',
-      price: 15000,
-      imageUrl:
-          'assets/images/photo_2026-05-04_21-46-04.jpg', // تعديل المسارات بناءً على الـ assets المتاحة لديكِ
-      isBorrow: false,
-    ),
-    CartBookModel(
-      id: '2',
-      title: 'أساسيات البرمجة بلغة ++C',
-      author: 'سارة',
-      price: 12000,
-      imageUrl: 'assets/images/photo_2026-05-04_21-46-04.jpg',
-      isBorrow: false,
-    ),
+  // استخدام كائن واحد ثابت للـ Repository لكل الـ Bloc
+  final BookCartRepository cartRepository = BookCartRepository();
 
-    // --- كتب الاستعارة ---
-    CartBookModel(
-      id: '3',
-      title: 'هندسة البرمجيات المتقدمة',
-      author: 'محمد',
-      price: 30000, // رسم الاستعارة
-      imageUrl: 'assets/images/photo_2026-05-04_21-46-04.jpg',
-      isBorrow: true,
-    ),
-    CartBookModel(
-      id: '4',
-      title: 'مقدمة في الذكاء الاصطناعي',
-      author: 'ولاء',
-      price: 30000, // رسم الاستعارة
-      imageUrl: 'assets/images/photo_2026-05-04_21-46-04.jpg',
-      isBorrow: true,
-    ),
-  ];
-
-  CartBloc() : super(CartLoaded([], 0.0)) {
-    on<LoadCartEvent>((event, emit) {
-      emit(CartLoaded(List.from(_cartItems), _calculateTotal()));
-    });
-
-    on<IncreaseQuantityEvent>((event, emit) {
-      final index = _cartItems.indexWhere((item) => item.id == event.bookId);
-      if (index != -1) {
-        _cartItems[index].quantity++;
-        emit(CartLoaded(List.from(_cartItems), _calculateTotal()));
+  CartBloc() : super(CartInitial()) {
+    on<LoadCartEvent>((event, emit) async {
+      emit(CartLoading());
+      try {
+        final cartModel = await cartRepository.getCart();
+        emit(CartLoaded(cartModel));
+      } catch (e) {
+        emit(CartError(e.toString()));
       }
     });
 
-    on<DecreaseQuantityEvent>((event, emit) {
-      final index = _cartItems.indexWhere((item) => item.id == event.bookId);
-      if (index != -1 && _cartItems[index].quantity > 1) {
-        _cartItems[index].quantity--;
-        emit(CartLoaded(List.from(_cartItems), _calculateTotal()));
+    on<RemoveBookFromCartEvent>((event, emit) async {
+      print(
+        '🔄 CartBloc: Received RemoveBookFromCartEvent for book ID: ${event.cartItemId}',
+      );
+
+      // حفظ الحالة السابقة احتياطياً
+      final currentState = state;
+
+      try {
+        // 1. حذف العنصر من السيرفر باستخدام الـ book_id مباشرة
+        await cartRepository.removeBookFromCart(event.cartItemId);
+
+        // 2. جلب السلة المحدثة من السيرفر
+        final updatedCart = await cartRepository.getCart();
+
+        // 3. إصدار الحالة الجديدة
+        emit(CartLoaded(updatedCart));
+        print('✅ Book removed and cart reloaded successfully from server!');
+      } catch (e) {
+        print('❌ CartBloc Error while removing book: $e');
+        emit(CartError(e.toString()));
+
+        // في حال حدث خطأ، إعادة الحالة القديمة
+        if (currentState is CartLoaded) {
+          emit(currentState);
+        }
       }
     });
-
-    on<RemoveBookEvent>((event, emit) {
-      _cartItems.removeWhere((item) => item.id == event.bookId);
-      emit(CartLoaded(List.from(_cartItems), _calculateTotal()));
-    });
-
-    add(LoadCartEvent());
-  }
-  double _calculateTotal() {
-    return _cartItems.fold(
-      0.0,
-      (sum, item) => sum + (item.price * item.quantity),
-    );
   }
 }
