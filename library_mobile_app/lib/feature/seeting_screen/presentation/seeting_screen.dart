@@ -3,6 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:library_mobile_app/core/theme_cubit.dart';
 import 'package:library_mobile_app/core/locale_cubit.dart';
 import 'package:library_mobile_app/core/theme.dart';
+import 'package:library_mobile_app/feature/login/presentation/signin_screen.dart';
+import 'package:library_mobile_app/feature/logout/bloc/logout_bloc.dart';
+import 'package:library_mobile_app/feature/logout/bloc/logout_event.dart';
+import 'package:library_mobile_app/feature/logout/bloc/logout_state.dart';
+import 'package:library_mobile_app/feature/logout/repo/logout_repo.dart';
 import 'package:library_mobile_app/l10n/app_localizations.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -16,6 +21,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _pushNotifications = true;
 
   static const String _appVersion = '1.0.0';
+
+  late final LogoutBloc _logoutBloc = LogoutBloc(
+    repository: LogoutRepository(),
+  );
+
+  @override
+  void dispose() {
+    _logoutBloc.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -588,7 +603,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             onPressed: () {
               Navigator.pop(dialogContext);
-              // TODO: call the account-deletion endpoint
             },
             child: const Text('Delete'),
           ),
@@ -600,47 +614,85 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showLogoutDialog(bool isDark) {
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: isDark ? AppColors.darkCard : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: Text(
-          'Log Out',
-          style: TextStyle(
-            color: isDark ? AppColors.textDark : AppColors.textLight,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Text(
-          'Are you sure you want to log out of your account?',
-          style: TextStyle(
-            color: isDark
-                ? AppColors.textDark.withOpacity(0.7)
-                : AppColors.textLight.withOpacity(0.7),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: isDark ? AppColors.textDark : AppColors.textLight,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFB33A3A),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: () {
+      builder: (dialogContext) => BlocProvider.value(
+        value: _logoutBloc,
+        child: BlocConsumer<LogoutBloc, LogoutState>(
+          listener: (context, state) {
+            if (state is LogoutSuccess) {
               Navigator.pop(dialogContext);
-            },
-            child: const Text('Log Out'),
-          ),
-        ],
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const SigninScreen()),
+              );
+            }
+            if (state is LogoutFailure) {
+              Navigator.pop(dialogContext);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+          builder: (context, state) {
+            final isLoading = state is LogoutLoading;
+            return AlertDialog(
+              backgroundColor: isDark ? AppColors.darkCard : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+              title: Text(
+                'Log Out',
+                style: TextStyle(
+                  color: isDark ? AppColors.textDark : AppColors.textLight,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Text(
+                'Are you sure you want to log out of your account?',
+                style: TextStyle(
+                  color: isDark
+                      ? AppColors.textDark.withOpacity(0.7)
+                      : AppColors.textLight.withOpacity(0.7),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () => Navigator.pop(dialogContext),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: isDark ? AppColors.textDark : AppColors.textLight,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFB33A3A),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: isLoading
+                      ? null
+                      : () => context.read<LogoutBloc>().add(LogoutRequested()),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Log Out'),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

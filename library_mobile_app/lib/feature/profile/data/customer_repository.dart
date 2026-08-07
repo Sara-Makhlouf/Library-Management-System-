@@ -1,16 +1,14 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:library_mobile_app/core/network.dart';
 
-/// يتعامل مع نقاط النهاية الخاصة ببيانات الزبون الحالي:
-/// GET  /customer  → عرض البيانات
-/// PUT  /customer   → تحديث البيانات (الاسم، الهاتف، الجنس، تاريخ الميلاد، اللغة، الصورة)
 class CustomerRepository {
-  /// جلب بيانات الملف الشخصي للزبون الحالي.
   Future<Map<String, dynamic>> getProfile() async {
     final dio = await NetworkService.getInstance();
     try {
       final response = await dio.get('/customer');
+      print('🟢 getProfile response data: ${response.data}');
       return response.data;
     } on DioException catch (e) {
       print('🔴 getProfile DioException: ${e.message}');
@@ -18,8 +16,6 @@ class CustomerRepository {
     }
   }
 
-  /// تحديث البيانات الشخصية. كل الحقول اختيارية (sometimes) في الباك اند،
-  /// لذلك يتم إرسال فقط الحقول التي تم تمريرها.
   Future<Map<String, dynamic>> updateProfile({
     String? name,
     String? gender,
@@ -29,6 +25,12 @@ class CustomerRepository {
     File? avatar,
   }) async {
     final dio = await NetworkService.getInstance();
+
+    if (avatar != null) {
+      print('📷 Avatar path: ${avatar.path}');
+      print('📷 Avatar exists: ${await avatar.exists()}');
+      print('📷 Avatar size: ${await avatar.length()} bytes');
+    }
 
     final formMap = <String, dynamic>{
       if (name != null) 'name': name,
@@ -40,24 +42,37 @@ class CustomerRepository {
         'avatar': await MultipartFile.fromFile(
           avatar.path,
           filename: avatar.path.split('/').last,
+          contentType: MediaType('image', _guessImageSubtype(avatar.path)),
         ),
     };
 
     try {
-      // PUT مع ملف يتطلب multipart، ولأن Laravel لا يدعم PUT مع
-      // multipart/form-data بشكل مباشر عبر بعض العملاء، نستخدم
-      // POST مع override خاص بالـ method لضمان التوافق.
       final response = await dio.post(
         '/customer',
         data: FormData.fromMap(formMap),
         queryParameters: {'_method': 'PUT'},
       );
       print('🟢 updateProfile response status: ${response.statusCode}');
+      print('🟢 updateProfile response data: ${response.data}');
       return response.data;
     } on DioException catch (e) {
       print('🔴 updateProfile DioException: ${e.message}');
       print('🔴 Response data: ${e.response?.data}');
       rethrow;
     }
+  }
+}
+
+String _guessImageSubtype(String path) {
+  final ext = path.split('.').last.toLowerCase();
+  switch (ext) {
+    case 'png':
+      return 'png';
+    case 'webp':
+      return 'webp';
+    case 'heic':
+      return 'heic';
+    default:
+      return 'jpeg';
   }
 }

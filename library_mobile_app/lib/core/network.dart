@@ -45,23 +45,7 @@ class NetworkService {
           print('🌐 Request headers after auth attach: ${options.headers}');
           return handler.next(options);
         },
-        onError: (e, handler) {
-          print(
-            '❌ Request failed: ${e.requestOptions.method} ${e.requestOptions.uri}',
-          );
-          print('❌ Error type: ${e.type}');
-          print('❌ Error message: ${e.message}');
-          print('❌ Response status code: ${e.response?.statusCode}');
 
-          final message = e.response?.data['message'];
-          if (message != null) {
-            throw DioException(
-              requestOptions: e.requestOptions,
-              error: message,
-            );
-          }
-          return handler.next(e);
-        },
         onResponse: (response, handler) {
           print('✅ Response status code: ${response.statusCode}');
           return handler.next(response);

@@ -112,55 +112,57 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white24 : Colors.black12,
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              leading: Icon(
-                Icons.photo_library_outlined,
-                color: AppColors.primary,
-              ),
-              title: Text(
-                'Choose from gallery',
-                style: TextStyle(
-                  color: isDark ? AppColors.textDark : AppColors.textLight,
-                  fontWeight: FontWeight.w500,
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white24 : Colors.black12,
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              onTap: () {
-                Navigator.pop(context);
-                _pickAvatar(ImageSource.gallery);
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.camera_alt_outlined,
-                color: AppColors.primary,
-              ),
-              title: Text(
-                'Take a photo',
-                style: TextStyle(
-                  color: isDark ? AppColors.textDark : AppColors.textLight,
-                  fontWeight: FontWeight.w500,
+              const SizedBox(height: 20),
+              ListTile(
+                leading: Icon(
+                  Icons.photo_library_outlined,
+                  color: AppColors.primary,
                 ),
+                title: Text(
+                  'Choose from gallery',
+                  style: TextStyle(
+                    color: isDark ? AppColors.textDark : AppColors.textLight,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickAvatar(ImageSource.gallery);
+                },
               ),
-              onTap: () {
-                Navigator.pop(context);
-                _pickAvatar(ImageSource.camera);
-              },
-            ),
-          ],
+              ListTile(
+                leading: Icon(
+                  Icons.camera_alt_outlined,
+                  color: AppColors.primary,
+                ),
+                title: Text(
+                  'Take a photo',
+                  style: TextStyle(
+                    color: isDark ? AppColors.textDark : AppColors.textLight,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickAvatar(ImageSource.camera);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

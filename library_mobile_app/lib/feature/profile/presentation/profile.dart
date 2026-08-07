@@ -24,6 +24,7 @@ class _ProfileState extends State<Profile> {
   String? _userDob;
   String? _avatarUrl;
   int _userPoints = 0;
+  int _avatarCacheBuster = 0;
 
   @override
   void initState() {
@@ -48,6 +49,7 @@ class _ProfileState extends State<Profile> {
         _userDob = data['DOB'];
         _avatarUrl = data['avatar'];
         _userPoints = data['points'] ?? 0;
+        _avatarCacheBuster = DateTime.now().millisecondsSinceEpoch;
         _isLoading = false;
       });
     } catch (e) {
@@ -265,7 +267,7 @@ class _ProfileState extends State<Profile> {
             child: ClipOval(
               child: _avatarUrl != null
                   ? Image.network(
-                      _avatarUrl!,
+                      '$_avatarUrl?v=$_avatarCacheBuster',
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Center(
                         child: Text(
@@ -604,13 +606,6 @@ class _ProfileState extends State<Profile> {
             onTap: () {},
           ),
           _buildTileDivider(isDark),
-          _buildActionTile(
-            icon: Icons.logout_rounded,
-            label: 'Log Out',
-            isDark: isDark,
-            isLogout: true,
-            onTap: () {},
-          ),
         ],
       ),
     );
