@@ -75,7 +75,6 @@ class _CartScreenState extends State<CartScreen> {
                   .where((item) => item.type == 'borrow')
                   .toList();
 
-              // التحقق من أن السلة فارغة
               final bool isCartEmpty = state.cart.details.isEmpty;
 
               return Column(
@@ -99,62 +98,12 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(
-                      bottom: 90,
-                      left: 20,
-                      right: 20,
-                      top: 10,
-                    ),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isDark
-                              ? AppColors.inputDark
-                              : const Color.fromARGB(255, 189, 170, 127),
-                          foregroundColor: isDark
-                              ? AppColors.primary
-                              : const Color.fromARGB(255, 96, 82, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            side: isDark
-                                ? BorderSide(
-                                    color: AppColors.primary.withOpacity(0.3),
-                                  )
-                                : BorderSide.none,
-                          ),
-                          elevation: 2,
-                        ),
-                        onPressed: () {
-                          // الشرط: إذا كانت السلة فارغة، أظهر تنبيه ولا تنتقل
-                          if (isCartEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  "عذراً، سلة المشتريات فارغة تماماً، لا يمكن إتمام الطلب.",
-                                ),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                            return;
-                          }
-
-                          // الانتقال لصفحة الدفع
-                          Navigator.pushNamed(
-                            context,
-                            Routes.payment,
-                            arguments: context.read<CartBloc>(),
-                          );
-                        },
-                        child: Text(
-                          localizations.confirmOrderAndPay,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                    padding: const EdgeInsets.only(bottom: 125, top: 10),
+                    child: _buildConfirmButton(
+                      context,
+                      isDark,
+                      isCartEmpty,
+                      localizations,
                     ),
                   ),
                 ],
@@ -168,6 +117,87 @@ class _CartScreenState extends State<CartScreen> {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConfirmButton(
+    BuildContext context,
+    bool isDark,
+    bool isCartEmpty,
+    AppLocalizations localizations,
+  ) {
+    final fillColor = isDark ? AppColors.darkCard : Colors.white;
+    final borderColor = isDark
+        ? AppColors.primary
+        : const Color.fromARGB(255, 96, 82, 50);
+    final contentColor = isDark
+        ? AppColors.primary
+        : const Color.fromARGB(255, 96, 82, 50);
+
+    return Align(
+      alignment: Alignment.center,
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.72,
+        height: 56,
+        child: Material(
+          color: Colors.transparent,
+          shape: StadiumBorder(
+            side: BorderSide(color: borderColor, width: 1.6),
+          ),
+          elevation: 8,
+          shadowColor: borderColor.withOpacity(0.3),
+          child: InkWell(
+            customBorder: const StadiumBorder(),
+            onTap: () {
+              if (isCartEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "Sorry, your cart is completely empty. The order can't be completed.",
+                    ),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
+              Navigator.pushNamed(
+                context,
+                Routes.payment,
+                arguments: context.read<CartBloc>(),
+              );
+            },
+            child: Ink(
+              decoration: ShapeDecoration(
+                color: fillColor,
+                shape: StadiumBorder(
+                  side: BorderSide(color: borderColor, width: 1.6),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.shopping_bag_outlined,
+                    color: contentColor,
+                    size: 19,
+                  ),
+                  const SizedBox(width: 9),
+                  Text(
+                    localizations.confirmOrderAndPay,
+                    style: TextStyle(
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.bold,
+                      color: contentColor,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

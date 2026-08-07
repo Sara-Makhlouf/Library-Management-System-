@@ -53,7 +53,7 @@ class _ProfileState extends State<Profile> {
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _errorMessage = 'تعذر تحميل بيانات الحساب، يرجى المحاولة لاحقاً';
+        _errorMessage = 'Unable to load account data, please try again later';
       });
     }
   }
@@ -72,16 +72,14 @@ class _ProfileState extends State<Profile> {
       ),
     );
 
-    // إذا تم الحفظ بنجاح في شاشة التعديل، أعد تحميل البيانات لعرض آخر تحديث
     if (updated == true) {
       _loadProfile();
     }
   }
 
-  /// يولّد الحروف الأولى من الاسم لعرضها داخل الصورة الرمزية عند غياب الصورة
   String _getInitials(String name) {
     final trimmed = name.trim();
-    if (trimmed.isEmpty) return '؟';
+    if (trimmed.isEmpty) return '?';
     final parts = trimmed.split(RegExp(r'\s+'));
     if (parts.length == 1) return parts.first.substring(0, 1);
     return parts.first.substring(0, 1) + parts[1].substring(0, 1);
@@ -129,7 +127,7 @@ class _ProfileState extends State<Profile> {
 
                             const SizedBox(height: 26),
 
-                            _buildSectionLabel('المعلومات الشخصية', isDark),
+                            _buildSectionLabel('Personal Information', isDark),
                             const SizedBox(height: 8),
                             _buildInfoCard(isDark)
                                 .animate()
@@ -138,16 +136,7 @@ class _ProfileState extends State<Profile> {
 
                             const SizedBox(height: 26),
 
-                            _buildSectionLabel('إعدادات الحساب', isDark),
-                            const SizedBox(height: 8),
-                            _buildSettingsCard(isDark)
-                                .animate()
-                                .fadeIn(delay: 175.ms, duration: 350.ms)
-                                .slideY(begin: 0.15, end: 0),
-
-                            const SizedBox(height: 26),
-
-                            _buildSectionLabel('الإجراءات', isDark),
+                            _buildSectionLabel('Actions', isDark),
                             const SizedBox(height: 8),
                             _buildActionsCard(isDark)
                                 .animate()
@@ -193,7 +182,7 @@ class _ProfileState extends State<Profile> {
             TextButton(
               onPressed: _loadProfile,
               style: TextButton.styleFrom(foregroundColor: AppColors.primary),
-              child: const Text('إعادة المحاولة'),
+              child: const Text('Retry'),
             ),
           ],
         ),
@@ -201,7 +190,6 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  // ── الهيدر: صورة (أو حروف أولى) + الاسم + الإيميل + زر تعديل ──
   Widget _buildHeader(bool isDark) {
     return Container(
       width: double.infinity,
@@ -229,7 +217,7 @@ class _ProfileState extends State<Profile> {
                 onPressed: () => Navigator.maybePop(context),
               ),
               Text(
-                'الملف الشخصي',
+                'Profile',
                 style: TextStyle(
                   color: isDark ? AppColors.textDark : AppColors.textLight,
                   fontSize: 16,
@@ -326,7 +314,6 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  // ── شارة/بطاقة النقاط والإحصائيات ──
   Widget _buildPointsCard(bool isDark) {
     return Container(
       width: double.infinity,
@@ -344,21 +331,21 @@ class _ProfileState extends State<Profile> {
           _buildStatItem(
             icon: Icons.star_rounded,
             value: '$_userPoints',
-            label: 'نقاط',
+            label: 'Points',
             isDark: isDark,
           ),
           _buildStatDivider(isDark),
           _buildStatItem(
             icon: Icons.menu_book_rounded,
             value: '8',
-            label: 'مقترضة',
+            label: 'Borrowed',
             isDark: isDark,
           ),
           _buildStatDivider(isDark),
           _buildStatItem(
             icon: Icons.shopping_bag_rounded,
             value: '3',
-            label: 'مشتراة',
+            label: 'Purchased',
             isDark: isDark,
           ),
         ],
@@ -440,7 +427,6 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  // ── بطاقة المعلومات الشخصية ──
   Widget _buildInfoCard(bool isDark) {
     return Container(
       decoration: BoxDecoration(
@@ -454,14 +440,14 @@ class _ProfileState extends State<Profile> {
         children: [
           _buildInfoTile(
             icon: Icons.person_outline_rounded,
-            label: 'الاسم الكامل',
+            label: 'Full Name',
             value: _userName,
             isDark: isDark,
           ),
           _buildTileDivider(isDark),
           _buildInfoTile(
             icon: Icons.email_outlined,
-            label: 'البريد الإلكتروني',
+            label: 'Email',
             value: _userEmail,
             isDark: isDark,
             trailing: Icon(
@@ -475,9 +461,9 @@ class _ProfileState extends State<Profile> {
           _buildTileDivider(isDark),
           _buildInfoTile(
             icon: Icons.phone_outlined,
-            label: 'رقم الهاتف',
+            label: 'Phone Number',
             value: (_userPhone == null || _userPhone!.isEmpty)
-                ? 'غير محدد'
+                ? 'Not specified'
                 : _userPhone!,
             isDark: isDark,
           ),
@@ -487,10 +473,10 @@ class _ProfileState extends State<Profile> {
               Expanded(
                 child: _buildInfoTile(
                   icon: Icons.wc_rounded,
-                  label: 'الجنس',
+                  label: 'Gender',
                   value: _userGender == null
-                      ? 'غير محدد'
-                      : (_userGender == 'M' ? 'ذكر' : 'أنثى'),
+                      ? 'Not specified'
+                      : (_userGender == 'M' ? 'Male' : 'Female'),
                   isDark: isDark,
                   compact: true,
                 ),
@@ -503,9 +489,9 @@ class _ProfileState extends State<Profile> {
               Expanded(
                 child: _buildInfoTile(
                   icon: Icons.cake_outlined,
-                  label: 'تاريخ الميلاد',
+                  label: 'Date of Birth',
                   value: (_userDob == null || _userDob!.isEmpty)
-                      ? 'غير محدد'
+                      ? 'Not specified'
                       : _userDob!,
                   isDark: isDark,
                   compact: true,
@@ -525,7 +511,6 @@ class _ProfileState extends State<Profile> {
     required bool isDark,
     Widget? trailing,
     bool compact = false,
-    bool isLast = false,
   }) {
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -593,89 +578,6 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  // ── بطاقة إعدادات الحساب (Dark Mode + Language) ──
-  Widget _buildSettingsCard(bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.06),
-        ),
-      ),
-      child: Column(
-        children: [
-          _buildSettingsTile(
-            icon: Icons.dark_mode_outlined,
-            label: 'الوضع الليلي',
-            isDark: isDark,
-            trailing: Switch(
-              value: isDark,
-              onChanged: (value) {
-                // تنفيذ تغيير الوضع
-              },
-              activeColor: AppColors.primary,
-            ),
-          ),
-          _buildTileDivider(isDark),
-          _buildSettingsTile(
-            icon: Icons.language_outlined,
-            label: 'لغة التطبيق',
-            isDark: isDark,
-            trailing: Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 14,
-              color: isDark
-                  ? AppColors.textDark.withOpacity(0.35)
-                  : AppColors.textLight.withOpacity(0.35),
-            ),
-            onTap: () {
-              // فتح قائمة اللغات
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSettingsTile({
-    required IconData icon,
-    required String label,
-    required bool isDark,
-    Widget? trailing,
-    VoidCallback? onTap,
-  }) {
-    final color = isDark ? AppColors.textDark : AppColors.textLight;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withOpacity(0.05)
-                : AppColors.backgroundLight,
-            borderRadius: BorderRadius.circular(9),
-          ),
-          child: Icon(icon, size: 15, color: color.withOpacity(0.65)),
-        ),
-        title: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: color,
-          ),
-        ),
-        trailing: trailing,
-      ),
-    );
-  }
-
-  // ── بطاقة الإجراءات ──
   Widget _buildActionsCard(bool isDark) {
     return Container(
       decoration: BoxDecoration(
@@ -687,39 +589,27 @@ class _ProfileState extends State<Profile> {
       ),
       child: Column(
         children: [
-          _buildActionTile(
-            icon: Icons.edit_outlined,
-            label: 'تعديل الملف الشخصي',
-            isDark: isDark,
-            onTap: _openEditProfile,
-          ),
           _buildTileDivider(isDark),
           _buildActionTile(
             icon: Icons.history_rounded,
-            label: 'سجل الطلبات',
+            label: 'Order History',
             isDark: isDark,
-            onTap: () {
-              // الانتقال إلى سجل الطلبات
-            },
+            onTap: () {},
           ),
           _buildTileDivider(isDark),
           _buildActionTile(
             icon: Icons.lock_outline_rounded,
-            label: 'تغيير كلمة المرور',
+            label: 'Change Password',
             isDark: isDark,
-            onTap: () {
-              // فتح شاشة تغيير كلمة المرور
-            },
+            onTap: () {},
           ),
           _buildTileDivider(isDark),
           _buildActionTile(
             icon: Icons.logout_rounded,
-            label: 'تسجيل الخروج',
+            label: 'Log Out',
             isDark: isDark,
             isLogout: true,
-            onTap: () {
-              // تنفيذ تسجيل الخروج
-            },
+            onTap: () {},
           ),
         ],
       ),

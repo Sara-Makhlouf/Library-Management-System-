@@ -10,7 +10,7 @@ import 'package:library_mobile_app/core/components/theme_toggle.dart';
 import 'package:library_mobile_app/core/components/custom_input_field.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/core/constant.dart';
-import 'package:library_mobile_app/feature/presentation/signin_screen.dart';
+import 'package:library_mobile_app/feature/login/presentation/signin_screen.dart';
 import 'package:library_mobile_app/feature/register/bloc/register_bloc.dart';
 import 'package:library_mobile_app/feature/register/bloc/register_event.dart';
 import 'package:library_mobile_app/feature/register/bloc/register_state.dart';
@@ -212,7 +212,10 @@ class _RegisterState extends State<Register> {
                 right: 0,
                 child: Column(
                   children: [
-                    Image.asset('assets/images/logo.png', width: size.width * 0.40)
+                    Image.asset(
+                          'assets/images/logo.png',
+                          width: size.width * 0.40,
+                        )
                         .animate()
                         .fadeIn(duration: 500.ms)
                         .scale(
@@ -225,7 +228,9 @@ class _RegisterState extends State<Register> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? AppColors.textDark : AppColors.textLight,
+                        color: isDark
+                            ? AppColors.textDark
+                            : AppColors.textLight,
                       ),
                     ).animate(delay: 150.ms).fadeIn(duration: 400.ms),
                     Text(
@@ -251,85 +256,112 @@ class _RegisterState extends State<Register> {
               ),
               Align(
                 alignment: Alignment.bottomCenter,
-                child: ShakeWidget(
-                      key: _shakeKey,
-                      child: Container(
-                        width: double.infinity,
-                        margin: const EdgeInsets.only(top: 100),
-                        decoration: BoxDecoration(
-                          color: isDark ? AppColors.accentDark : Colors.white,
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(32),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(
-                                isDark ? 0.3 : 0.08,
+                child:
+                    ShakeWidget(
+                          key: _shakeKey,
+                          child: Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(top: 100),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppColors.accentDark
+                                  : Colors.white,
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(32),
                               ),
-                              blurRadius: 30,
-                              offset: const Offset(0, -8),
-                            ),
-                          ],
-                        ),
-                        child: SingleChildScrollView(
-                          padding: EdgeInsets.fromLTRB(
-                            28,
-                            28,
-                            28,
-                            MediaQuery.of(context).viewInsets.bottom + 28,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Center(
-                                child: Container(
-                                  width: 40,
-                                  height: 4,
-                                  decoration: BoxDecoration(
-                                    color: isDark ? Colors.white12 : Colors.black12,
-                                    borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(
+                                    isDark ? 0.3 : 0.08,
                                   ),
+                                  blurRadius: 30,
+                                  offset: const Offset(0, -8),
                                 ),
+                              ],
+                            ),
+                            child: SingleChildScrollView(
+                              padding: EdgeInsets.fromLTRB(
+                                28,
+                                28,
+                                28,
+                                MediaQuery.of(context).viewInsets.bottom +
+                                    MediaQuery.of(context).padding.bottom +
+                                    40,
                               ),
-                              const SizedBox(height: 20),
-                              _StepDots(
-                                currentStep: _currentStep,
-                                isDark: isDark,
-                              ).animate(delay: 80.ms).fadeIn(),
-                              const SizedBox(height: 16),
-                              Row(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    _currentStep == 0 ? 'Personal info' : 'Account security',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: isDark ? AppColors.textDark : AppColors.textLight,
+                                  Center(
+                                    child: Container(
+                                      width: 40,
+                                      height: 4,
+                                      decoration: BoxDecoration(
+                                        color: isDark
+                                            ? Colors.white12
+                                            : Colors.black12,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
                                     ),
                                   ),
+                                  const SizedBox(height: 20),
+                                  _StepDots(
+                                    currentStep: _currentStep,
+                                    isDark: isDark,
+                                  ).animate(delay: 80.ms).fadeIn(),
+                                  const SizedBox(height: 16),
+                                  Row(
+                                        children: [
+                                          Text(
+                                            _currentStep == 0
+                                                ? 'Personal info'
+                                                : 'Account security',
+                                            style: TextStyle(
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.bold,
+                                              color: isDark
+                                                  ? AppColors.textDark
+                                                  : AppColors.textLight,
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                      .animate(delay: 100.ms)
+                                      .fadeIn()
+                                      .slideY(begin: 0.2, end: 0),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _currentStep == 0
+                                        ? 'Step 1 of 2'
+                                        : 'Step 2 of 2',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: isDark
+                                          ? AppColors.textDark.withOpacity(0.5)
+                                          : AppColors.textLight.withOpacity(
+                                              0.5,
+                                            ),
+                                    ),
+                                  ).animate(delay: 160.ms).fadeIn(),
+                                  const SizedBox(height: 24),
+                                  AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 250),
+                                    child: _currentStep == 0
+                                        ? _buildStepOne(isDark)
+                                        : _buildStepTwo(isDark),
+                                  ),
                                 ],
-                              ).animate(delay: 100.ms).fadeIn().slideY(begin: 0.2, end: 0),
-                              const SizedBox(height: 4),
-                              Text(
-                                _currentStep == 0 ? 'Step 1 of 2' : 'Step 2 of 2',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: isDark ? AppColors.textDark.withOpacity(0.5) : AppColors.textLight.withOpacity(0.5),
-                                ),
-                              ).animate(delay: 160.ms).fadeIn(),
-                              const SizedBox(height: 24),
-                              AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 250),
-                                child: _currentStep == 0 ? _buildStepOne(isDark) : _buildStepTwo(isDark),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
-                    )
-                    .animate(delay: 50.ms)
-                    .slideY(begin: 0.18, end: 0, duration: 600.ms, curve: Curves.easeOutCubic)
-                    .fadeIn(duration: 500.ms),
+                        )
+                        .animate(delay: 50.ms)
+                        .slideY(
+                          begin: 0.18,
+                          end: 0,
+                          duration: 600.ms,
+                          curve: Curves.easeOutCubic,
+                        )
+                        .fadeIn(duration: 500.ms),
               ),
             ],
           ),
@@ -406,9 +438,13 @@ class _RegisterState extends State<Register> {
           obscure: _obscure1,
           suffixIcon: IconButton(
             icon: Icon(
-              _obscure1 ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+              _obscure1
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
               size: 18,
-              color: isDark ? AppColors.textDark.withOpacity(0.4) : AppColors.textLight.withOpacity(0.4),
+              color: isDark
+                  ? AppColors.textDark.withOpacity(0.4)
+                  : AppColors.textLight.withOpacity(0.4),
             ),
             onPressed: () => setState(() => _obscure1 = !_obscure1),
           ),
@@ -422,9 +458,13 @@ class _RegisterState extends State<Register> {
           obscure: _obscure2,
           suffixIcon: IconButton(
             icon: Icon(
-              _obscure2 ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+              _obscure2
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
               size: 18,
-              color: isDark ? AppColors.textDark.withOpacity(0.4) : AppColors.textLight.withOpacity(0.4),
+              color: isDark
+                  ? AppColors.textDark.withOpacity(0.4)
+                  : AppColors.textLight.withOpacity(0.4),
             ),
             onPressed: () => setState(() => _obscure2 = !_obscure2),
           ),
@@ -481,7 +521,9 @@ class _RegisterState extends State<Register> {
                 'or sign up with',
                 style: TextStyle(
                   fontSize: 11,
-                  color: isDark ? AppColors.textDark.withOpacity(0.4) : AppColors.textLight.withOpacity(0.4),
+                  color: isDark
+                      ? AppColors.textDark.withOpacity(0.4)
+                      : AppColors.textLight.withOpacity(0.4),
                 ),
               ),
             ),
@@ -524,7 +566,9 @@ class _RegisterState extends State<Register> {
                 'Already have an account? ',
                 style: TextStyle(
                   fontSize: 13,
-                  color: isDark ? AppColors.textDark.withOpacity(0.5) : AppColors.textLight.withOpacity(0.5),
+                  color: isDark
+                      ? AppColors.textDark.withOpacity(0.5)
+                      : AppColors.textLight.withOpacity(0.5),
                 ),
               ),
               GestureDetector(

@@ -3,7 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:library_mobile_app/core/components/onboarding_dot.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/presentation/Onboarding_tow.dart';
-import 'package:library_mobile_app/feature/presentation/signin_screen.dart';
+import 'package:library_mobile_app/feature/login/presentation/signin_screen.dart';
 
 class OnboardingOne extends StatelessWidget {
   const OnboardingOne({super.key});

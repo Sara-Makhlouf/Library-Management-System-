@@ -15,7 +15,7 @@ import 'package:library_mobile_app/feature/homepage/data/model.dart';
 import 'package:library_mobile_app/feature/homepage/data/repository.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/screens/home_page.dart';
 import 'package:library_mobile_app/feature/notifications/notifications_screen.dart';
-import 'package:library_mobile_app/feature/presentation/profile.dart';
+import 'package:library_mobile_app/feature/profile/presentation/profile.dart';
 import 'package:library_mobile_app/feature/presentation/splash_screen.dart';
 import 'package:library_mobile_app/feature/seeting_screen/presentation/seeting_screen.dart';
 import '../feature/payment_page/presentation/payment_screen.dart';

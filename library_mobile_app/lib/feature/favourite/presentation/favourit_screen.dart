@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dio/dio.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/favourite/bloc/favbloc.dart';
 import 'package:library_mobile_app/feature/favourite/bloc/favevent.dart';
@@ -15,7 +14,6 @@ class FavoriteScreen extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return BlocProvider(
-      // حقن الـ Repository والـ Bloc وتوليد حدث الجلب أول ما تفتح الواجهة
       create: (context) =>
           FavoriteBloc(FavoriteRepository())..add(GetFavoritesEvent()),
       child: Scaffold(
@@ -66,7 +64,6 @@ class FavoriteScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(10.0),
                       child: Row(
                         children: [
-                          // صورة الغلاف مع معالجة الرابط القادم من الموديل
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: book.cover != null && book.cover!.isNotEmpty
@@ -83,7 +80,6 @@ class FavoriteScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 15),
 
-                          // تفاصيل الكتاب المتوافقة مع الموديل الجديد
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,7 +105,7 @@ class FavoriteScreen extends StatelessWidget {
                                 ),*/
                                 const SizedBox(height: 4),
                                 Text(
-                                  'التصنيف: ${book.categoryName}',
+                                  'Category: ${book.categoryName}',
                                   style: TextStyle(
                                     color: Colors.grey[600],
                                     fontSize: 12,
@@ -117,7 +113,7 @@ class FavoriteScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'السعر: ${book.salePrice ?? book.price ?? '0'} \$',
+                                  'Price: ${book.salePrice ?? book.price ?? '0'} \$',
                                   style: const TextStyle(
                                     color: Colors.green,
                                     fontWeight: FontWeight.bold,
@@ -128,11 +124,9 @@ class FavoriteScreen extends StatelessWidget {
                             ),
                           ),
 
-                          // زر إزالة العنصر من المفضلة
                           IconButton(
                             icon: const Icon(Icons.favorite, color: Colors.red),
                             onPressed: () {
-                              // إرسال حدث التبديل لإزالة العنصر وتحديث القائمة
                               context.read<FavoriteBloc>().add(
                                 ToggleFavoriteEvent(book.id),
                               );

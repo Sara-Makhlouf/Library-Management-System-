@@ -7,7 +7,7 @@ import '../bloc/payment_bloc.dart';
 import '../bloc/payment_event.dart';
 import '../bloc/payment_state.dart';
 
-// 1. الشاشة الرئيسية تغلف بالـ BlocProvider من الأعلى مرة واحدة فقط
+// 1. The top-level screen wraps everything in a BlocProvider once
 class CheckoutScreen extends StatelessWidget {
   const CheckoutScreen({super.key});
 
@@ -20,7 +20,7 @@ class CheckoutScreen extends StatelessWidget {
   }
 }
 
-// 2. محتوى الشاشة الفعلي
+// 2. The actual screen content
 class CheckoutViewContent extends StatefulWidget {
   const CheckoutViewContent({super.key});
 
@@ -41,7 +41,7 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
     super.dispose();
   }
 
-  // دالة لإظهار تنبيه من الأعلى
+  // Shows a notification from the top of the screen
   void _showTopNotification(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -105,7 +105,7 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
           }
         },
         builder: (context, state) {
-          // قراءة القيم الحالية مباشرة من الـ State المستقر في الـ Bloc
+          // Read the current values directly from the stable state in the Bloc
           String currentPayment = 'cash';
           bool currentDelivery = true;
 
@@ -273,31 +273,25 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
                             ? AppColors.primary
                             : const Color.fromARGB(255, 96, 82, 50),
                       )
-                    : ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 55),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          backgroundColor: isDark
-                              ? AppColors.inputDark
-                              : const Color.fromARGB(255, 189, 170, 127),
-                        ),
+                    : _buildConfirmButton(
+                        context,
+                        isDark,
+                        localizations,
                         onPressed: () {
-                          // 1. التحقق من الحقول النصية إن كانت فارغة
+                          // 1. Check whether the text fields are empty
                           if (_nameController.text.trim().isEmpty ||
                               _phoneController.text.trim().isEmpty ||
                               _addressController.text.trim().isEmpty) {
                             _showTopNotification(
                               context,
-                              'الرجاء تعبئة جميع معلوماتك الشخصية قبل التأكيد',
+                              'Please fill in all your personal information before confirming',
                             );
-                            return; // إيقاف التنفيذ وعدم إرسال الطلب
+                            return; // Stop here, don't submit the order
                           }
 
-                          // 2. التحقق من الاختيارات (الـ Radio موجودة ومضبوطة مسبقاً بقيم افتراضية في الـ State، لذا الحقول معباة دائماً)
+                          // 2. Radio selections already carry default values in the state, so they're always filled
 
-                          // إذا كل شيء تمام، يتم إرسال الحدث للـ Bloc
+                          // Everything looks good, dispatch the event to the Bloc
                           context.read<PaymentBloc>().add(
                             ConfirmPaymentEvent(
                               name: _nameController.text,
@@ -306,21 +300,74 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
                             ),
                           );
                         },
-                        child: Text(
-                          localizations.confirmOrderAndPay,
-                          style: TextStyle(
-                            color: isDark
-                                ? AppColors.primary
-                                : const Color.fromARGB(255, 96, 82, 50),
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                       ),
+                // Extra breathing room so the button doesn't sit flush
+                // against the very bottom of the scroll view.
+                const SizedBox(height: 40),
               ],
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildConfirmButton(
+    BuildContext context,
+    bool isDark,
+    AppLocalizations localizations, {
+    required VoidCallback onPressed,
+  }) {
+    final gradientColors = isDark
+        ? [AppColors.primary, AppColors.primary.withOpacity(0.75)]
+        : [
+            const Color.fromARGB(255, 96, 82, 50),
+            const Color.fromARGB(255, 148, 128, 84),
+          ];
+
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(50),
+        elevation: 6,
+        shadowColor: (isDark ? AppColors.primary : const Color(0xFF605232))
+            .withOpacity(0.4),
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: gradientColors,
+            ),
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(50),
+            onTap: onPressed,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.lock_outline_rounded,
+                  color: Colors.white,
+                  size: 19,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  localizations.confirmOrderAndPay,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

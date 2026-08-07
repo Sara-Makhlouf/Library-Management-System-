@@ -8,10 +8,6 @@ import 'package:library_mobile_app/core/components/custom_input_field.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/profile/data/customer_repository.dart';
 
-/// شاشة تعديل البيانات الشخصية — تعرض فقط الحقول التي يسمح
-/// الباك اند بتعديلها: الاسم، الهاتف، الجنس، تاريخ الميلاد، الصورة.
-/// البريد الإلكتروني يبقى للعرض فقط لأنه غير قابل للتعديل من نقطة
-/// النهاية الخاصة بالحساب.
 class EditProfileScreen extends StatefulWidget {
   final String currentName;
   final String currentEmail;
@@ -136,7 +132,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 color: AppColors.primary,
               ),
               title: Text(
-                'اختيار من المعرض',
+                'Choose from gallery',
                 style: TextStyle(
                   color: isDark ? AppColors.textDark : AppColors.textLight,
                   fontWeight: FontWeight.w500,
@@ -153,7 +149,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 color: AppColors.primary,
               ),
               title: Text(
-                'التقاط صورة',
+                'Take a photo',
                 style: TextStyle(
                   color: isDark ? AppColors.textDark : AppColors.textLight,
                   fontWeight: FontWeight.w500,
@@ -172,12 +168,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _onSave() async {
     if (_nameController.text.trim().isEmpty) {
-      setState(() => _errorMessage = 'الاسم لا يمكن أن يكون فارغاً');
+      setState(() => _errorMessage = 'Name cannot be empty');
       return;
     }
     if (_phoneController.text.trim().isNotEmpty &&
         _phoneController.text.trim().length != 10) {
-      setState(() => _errorMessage = 'رقم الهاتف يجب أن يكون 10 أرقام');
+      setState(() => _errorMessage = 'Phone number must be 10 digits');
       return;
     }
 
@@ -200,7 +196,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('تم تحديث البيانات بنجاح'),
+          content: Text('Profile updated successfully'),
           backgroundColor: Colors.green,
         ),
       );
@@ -210,7 +206,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ? e.response?.data['message']
           : null;
       setState(() {
-        _errorMessage = serverMessage ?? 'حدث خطأ أثناء حفظ التعديلات';
+        _errorMessage =
+            serverMessage ?? 'An error occurred while saving changes';
       });
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -231,7 +228,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             : AppColors.backgroundLight,
         elevation: 0,
         title: Text(
-          'تعديل البيانات الشخصية',
+          'Edit Profile',
           style: TextStyle(
             color: isDark ? AppColors.textDark : AppColors.textLight,
             fontSize: 16,
@@ -248,7 +245,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── صورة الحساب ──
               Center(
                 child: GestureDetector(
                   onTap: _showAvatarOptions,
@@ -319,9 +315,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               const SizedBox(height: 28),
 
-              // ── البريد الإلكتروني (للعرض فقط) ──
               Text(
-                'البريد الإلكتروني',
+                'Email',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -377,24 +372,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               const SizedBox(height: 18),
 
-              // ── الاسم الكامل ──
-              _fieldLabel('الاسم الكامل', isDark),
+              _fieldLabel('Full Name', isDark),
               const SizedBox(height: 8),
               CustomInputField(
                 controller: _nameController,
-                hint: 'أدخل اسمك الكامل',
+                hint: 'Enter your full name',
                 icon: Icons.person_outline_rounded,
                 isDark: isDark,
               ).animate(delay: 100.ms).fadeIn().slideY(begin: 0.1, end: 0),
 
               const SizedBox(height: 18),
 
-              // ── رقم الهاتف ──
-              _fieldLabel('رقم الهاتف', isDark),
+              _fieldLabel('Phone Number', isDark),
               const SizedBox(height: 8),
               CustomInputField(
                 controller: _phoneController,
-                hint: 'أدخل رقم هاتفك',
+                hint: 'Enter your phone number',
                 icon: Icons.phone_outlined,
                 isDark: isDark,
                 keyboardType: TextInputType.phone,
@@ -402,15 +395,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               const SizedBox(height: 18),
 
-              // ── تاريخ الميلاد ──
-              _fieldLabel('تاريخ الميلاد', isDark),
+              _fieldLabel('Date of Birth', isDark),
               const SizedBox(height: 8),
               GestureDetector(
                 onTap: _pickDob,
                 child: AbsorbPointer(
                   child: CustomInputField(
                     controller: _dobController,
-                    hint: 'اختر تاريخ ميلادك',
+                    hint: 'Select your date of birth',
                     icon: Icons.calendar_today_outlined,
                     isDark: isDark,
                   ),
@@ -419,8 +411,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               const SizedBox(height: 18),
 
-              // ── الجنس ──
-              _fieldLabel('الجنس', isDark),
+              _fieldLabel('Gender', isDark),
               const SizedBox(height: 8),
               _GenderSelector(
                 selected: _gender,
@@ -444,7 +435,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               CustomButton(
                 isLoading: _isSaving,
                 onTap: _onSave,
-                text: 'حفظ التعديلات',
+                text: 'Save Changes',
               ).animate(delay: 300.ms).fadeIn(),
             ],
           ),
@@ -528,9 +519,9 @@ class _GenderSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _chip('M', 'ذكر', Icons.male_rounded),
+        _chip('M', 'Male', Icons.male_rounded),
         const SizedBox(width: 10),
-        _chip('F', 'أنثى', Icons.female_rounded),
+        _chip('F', 'Female', Icons.female_rounded),
       ],
     );
   }

@@ -7,9 +7,6 @@ import 'package:library_mobile_app/feature/favourite/bloc/favbloc.dart';
 import 'package:library_mobile_app/feature/favourite/bloc/favevent.dart';
 import 'package:library_mobile_app/feature/favourite/data/repository.dart';
 import 'package:library_mobile_app/feature/favourite/presentation/favourit_screen.dart';
-// تأكد من استيراد الـ Bloc والـ Repository الخاص بالمفضلة:
-// import 'package:library_mobile_app/feature/favourite/bloc/favorite_bloc.dart';
-// import 'package:library_mobile_app/feature/favourite/data/favorite_repository.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/BottomNav.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/PointsStickyNote.dart';
@@ -288,11 +285,14 @@ class HomeScreen extends StatelessWidget {
           ),
 
           body: buildBody(state.tabIndex, isDark, localizations),
-          bottomNavigationBar: BottomNav(
-            currentIndex: state.tabIndex,
-            onTap: (index) {
-              context.read<HomeBloc>().add(ChangeTabEvent(index));
-            },
+
+          bottomNavigationBar: SafeArea(
+            child: BottomNav(
+              currentIndex: state.tabIndex,
+              onTap: (index) {
+                context.read<HomeBloc>().add(ChangeTabEvent(index));
+              },
+            ),
           ),
         );
       },
