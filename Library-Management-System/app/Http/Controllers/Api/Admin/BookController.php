@@ -146,27 +146,40 @@ class BookController extends Controller
         });
     }
 
+
     /**
-     * عرض تفاصيل كتاب محدد
+     * عرض تفاصيل كتاب محدد مع حالة المفضلة
      */
     public function show($id)
     {
+        $user = auth('sanctum')->user() ?? request()->user();
+        $customerId = ($user && $user->customer) ? $user->customer->id : null;
+
         $book = Book::with(['authors', 'category'])
-            ->withAvg('ratings as avg_rating', 'ratings.rate')
+            ->withAvg('ratings as avg_rating', 'rate')
             ->withCount('ratings as total_reviews')
+            ->when($customerId, function ($q) use ($customerId) {
+                $q->withExists(['favoritedBy as is_favorite' => function ($favQ) use ($customerId) {
+                    $favQ->where('customer_id', $customerId);
+                }]);
+            })
             ->findOrFail($id);
+
+        $book->is_favorite = $customerId ? (bool) $book->is_favorite : false;
 
         $book->is_available = $book->stock > 0;
 
         if ($book->is_digital) {
             $book->has_file = !empty($book->file_path);
         }
-        if ($book->is_digital && (!request()->user() || request()->user()->type !== 'admin')) {
+
+        if ($book->is_digital && (!$user || $user->type !== 'admin')) {
             $book->makeHidden('file_path');
         }
+
         return response()->json([
             'status' => 'success',
-            'data' => $book
+            'data'   => $book
         ]);
     }
     /**

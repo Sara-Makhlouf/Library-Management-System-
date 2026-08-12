@@ -26,7 +26,15 @@ class DatabaseSeeder extends Seeder
 
         $this->call([AdminSeeder::class]);
 
-        $categoryNames = ['روايات', 'تكنولوجيا', 'تاريخ', 'علوم', 'فن وأدب', 'فلسفة', 'اقتصاد'];
+        $categoryNames = [
+            'Novels',
+            'Technology',
+            'History',
+            'Science',
+            'Art & Literature',
+            'Philosophy',
+            'Economics'
+        ];
         foreach ($categoryNames as $name) {
             Category::create(['name' => $name]);
         }

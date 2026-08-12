@@ -22,6 +22,7 @@ class Bill extends Model
         'delivery_address',
         'delivery_status',
         'delivery_fee',
+        'phone_number'
     ];
 
 

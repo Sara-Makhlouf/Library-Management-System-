@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -65,34 +66,49 @@ class NotificationController extends Controller
     /**
      * إرسال إشعار جماعي (للأدمن فقط)
      */
-    public function sendGlobalNotification(Request $request)
+    public function sendGlobalNotification(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'title' => 'required|string|max:255',
-            'body'  => 'required|string',
+            'title'         => 'required|string|max:255',
+            'body'          => 'required|string',
             'target_screen' => 'nullable|string',
         ]);
 
-        User::with('customer')->where('type', 'customer')->chunk(100, function ($users) use ($data) {
-            foreach ($users as $user) {
-                if ($user->customer) {
-                    Notification::send(
-                        $user->customer->id,
-                        'global_admin_announcement',
-                        $data['title'],
-                        $data['body'],
-                        [
-                            'icon' => 'admin_alert',
-                            'target_screen' => $data['target_screen'] ?? 'home'
-                        ]
-                    );
-                }
-            }
-        });
+        $customerIds = Customer::pluck('id');
+
+        if ($customerIds->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'لا يوجد زبائن لإرسال الإشعار إليهم'
+            ], 400);
+        }
+
+        $now = now();
+        $notificationsToInsert = [];
+
+        foreach ($customerIds as $customerId) {
+            $notificationsToInsert[] = [
+                'customer_id'   => $customerId,
+                'type'          => 'global_admin_announcement',
+                'title'         => $data['title'],
+                'body'          => $data['body'],
+                'data'          => json_encode([
+                    'icon'          => 'admin_alert',
+                    'target_screen' => $data['target_screen'] ?? 'home'
+                ]),
+                'is_read'       => false,
+                'created_at'    => $now,
+                'updated_at'    => $now,
+            ];
+        }
+
+        foreach (array_chunk($notificationsToInsert, 500) as $chunk) {
+            Notification::insert($chunk);
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'تمت جدولة إرسال الإشعار الجماعي لجميع المستخدمين'
+            'message' => 'تم إرسال الإشعار الجماعي لجميع المستخدمين بنجاح'
         ], 200);
     }
 }

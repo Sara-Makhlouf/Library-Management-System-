@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\Admin\TransactionController as AdminTransactionCont
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\WaitingListController;
 
+
 /*
 |--------------------------------------------------------------------------
 | 1. PUBLIC ROUTES — لا تحتاج تسجيل دخول
@@ -32,7 +33,8 @@ use App\Http\Controllers\Api\Admin\WaitingListController;
 Route::post('/register',     [AuthController::class, 'register']);     // تسجيل زبون جديد
 Route::post('/login',        [AuthController::class, 'login']);        // تسجيل دخول زبون (برقم الهاتف)
 Route::post('/admin/login',  [AuthController::class, 'adminLogin']);   // تسجيل دخول أدمن (بالإيميل)
-
+// رابط إعادة تعيين كلمة المرور (عام Public)
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 // --- الكتب (عامة — بدون توكن) ---
 Route::get('/books',              [BookController::class, 'index']);       // عرض كل الكتب مع دعم البحث والفلترة
 Route::get('/books/top-borrowed', [BookController::class, 'topBorrowed']); // الكتب الأكثر استعارة
@@ -42,6 +44,7 @@ Route::get('/books/{id}',         [BookController::class, 'show']);        // ت
 Route::get('/settings/footer', [SettingController::class, 'footer']);    // إعدادات الفوتر (اسم الموقع، تواصل، سوشيال)
 Route::get('/settings/group',  [SettingController::class, 'getByGroup']); // جلب مجموعة إعدادات بالمفاتيح
 
+Route::get('/admin/categories', [CategoryController::class, 'index']);
 
 /*
 |--------------------------------------------------------------------------
@@ -56,7 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // --- المصادقة المحمية ---
     Route::post('/logout',          [AuthController::class, 'logout']);         // تسجيل الخروج وحذف التوكن
     Route::post('/change-password', [AuthController::class, 'changePassword']); // تغيير كلمة المرور
-
+    Route::delete('/delete-account', [AuthController::class, 'deleteAccount']);
     // --- الملف الشخصي ---
     Route::get('/customer', [CustomerController::class, 'show']);   // عرض بيانات الزبون الحالي
     Route::put('/customer', [CustomerController::class, 'update']); // تحديث البيانات الشخصية (الاسم، الصورة، الهاتف...)
@@ -84,6 +87,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('transactions')->group(function () {
         Route::get('/my-history', [TransactionController::class, 'userHistory']); // سجل عمليات الزبون (شراء واستعارة)
     });
+
+    Route::get('/my-bills', [BillController::class, 'userBills']);
+    Route::get('/my-bills/{id}', [BillController::class, 'userBillDetails']);
 
     /*
     |------------------------------------------------------------------
@@ -117,7 +123,10 @@ Route::middleware('auth:sanctum')->group(function () {
     */
     Route::get('/favorites',         [FavoriteController::class, 'index']);  // عرض الكتب المفضلة
     Route::post('/favorites/toggle', [FavoriteController::class, 'toggle']); // إضافة أو حذف كتاب من المفضلة
-
+    //قائمة الانتظار — Waiting List
+    Route::post('/books/{bookId}/waiting-list/join', [WaitingListController::class, 'join']);
+    Route::delete('/books/{bookId}/waiting-list/leave', [WaitingListController::class, 'leave']);
+    Route::get('/my-waiting-list', [WaitingListController::class, 'myWaitingList']);
     /*
     |------------------------------------------------------------------
     | الإشعارات — Notifications
@@ -176,8 +185,10 @@ Route::middleware('auth:sanctum')->group(function () {
         | إدارة التصنيفات — Categories
         |----------------------------------------------------------------------
         */
-        Route::apiResource('categories', CategoryController::class)->except(['show']);
 
+        Route::post('/categories', [CategoryController::class, 'store']);
+        Route::put('/categories/{category}', [CategoryController::class, 'update']);
+        Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
         /*
         |----------------------------------------------------------------------
         | قائمة الانتظار — Waiting List
@@ -214,6 +225,7 @@ Route::middleware('auth:sanctum')->group(function () {
         | طلبات الكتب — Book Requests (Admin)
         |----------------------------------------------------------------------
         */
+        Route::get('/book-requests', [BookRequestController::class, 'adminIndex']); // عرض كل الطلبات
         Route::put('/book-requests/{id}/status', [BookRequestController::class, 'updateStatus']); // قبول أو رفض طلب كتاب مع إشعار الزبون
 
         /*

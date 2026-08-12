@@ -126,7 +126,7 @@ class UserController extends Controller
                     'name' => $customer->name,
                     'phone' => $customer->phone,
                     'points' => $customer->points_balance,
-                    'member_type' => $customer->points_balance >= 50 ? 'عميل ذهبي' : 'عميل عادي',
+                    'member_type' => $customer->points_balance >= 50 ? 'عميل نشط' : 'عميل غير نشط',
                 ],
                 'financial_summary' => [
                     'borrowed_count'     => $borrowedBooksCount,

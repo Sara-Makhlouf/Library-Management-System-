@@ -29,8 +29,9 @@ class PointsService
             ]);
 
             $customer->increment('points_balance', $amount);
+            $customer->refresh(); // لتضمين الزيادة الجديدة في المتغير فوراً
 
-            // إرسال إشعار فوري
+            // إرسال إشعار فوري بالرصيد المحدث
             try {
                 Notification::send(
                     $customerId,
@@ -38,7 +39,7 @@ class PointsService
                     'ربحت نقاطاً جديدة! 🎉✨',
                     "تهانينا، تم إضافة {$amount} نقطة إلى رصيدك. رصيدك الإجمالي الحالي هو: {$customer->points_balance} نقطة.",
                     [
-                        'icon' => 'points_bonus',
+                        'icon'          => 'points_bonus',
                         'target_screen' => 'profile',
                         'earned_amount' => $amount
                     ]
@@ -57,7 +58,8 @@ class PointsService
     public function earnPointsForLogin($customerId)
     {
         $alreadyEarnedToday = PointsTransaction::where('customer_id', $customerId)
-            ->where('reason', 'like', 'مكافأة تسجيل الدخول اليومي%')
+            ->where('transaction_type', 'earn')
+            ->where('reason', 'like', '%تسجيل الدخول%')
             ->whereDate('created_at', Carbon::today())
             ->exists();
 
@@ -110,6 +112,7 @@ class PointsService
             ]);
 
             $customer->decrement('points_balance', $amount);
+            $customer->refresh();
 
             try {
                 Notification::send(

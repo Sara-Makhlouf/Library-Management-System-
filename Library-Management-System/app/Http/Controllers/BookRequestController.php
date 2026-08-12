@@ -170,4 +170,30 @@ class BookRequestController extends Controller
             'data' => $bookRequest
         ]);
     }
+    /**
+     * 6. (للأدمن) عرض جميع طلبات الكتب الخاصة بجميع الزبائن مع الفلترة
+     */
+    public function adminIndex(Request $request): JsonResponse
+    {
+        $requests = BookRequest::with('customer:id,name,phone')
+            ->when($request->status, function ($query, $status) {
+                $query->where('status', $status);
+            })
+            ->when($request->search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('book_title', 'like', "%{$search}%")
+                        ->orWhere('author_name', 'like', "%{$search}%")
+                        ->orWhereHas('customer', function ($c) use ($search) {
+                            $c->where('name', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data'   => $requests
+        ]);
+    }
 }
