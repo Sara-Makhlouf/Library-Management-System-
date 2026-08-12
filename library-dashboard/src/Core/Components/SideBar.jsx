@@ -81,21 +81,57 @@ const menuOpen = Boolean(anchorEl);
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: "10px", overflow: "hidden" }}>
-          <Box
-            sx={{
-              width: 34,
-              height: 34,
-              minWidth: 34,
-              borderRadius: "10px",
-              background: "linear-gradient(135deg,#c9a84c,#8b5e1a)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 16,
-            }}
-          >
-            📚
-          </Box>
+      <Box
+  sx={{
+    width: 42,
+    height: 42,
+    minWidth: 42,
+    borderRadius: "12px",
+
+    background: `
+      linear-gradient(
+        145deg,
+        rgba(201,168,76,0.28),
+        rgba(139,94,26,0.12)
+      )
+    `,
+
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+
+    border: "1px solid rgba(201,168,76,0.45)",
+
+    boxShadow: `
+      0 0 0 3px rgba(201,168,76,0.06),
+      0 5px 18px rgba(139,94,26,0.18),
+      inset 0 1px 0 rgba(255,255,255,0.2)
+    `,
+
+    overflow: "hidden",
+
+    transition: "all 0.25s ease",
+
+    "&:hover": {
+      transform: "translateY(-1px) scale(1.03)",
+      boxShadow: `
+        0 0 0 4px rgba(201,168,76,0.08),
+        0 7px 22px rgba(139,94,26,0.25)
+      `,
+    },
+  }}
+>
+  <img
+    src="/adminlogo.png"
+    alt="Admin Logo"
+    style={{
+      width: "32px",
+      height: "32px",
+      objectFit: "contain",
+      display: "block",
+    }}
+  />
+</Box>
 
           {!collapsed && (
             <Box sx={{ overflow: "hidden" }}>
