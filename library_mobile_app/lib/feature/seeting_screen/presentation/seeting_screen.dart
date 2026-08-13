@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:library_mobile_app/feature/seeting_screen/deletaccount/bloc/delete_bloc.dart';
+import 'package:library_mobile_app/feature/seeting_screen/deletaccount/bloc/delete_event.dart';
+import 'package:library_mobile_app/feature/seeting_screen/deletaccount/bloc/delete_state.dart';
+import 'package:library_mobile_app/feature/seeting_screen/deletaccount/repo/delete_repo.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:library_mobile_app/core/theme_cubit.dart';
 import 'package:library_mobile_app/core/locale_cubit.dart';
 import 'package:library_mobile_app/core/theme.dart';
+
 import 'package:library_mobile_app/feature/login/presentation/signin_screen.dart';
+
 import 'package:library_mobile_app/feature/logout/bloc/logout_bloc.dart';
 import 'package:library_mobile_app/feature/logout/bloc/logout_event.dart';
 import 'package:library_mobile_app/feature/logout/bloc/logout_state.dart';
 import 'package:library_mobile_app/feature/logout/repo/logout_repo.dart';
+
 import 'package:library_mobile_app/l10n/app_localizations.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -26,21 +35,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
     repository: LogoutRepository(),
   );
 
+  late final DeleteAccountBloc _deleteAccountBloc = DeleteAccountBloc(
+    repository: DeleteAccountRepository(),
+  );
+
   @override
   void dispose() {
     _logoutBloc.close();
+    _deleteAccountBloc.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final currentLocale = Localizations.localeOf(context);
 
     return Scaffold(
       backgroundColor: isDark
           ? AppColors.backgroundDark
           : AppColors.backgroundLight,
+
       appBar: AppBar(
         title: Text(
           AppLocalizations.of(context)!.settings,
@@ -51,11 +67,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         elevation: 0,
         centerTitle: true,
       ),
+
       body: ListView(
         padding: const EdgeInsets.all(20),
+
         children: [
           _buildSectionLabel('Account', isDark),
+
           const SizedBox(height: 8),
+
           _buildCard(isDark, [
             _buildSettingsTile(
               icon: Icons.delete_outline_rounded,
@@ -71,7 +91,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 26),
 
           _buildSectionLabel('Notifications', isDark),
+
           const SizedBox(height: 8),
+
           _buildCard(isDark, [
             _buildSettingsTile(
               icon: Icons.notifications_outlined,
@@ -79,7 +101,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               isDark: isDark,
               trailing: Switch(
                 value: _pushNotifications,
-                onChanged: (v) => setState(() => _pushNotifications = v),
+                onChanged: (value) {
+                  setState(() {
+                    _pushNotifications = value;
+                  });
+                },
                 activeColor: AppColors.primary,
               ),
             ),
@@ -88,16 +114,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 26),
 
           _buildSectionLabel('General', isDark),
+
           const SizedBox(height: 8),
+
           _buildCard(isDark, [
             _buildSettingsTile(
               icon: isDark
                   ? Icons.dark_mode_outlined
                   : Icons.light_mode_outlined,
+
               label: isDark
                   ? AppLocalizations.of(context)!.darkMode
                   : AppLocalizations.of(context)!.lightMode,
+
               isDark: isDark,
+
               trailing: Switch(
                 value: isDark,
                 onChanged: (bool value) {
@@ -106,32 +137,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 activeColor: AppColors.primary,
               ),
             ),
+
             _divider(isDark),
+
             _buildSettingsTile(
               icon: Icons.language_outlined,
               label: 'App Language',
               isDark: isDark,
+
               trailing: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: currentLocale.languageCode,
-                  icon: Icon(
+
+                  icon: const Icon(
                     Icons.arrow_drop_down_rounded,
                     color: AppColors.primary,
                     size: 26,
                   ),
+
                   dropdownColor: isDark ? AppColors.darkCard : Colors.white,
+
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
                     color: isDark ? AppColors.textDark : AppColors.textLight,
                   ),
+
                   items: const [
                     DropdownMenuItem(value: 'ar', child: Text('العربية')),
                     DropdownMenuItem(value: 'en', child: Text('English')),
                   ],
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      context.read<LocaleCubit>().changeLanguage(newValue);
+
+                  onChanged: (String? value) {
+                    if (value != null) {
+                      context.read<LocaleCubit>().changeLanguage(value);
                     }
                   },
                 ),
@@ -142,7 +181,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 26),
 
           _buildSectionLabel('Support', isDark),
+
           const SizedBox(height: 8),
+
           _buildCard(isDark, [
             _buildSettingsTile(
               icon: Icons.help_outline_rounded,
@@ -151,7 +192,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               trailing: _chevron(isDark),
               onTap: () => _showFaqSheet(isDark),
             ),
+
             _divider(isDark),
+
             _buildSettingsTile(
               icon: Icons.chat_bubble_outline_rounded,
               label: 'Contact Us',
@@ -159,7 +202,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               trailing: _chevron(isDark),
               onTap: () => _showContactSheet(isDark),
             ),
+
             _divider(isDark),
+
             _buildSettingsTile(
               icon: Icons.star_outline_rounded,
               label: 'Rate the App',
@@ -172,7 +217,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 26),
 
           _buildSectionLabel('About', isDark),
+
           const SizedBox(height: 8),
+
           _buildCard(isDark, [
             _buildSettingsTile(
               icon: Icons.info_outline_rounded,
@@ -189,7 +236,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
             ),
+
             _divider(isDark),
+
             _buildSettingsTile(
               icon: Icons.description_outlined,
               label: 'Terms & Conditions',
@@ -202,7 +251,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     'By using this app you agree to borrow and purchase books responsibly, return borrowed items on time, and keep your account information accurate. Full terms will be published here once finalized.',
               ),
             ),
+
             _divider(isDark),
+
             _buildSettingsTile(
               icon: Icons.policy_outlined,
               label: 'Privacy Policy',
@@ -236,18 +287,281 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showRateAppDialog(bool isDark) {
-    int selectedStars = 0;
+  void _showDeleteAccountDialog(bool isDark) {
     showDialog(
       context: context,
+      barrierDismissible: false,
+
+      builder: (dialogContext) {
+        return BlocProvider.value(
+          value: _deleteAccountBloc,
+
+          child: BlocConsumer<DeleteAccountBloc, DeleteAccountState>(
+            listener: (context, state) async {
+              if (state is DeleteAccountSuccess) {
+                final prefs = await SharedPreferences.getInstance();
+
+                await prefs.remove('token');
+                await prefs.remove('user');
+
+                if (!mounted) return;
+
+                Navigator.of(dialogContext).pop();
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const SigninScreen()),
+                  (route) => false,
+                );
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Your account has been permanently deleted.'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+
+              if (state is DeleteAccountFailure) {
+                if (!mounted) return;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+
+            builder: (context, state) {
+              final isLoading = state is DeleteAccountLoading;
+
+              return AlertDialog(
+                backgroundColor: isDark ? AppColors.darkCard : Colors.white,
+
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+
+                title: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFB33A3A).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.delete_forever_rounded,
+                        color: Color(0xFFB33A3A),
+                      ),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: Text(
+                        'Delete Account',
+                        style: TextStyle(
+                          color: isDark
+                              ? AppColors.textDark
+                              : AppColors.textLight,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                content: Text(
+                  'Are you sure you want to permanently delete your account?\n\n'
+                  'Your account and its associated data will be permanently deleted. '
+                  'This action cannot be undone.',
+                  style: TextStyle(
+                    height: 1.5,
+                    color: isDark
+                        ? AppColors.textDark.withOpacity(0.7)
+                        : AppColors.textLight.withOpacity(0.7),
+                  ),
+                ),
+
+                actions: [
+                  // CANCEL
+                  TextButton(
+                    onPressed: isLoading
+                        ? null
+                        : () {
+                            Navigator.of(dialogContext).pop();
+                          },
+
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: isDark
+                            ? AppColors.textDark
+                            : AppColors.textLight,
+                      ),
+                    ),
+                  ),
+
+                  // DELETE
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFB33A3A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+
+                    onPressed: isLoading
+                        ? null
+                        : () {
+                            context.read<DeleteAccountBloc>().add(
+                              DeleteAccountRequested(),
+                            );
+                          },
+
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text('Delete Permanently'),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  void _showLogoutDialog(bool isDark) {
+    showDialog(
+      context: context,
+
+      builder: (dialogContext) => BlocProvider.value(
+        value: _logoutBloc,
+
+        child: BlocConsumer<LogoutBloc, LogoutState>(
+          listener: (context, state) {
+            if (state is LogoutSuccess) {
+              Navigator.pop(dialogContext);
+
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const SigninScreen()),
+                (route) => false,
+              );
+            }
+
+            if (state is LogoutFailure) {
+              Navigator.pop(dialogContext);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
+
+          builder: (context, state) {
+            final isLoading = state is LogoutLoading;
+
+            return AlertDialog(
+              backgroundColor: isDark ? AppColors.darkCard : Colors.white,
+
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+
+              title: Text(
+                'Log Out',
+                style: TextStyle(
+                  color: isDark ? AppColors.textDark : AppColors.textLight,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              content: Text(
+                'Are you sure you want to log out of your account?',
+                style: TextStyle(
+                  color: isDark
+                      ? AppColors.textDark.withOpacity(0.7)
+                      : AppColors.textLight.withOpacity(0.7),
+                ),
+              ),
+
+              actions: [
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () => Navigator.pop(dialogContext),
+
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: isDark ? AppColors.textDark : AppColors.textLight,
+                    ),
+                  ),
+                ),
+
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFB33A3A),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+
+                  onPressed: isLoading
+                      ? null
+                      : () {
+                          context.read<LogoutBloc>().add(LogoutRequested());
+                        },
+
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Log Out'),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  void _showRateAppDialog(bool isDark) {
+    int selectedStars = 0;
+
+    showDialog(
+      context: context,
+
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
               backgroundColor: isDark ? AppColors.darkCard : Colors.white,
+
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
               ),
+
               title: Text(
                 'Rate the App',
                 textAlign: TextAlign.center,
@@ -256,8 +570,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
               content: Column(
                 mainAxisSize: MainAxisSize.min,
+
                 children: [
                   Text(
                     'How was your experience with the app?',
@@ -269,25 +585,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           : AppColors.textLight.withOpacity(0.6),
                     ),
                   ),
+
                   const SizedBox(height: 16),
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+
                     children: List.generate(5, (index) {
                       final starIndex = index + 1;
+
                       final isFilled = starIndex <= selectedStars;
+
                       return IconButton(
                         onPressed: () {
                           setDialogState(() => selectedStars = starIndex);
                         },
+
                         icon: Icon(
                           isFilled
                               ? Icons.star_rounded
                               : Icons.star_outline_rounded,
+
                           color: isFilled
                               ? Colors.amber
                               : (isDark
                                     ? AppColors.textDark.withOpacity(0.3)
                                     : AppColors.textLight.withOpacity(0.3)),
+
                           size: 34,
                         ),
                       );
@@ -295,10 +619,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ],
               ),
+
               actionsAlignment: MainAxisAlignment.center,
+
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(dialogContext),
+
                   child: Text(
                     'Cancel',
                     style: TextStyle(
@@ -308,6 +635,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
+
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
@@ -315,10 +643,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
+
                   onPressed: selectedStars == 0
                       ? null
                       : () {
                           Navigator.pop(dialogContext);
+
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
@@ -328,6 +658,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           );
                         },
+
                   child: const Text('Submit'),
                 ),
               ],
@@ -342,14 +673,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.accentDark : Colors.white,
+
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+
       builder: (_) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+
           child: Column(
             mainAxisSize: MainAxisSize.min,
+
             children: [
               Container(
                 width: 40,
@@ -359,7 +694,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
+
               const SizedBox(height: 20),
+
               Text(
                 'Contact Us',
                 style: TextStyle(
@@ -368,35 +705,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   color: isDark ? AppColors.textDark : AppColors.textLight,
                 ),
               ),
+
               const SizedBox(height: 16),
+
               ListTile(
-                leading: Icon(Icons.email_outlined, color: AppColors.primary),
+                leading: const Icon(
+                  Icons.email_outlined,
+                  color: AppColors.primary,
+                ),
+
                 title: Text(
                   'support@library-app.com',
                   style: TextStyle(
                     color: isDark ? AppColors.textDark : AppColors.textLight,
                   ),
                 ),
+
                 onTap: () => Navigator.pop(context),
               ),
+
               ListTile(
-                leading: Icon(Icons.phone_outlined, color: AppColors.primary),
+                leading: const Icon(
+                  Icons.phone_outlined,
+                  color: AppColors.primary,
+                ),
+
                 title: Text(
                   '+963 000 000 000',
                   style: TextStyle(
                     color: isDark ? AppColors.textDark : AppColors.textLight,
                   ),
                 ),
+
                 onTap: () => Navigator.pop(context),
               ),
+
               ListTile(
-                leading: Icon(Icons.chat_outlined, color: AppColors.primary),
+                leading: const Icon(
+                  Icons.chat_outlined,
+                  color: AppColors.primary,
+                ),
+
                 title: Text(
                   'Live chat with support',
                   style: TextStyle(
                     color: isDark ? AppColors.textDark : AppColors.textLight,
                   ),
                 ),
+
                 onTap: () => Navigator.pop(context),
               ),
             ],
@@ -430,20 +786,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: isDark ? AppColors.accentDark : Colors.white,
+
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+
       builder: (_) => DraggableScrollableSheet(
         initialChildSize: 0.6,
         minChildSize: 0.4,
         maxChildSize: 0.9,
         expand: false,
+
         builder: (context, scrollController) => Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
+
           child: ListView(
             controller: scrollController,
+
             children: [
               const SizedBox(height: 12),
+
               Center(
                 child: Container(
                   width: 40,
@@ -454,7 +816,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 16),
+
               Text(
                 'Help Center & FAQ',
                 style: TextStyle(
@@ -463,13 +827,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   color: isDark ? AppColors.textDark : AppColors.textLight,
                 ),
               ),
+
               const SizedBox(height: 8),
+
               ...faqs.map(
                 (faq) => ExpansionTile(
                   iconColor: AppColors.primary,
+
                   collapsedIconColor: isDark
                       ? AppColors.textDark.withOpacity(0.5)
                       : AppColors.textLight.withOpacity(0.5),
+
                   title: Text(
                     faq.$1,
                     style: TextStyle(
@@ -478,9 +846,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: isDark ? AppColors.textDark : AppColors.textLight,
                     ),
                   ),
+
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(bottom: 14),
+
                       child: Text(
                         faq.$2,
                         style: TextStyle(
@@ -494,6 +864,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
               ),
+
               const SizedBox(height: 20),
             ],
           ),
@@ -511,20 +882,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: isDark ? AppColors.accentDark : Colors.white,
+
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+
       builder: (_) => DraggableScrollableSheet(
         initialChildSize: 0.5,
         minChildSize: 0.3,
         maxChildSize: 0.85,
         expand: false,
+
         builder: (context, scrollController) => Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
+
           child: ListView(
             controller: scrollController,
+
             children: [
               const SizedBox(height: 12),
+
               Center(
                 child: Container(
                   width: 40,
@@ -535,7 +912,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 16),
+
               Text(
                 title,
                 style: TextStyle(
@@ -544,7 +923,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   color: isDark ? AppColors.textDark : AppColors.textLight,
                 ),
               ),
+
               const SizedBox(height: 12),
+
               Text(
                 body,
                 style: TextStyle(
@@ -555,6 +936,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       : AppColors.textLight.withOpacity(0.7),
                 ),
               ),
+
               const SizedBox(height: 24),
             ],
           ),
@@ -563,143 +945,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showDeleteAccountDialog(bool isDark) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: isDark ? AppColors.darkCard : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: Text(
-          'Delete Account',
-          style: TextStyle(
-            color: isDark ? AppColors.textDark : AppColors.textLight,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Text(
-          'This will permanently delete your account, order history, and borrowed book records. This action cannot be undone.',
-          style: TextStyle(
-            color: isDark
-                ? AppColors.textDark.withOpacity(0.7)
-                : AppColors.textLight.withOpacity(0.7),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: isDark ? AppColors.textDark : AppColors.textLight,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFB33A3A),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: () {
-              Navigator.pop(dialogContext);
-            },
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showLogoutDialog(bool isDark) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => BlocProvider.value(
-        value: _logoutBloc,
-        child: BlocConsumer<LogoutBloc, LogoutState>(
-          listener: (context, state) {
-            if (state is LogoutSuccess) {
-              Navigator.pop(dialogContext);
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const SigninScreen()),
-              );
-            }
-            if (state is LogoutFailure) {
-              Navigator.pop(dialogContext);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          },
-          builder: (context, state) {
-            final isLoading = state is LogoutLoading;
-            return AlertDialog(
-              backgroundColor: isDark ? AppColors.darkCard : Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-              title: Text(
-                'Log Out',
-                style: TextStyle(
-                  color: isDark ? AppColors.textDark : AppColors.textLight,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              content: Text(
-                'Are you sure you want to log out of your account?',
-                style: TextStyle(
-                  color: isDark
-                      ? AppColors.textDark.withOpacity(0.7)
-                      : AppColors.textLight.withOpacity(0.7),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: isLoading
-                      ? null
-                      : () => Navigator.pop(dialogContext),
-                  child: Text(
-                    'Cancel',
-                    style: TextStyle(
-                      color: isDark ? AppColors.textDark : AppColors.textLight,
-                    ),
-                  ),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFB33A3A),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: isLoading
-                      ? null
-                      : () => context.read<LogoutBloc>().add(LogoutRequested()),
-                  child: isLoading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text('Log Out'),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
   Widget _buildSectionLabel(String text, bool isDark) {
     return Padding(
       padding: const EdgeInsets.only(left: 4),
+
       child: Text(
         text,
         style: TextStyle(
@@ -717,11 +966,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : Colors.white,
+
         borderRadius: BorderRadius.circular(16),
+
         border: Border.all(
           color: isDark ? Colors.white10 : Colors.black.withOpacity(0.06),
         ),
       ),
+
       child: Column(children: children),
     );
   }
@@ -756,22 +1008,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }) {
     final color =
         labelColor ?? (isDark ? AppColors.textDark : AppColors.textLight);
+
     final iColor = iconColor ?? color;
 
     return ListTile(
       onTap: onTap,
+
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+
       leading: Container(
         width: 32,
         height: 32,
+
         decoration: BoxDecoration(
           color: isDark
               ? Colors.white.withOpacity(0.05)
               : AppColors.backgroundLight,
+
           borderRadius: BorderRadius.circular(9),
         ),
+
         child: Icon(icon, size: 15, color: iColor.withOpacity(0.75)),
       ),
+
       title: Text(
         label,
         style: TextStyle(
@@ -780,6 +1039,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           color: color,
         ),
       ),
+
       trailing: trailing,
     );
   }
