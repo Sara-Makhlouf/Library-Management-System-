@@ -1,9 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:library_mobile_app/core/constants.dart';
+
 import 'package:library_mobile_app/feature/register/bloc/register_event.dart';
 import 'package:library_mobile_app/feature/register/bloc/register_state.dart';
 import 'package:library_mobile_app/feature/register/data/register_repository.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:library_mobile_app/core/constants.dart';
 
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   final RegisterRepository repository;
@@ -11,6 +13,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   RegisterBloc({required this.repository}) : super(RegisterInitial()) {
     on<RegisterSubmitted>(_onSubmitted);
   }
+
   Future<void> _onSubmitted(
     RegisterSubmitted event,
     Emitter<RegisterState> emit,
@@ -30,16 +33,45 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         fcmToken: event.fcmToken,
       );
 
-      final responseData = result['data'] as Map<String, dynamic>;
+      print('====================================');
+      print('🟢 Register Success');
+      print('🟢 Response: $result');
+      print('====================================');
 
-      final token = responseData['token']?.toString() ?? '';
+      String token = '';
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(tokenKey, token);
+      final data = result['data'];
+
+      if (data is Map) {
+        token = data['token']?.toString() ?? '';
+      }
+
+      if (token.isEmpty) {
+        token = result['token']?.toString() ?? '';
+      }
+
+      if (token.isNotEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+
+        await prefs.setString(tokenKey, token);
+
+        print('🟢 Token saved');
+      }
 
       emit(RegisterSuccess(result));
     } catch (e) {
-      emit(RegisterFailure(e.toString()));
+      print('====================================');
+      print('🔴 Register Failure');
+      print('🔴 Error: $e');
+      print('====================================');
+
+      String message = e.toString();
+
+      if (message.startsWith('Exception: ')) {
+        message = message.replaceFirst('Exception: ', '');
+      }
+
+      emit(RegisterFailure(message));
     }
   }
 }

@@ -12,15 +12,17 @@ class RegisterInitial extends RegisterState {}
 class RegisterLoading extends RegisterState {}
 
 class RegisterSuccess extends RegisterState {
-  final Map<String, dynamic> userData;
-  const RegisterSuccess(this.userData);
+  final Map<String, dynamic> data;
+
+  const RegisterSuccess(this.data);
 
   @override
-  List<Object?> get props => [userData];
+  List<Object?> get props => [data];
 }
 
 class RegisterFailure extends RegisterState {
   final String message;
+
   const RegisterFailure(this.message);
 
   @override

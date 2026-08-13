@@ -2,6 +2,7 @@
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import 'package:library_mobile_app/core/components/custom_button.dart';
 import 'package:library_mobile_app/core/components/decorCircle.dart';
 import 'package:library_mobile_app/core/components/shake_widget.dart';
@@ -9,12 +10,14 @@ import 'package:library_mobile_app/core/components/social_button.dart';
 import 'package:library_mobile_app/core/components/theme_toggle.dart';
 import 'package:library_mobile_app/core/components/custom_input_field.dart';
 import 'package:library_mobile_app/core/theme.dart';
-import 'package:library_mobile_app/core/constant.dart';
+
 import 'package:library_mobile_app/feature/login/presentation/signin_screen.dart';
+
 import 'package:library_mobile_app/feature/register/bloc/register_bloc.dart';
-import 'package:library_mobile_app/feature/register/bloc/register_event.dart';
-import 'package:library_mobile_app/feature/register/bloc/register_state.dart';
 import 'package:library_mobile_app/feature/register/data/register_repository.dart';
+import 'package:library_mobile_app/feature/register/helper/dots.dart';
+import 'package:library_mobile_app/feature/register/helper/gender.dart';
+import 'package:library_mobile_app/feature/register/presentation/otp_page.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -35,15 +38,25 @@ class _RegisterState extends State<Register> {
 
   late RegisterBloc _registerBloc;
 
+  late RegisterRepository _registerRepository;
+
   int _currentStep = 0;
+
   String _gender = 'M';
+
   bool _obscure1 = true;
   bool _obscure2 = true;
+
+  // مهم حتى ما يضغط المستخدم Continue عدة مرات
+  bool _sendingOtp = false;
 
   @override
   void initState() {
     super.initState();
-    _registerBloc = RegisterBloc(repository: RegisterRepository());
+
+    _registerRepository = RegisterRepository();
+
+    _registerBloc = RegisterBloc(repository: _registerRepository);
   }
 
   @override
@@ -54,12 +67,15 @@ class _RegisterState extends State<Register> {
     _emailController.dispose();
     _passController.dispose();
     _rePassController.dispose();
+
     _registerBloc.close();
+
     super.dispose();
   }
 
   Future<void> _pickDob() async {
     final now = DateTime.now();
+
     final picked = await showDatePicker(
       context: context,
       initialDate: DateTime(now.year - 18, now.month, now.day),
@@ -67,6 +83,7 @@ class _RegisterState extends State<Register> {
       lastDate: now,
       builder: (context, child) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
+
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
@@ -83,288 +100,448 @@ class _RegisterState extends State<Register> {
         );
       },
     );
+
     if (picked != null) {
       setState(() {
         _dobController.text =
-            '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+            '${picked.year}-'
+            '${picked.month.toString().padLeft(2, '0')}-'
+            '${picked.day.toString().padLeft(2, '0')}';
       });
     }
   }
 
   void _goNext() {
-    if (_fullNameController.text.trim().isEmpty ||
-        _dobController.text.isEmpty ||
-        _phoneController.text.trim().isEmpty) {
-      _shakeKey.currentState?.shake();
+    final name = _fullNameController.text.trim();
+    final dob = _dobController.text.trim();
+    final phone = _phoneController.text.trim();
+
+    if (name.isEmpty) {
+      _showError('Please enter your full name');
       return;
     }
-    setState(() => _currentStep = 1);
+
+    if (dob.isEmpty) {
+      _showError('Please select your date of birth');
+      return;
+    }
+
+    if (phone.isEmpty) {
+      _showError('Please enter your phone number');
+      return;
+    }
+
+    if (phone.length < 8) {
+      _showError('Please enter a valid phone number');
+      return;
+    }
+
+    setState(() {
+      _currentStep = 1;
+    });
   }
 
   void _goBack() {
-    setState(() => _currentStep = 0);
+    if (_sendingOtp) return;
+
+    setState(() {
+      _currentStep = 0;
+    });
   }
 
   String? _validatePasswords() {
     final pass = _passController.text;
     final rePass = _rePassController.text;
 
+    if (pass.isEmpty) {
+      return 'Please enter your password';
+    }
+
     if (pass.length < 8) {
       return 'Password must be at least 8 characters';
     }
+
+    if (rePass.isEmpty) {
+      return 'Please confirm your password';
+    }
+
     if (pass != rePass) {
       return 'Passwords do not match';
     }
+
     return null;
   }
 
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+
+    return emailRegex.hasMatch(email);
+  }
+
+  String _normalizePhone(String phone) {
+    phone = phone.trim().replaceAll(' ', '');
+
+    if (phone.startsWith('09')) {
+      return '+963${phone.substring(1)}';
+    }
+
+    if (phone.startsWith('9')) {
+      return '+963$phone';
+    }
+
+    if (phone.startsWith('963')) {
+      return '+$phone';
+    }
+
+    if (phone.startsWith('+963')) {
+      return phone;
+    }
+
+    return phone;
+  }
+
   void _showError(String message) {
+    if (!mounted) return;
+
     _shakeKey.currentState?.shake();
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white),
+            const SizedBox(width: 10),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
     );
   }
 
-  void _onCreateAccount() {
-    if (_emailController.text.trim().isEmpty) {
+  void _showSuccess(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_outline, color: Colors.white),
+            const SizedBox(width: 10),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  Future<void> _onCreateAccount() async {
+    if (_sendingOtp) return;
+
+    final email = _emailController.text.trim();
+
+    final phone = _normalizePhone(_phoneController.text);
+
+    if (email.isEmpty) {
       _showError('Please enter your email');
       return;
     }
 
+    if (!_isValidEmail(email)) {
+      _showError('Please enter a valid email');
+      return;
+    }
+
     final passwordError = _validatePasswords();
+
     if (passwordError != null) {
       _showError(passwordError);
       return;
     }
 
-    print('🟡 Create account button pressed, dispatching RegisterSubmitted');
+    if (phone.isEmpty) {
+      _showError('Please enter your phone number');
+      return;
+    }
 
-    _registerBloc.add(
-      RegisterSubmitted(
-        name: _fullNameController.text.trim(),
-        email: _emailController.text.trim(),
-        password: _passController.text,
-        passwordConfirmation: _rePassController.text,
-        gender: _gender,
-        phone: _phoneController.text.trim(),
-        dob: _dobController.text,
-      ),
-    );
+    if (!phone.startsWith('+963')) {
+      _showError('Please enter a valid Syrian phone number');
+      return;
+    }
+
+    final registerData = <String, dynamic>{
+      'name': _fullNameController.text.trim(),
+      'email': email,
+      'password': _passController.text,
+      'password_confirmation': _rePassController.text,
+      'gender': _gender,
+      'phone': phone,
+      'DOB': _dobController.text.trim(),
+      'lang': 'ar',
+      'fcm_token': '',
+    };
+
+    setState(() {
+      _sendingOtp = true;
+    });
+
+    try {
+      final result = await _registerRepository.sendOtp(phone: phone);
+
+      debugPrint('🟢 OTP response: $result');
+
+      if (!mounted) return;
+
+      _showSuccess('Verification code sent to your WhatsApp');
+
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) {
+            return OtpPage(
+              phone: phone,
+              registerData: registerData,
+              registerBloc: _registerBloc,
+            );
+          },
+        ),
+      );
+    } catch (e) {
+      debugPrint('🔴 Send OTP failed: $e');
+
+      if (!mounted) return;
+
+      String message = e.toString();
+
+      if (message.startsWith('Exception: ')) {
+        message = message.replaceFirst('Exception: ', '');
+      }
+
+      _showError(message);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _sendingOtp = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final size = MediaQuery.of(context).size;
 
     return BlocProvider.value(
       value: _registerBloc,
-      child: BlocListener<RegisterBloc, RegisterState>(
-        listener: (context, state) {
-          if (state is RegisterSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Account created successfully'),
-                backgroundColor: Colors.green,
+      child: Scaffold(
+        backgroundColor: isDark
+            ? AppColors.backgroundDark
+            : AppColors.accentLight,
+        body: Stack(
+          children: [
+            Positioned(
+              top: -60,
+              left: -60,
+              child: DecorCircle(
+                size: 220,
+                color: AppColors.primary,
+                opacity: isDark ? 0.08 : 0.13,
               ),
-            );
-            Navigator.of(context).pushReplacementNamed(Routes.homePage);
-          } else if (state is RegisterFailure) {
-            _showError(state.message);
-          }
-        },
-        child: Scaffold(
-          backgroundColor: isDark
-              ? AppColors.backgroundDark
-              : AppColors.accentLight,
-          body: Stack(
-            children: [
-              Positioned(
-                top: -60,
-                left: -60,
-                child: DecorCircle(
-                  size: 220,
-                  color: AppColors.primary,
-                  opacity: isDark ? 0.08 : 0.13,
-                ),
+            ),
+
+            Positioned(
+              top: size.height * 0.12,
+              right: -80,
+              child: DecorCircle(
+                size: 180,
+                color: AppColors.primary,
+                opacity: isDark ? 0.05 : 0.09,
               ),
-              Positioned(
-                top: size.height * 0.12,
-                right: -80,
-                child: DecorCircle(
-                  size: 180,
-                  color: AppColors.primary,
-                  opacity: isDark ? 0.05 : 0.09,
-                ),
+            ),
+
+            Positioned(
+              top: size.height * 0.3,
+              left: size.width * 0.2,
+              child: DecorCircle(
+                size: 120,
+                color: AppColors.primary,
+                opacity: isDark ? 0.04 : 0.07,
               ),
-              Positioned(
-                top: size.height * 0.3,
-                left: size.width * 0.2,
-                child: DecorCircle(
-                  size: 120,
-                  color: AppColors.primary,
-                  opacity: isDark ? 0.04 : 0.07,
-                ),
-              ),
-              Positioned(
-                top: size.height * 0.06,
-                left: 0,
-                right: 0,
-                child: Column(
-                  children: [
-                    Image.asset(
-                          'assets/images/logo.png',
-                          width: size.width * 0.40,
-                        )
-                        .animate()
-                        .fadeIn(duration: 500.ms)
-                        .scale(
-                          begin: const Offset(0.8, 0.8),
-                          duration: 500.ms,
-                          curve: Curves.easeOutBack,
-                        ),
-                    Text(
-                      'Hibr & Waraq',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: isDark
-                            ? AppColors.textDark
-                            : AppColors.textLight,
+            ),
+
+            Positioned(
+              top: size.height * 0.06,
+              left: 0,
+              right: 0,
+              child: Column(
+                children: [
+                  Image.asset(
+                        'assets/images/logo.png',
+                        width: size.width * 0.40,
+                      )
+                      .animate()
+                      .fadeIn(duration: 500.ms)
+                      .scale(
+                        begin: const Offset(0.8, 0.8),
+                        duration: 500.ms,
+                        curve: Curves.easeOutBack,
                       ),
-                    ).animate(delay: 150.ms).fadeIn(duration: 400.ms),
-                    Text(
-                      'Your digital library',
-                      style: TextStyle(
-                        fontSize: 12,
-                        letterSpacing: 1,
-                        color: isDark
-                            ? AppColors.textDark.withOpacity(0.5)
-                            : AppColors.textLight.withOpacity(0.55),
-                      ),
-                    ).animate(delay: 350.ms).fadeIn(duration: 500.ms),
-                  ],
-                ),
+
+                  Text(
+                    'Hibr & Waraq',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? AppColors.textDark : AppColors.textLight,
+                    ),
+                  ).animate(delay: 150.ms).fadeIn(duration: 400.ms),
+
+                  Text(
+                    'Your digital library',
+                    style: TextStyle(
+                      fontSize: 12,
+                      letterSpacing: 1,
+                      color: isDark
+                          ? AppColors.textDark.withOpacity(0.5)
+                          : AppColors.textLight.withOpacity(0.55),
+                    ),
+                  ).animate(delay: 350.ms).fadeIn(duration: 500.ms),
+                ],
               ),
-              Positioned(
-                top: MediaQuery.of(context).padding.top + 12,
-                right: 16,
-                child: ThemeToggle(isDark: isDark)
-                    .animate(delay: 400.ms)
-                    .fadeIn(duration: 400.ms)
-                    .slideX(begin: 0.3, end: 0),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child:
-                    ShakeWidget(
-                          key: _shakeKey,
-                          child: Container(
-                            width: double.infinity,
-                            margin: const EdgeInsets.only(top: 100),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? AppColors.accentDark
-                                  : Colors.white,
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(32),
+            ),
+
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 12,
+              right: 16,
+              child: ThemeToggle(isDark: isDark)
+                  .animate(delay: 400.ms)
+                  .fadeIn(duration: 400.ms)
+                  .slideX(begin: 0.3, end: 0),
+            ),
+
+            Align(
+              alignment: Alignment.bottomCenter,
+              child:
+                  ShakeWidget(
+                        key: _shakeKey,
+                        child: Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.only(top: 100),
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.accentDark : Colors.white,
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(32),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(
+                                  isDark ? 0.3 : 0.08,
+                                ),
+                                blurRadius: 30,
+                                offset: const Offset(0, -8),
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(
-                                    isDark ? 0.3 : 0.08,
+                            ],
+                          ),
+                          child: SingleChildScrollView(
+                            padding: EdgeInsets.fromLTRB(
+                              28,
+                              28,
+                              28,
+                              MediaQuery.of(context).viewInsets.bottom +
+                                  MediaQuery.of(context).padding.bottom +
+                                  40,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Handle
+                                Center(
+                                  child: Container(
+                                    width: 40,
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? Colors.white12
+                                          : Colors.black12,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                   ),
-                                  blurRadius: 30,
-                                  offset: const Offset(0, -8),
+                                ),
+
+                                const SizedBox(height: 20),
+
+                                StepDots(
+                                  currentStep: _currentStep,
+                                  isDark: isDark,
+                                ).animate(delay: 80.ms).fadeIn(),
+
+                                const SizedBox(height: 16),
+
+                                Text(
+                                      _currentStep == 0
+                                          ? 'Personal info'
+                                          : 'Account security',
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: isDark
+                                            ? AppColors.textDark
+                                            : AppColors.textLight,
+                                      ),
+                                    )
+                                    .animate(delay: 100.ms)
+                                    .fadeIn()
+                                    .slideY(begin: 0.2, end: 0),
+
+                                const SizedBox(height: 4),
+
+                                Text(
+                                  _currentStep == 0
+                                      ? 'Step 1 of 2'
+                                      : 'Step 2 of 2',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: isDark
+                                        ? AppColors.textDark.withOpacity(0.5)
+                                        : AppColors.textLight.withOpacity(0.5),
+                                  ),
+                                ).animate(delay: 160.ms).fadeIn(),
+
+                                const SizedBox(height: 24),
+
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 250),
+                                  child: _currentStep == 0
+                                      ? _buildStepOne(isDark)
+                                      : _buildStepTwo(isDark),
                                 ),
                               ],
                             ),
-                            child: SingleChildScrollView(
-                              padding: EdgeInsets.fromLTRB(
-                                28,
-                                28,
-                                28,
-                                MediaQuery.of(context).viewInsets.bottom +
-                                    MediaQuery.of(context).padding.bottom +
-                                    40,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Center(
-                                    child: Container(
-                                      width: 40,
-                                      height: 4,
-                                      decoration: BoxDecoration(
-                                        color: isDark
-                                            ? Colors.white12
-                                            : Colors.black12,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  _StepDots(
-                                    currentStep: _currentStep,
-                                    isDark: isDark,
-                                  ).animate(delay: 80.ms).fadeIn(),
-                                  const SizedBox(height: 16),
-                                  Row(
-                                        children: [
-                                          Text(
-                                            _currentStep == 0
-                                                ? 'Personal info'
-                                                : 'Account security',
-                                            style: TextStyle(
-                                              fontSize: 22,
-                                              fontWeight: FontWeight.bold,
-                                              color: isDark
-                                                  ? AppColors.textDark
-                                                  : AppColors.textLight,
-                                            ),
-                                          ),
-                                        ],
-                                      )
-                                      .animate(delay: 100.ms)
-                                      .fadeIn()
-                                      .slideY(begin: 0.2, end: 0),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _currentStep == 0
-                                        ? 'Step 1 of 2'
-                                        : 'Step 2 of 2',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: isDark
-                                          ? AppColors.textDark.withOpacity(0.5)
-                                          : AppColors.textLight.withOpacity(
-                                              0.5,
-                                            ),
-                                    ),
-                                  ).animate(delay: 160.ms).fadeIn(),
-                                  const SizedBox(height: 24),
-                                  AnimatedSwitcher(
-                                    duration: const Duration(milliseconds: 250),
-                                    child: _currentStep == 0
-                                        ? _buildStepOne(isDark)
-                                        : _buildStepTwo(isDark),
-                                  ),
-                                ],
-                              ),
-                            ),
                           ),
-                        )
-                        .animate(delay: 50.ms)
-                        .slideY(
-                          begin: 0.18,
-                          end: 0,
-                          duration: 600.ms,
-                          curve: Curves.easeOutCubic,
-                        )
-                        .fadeIn(duration: 500.ms),
-              ),
-            ],
-          ),
+                        ),
+                      )
+                      .animate(delay: 50.ms)
+                      .slideY(
+                        begin: 0.18,
+                        end: 0,
+                        duration: 600.ms,
+                        curve: Curves.easeOutCubic,
+                      )
+                      .fadeIn(duration: 500.ms),
+            ),
+          ],
         ),
       ),
     );
@@ -381,7 +558,9 @@ class _RegisterState extends State<Register> {
           icon: Icons.person_outline_rounded,
           isDark: isDark,
         ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.15, end: 0),
+
         const SizedBox(height: 12),
+
         GestureDetector(
           onTap: _pickDob,
           child: AbsorbPointer(
@@ -393,21 +572,31 @@ class _RegisterState extends State<Register> {
             ),
           ),
         ).animate(delay: 250.ms).fadeIn().slideY(begin: 0.15, end: 0),
+
         const SizedBox(height: 12),
-        _GenderSelector(
+
+        GenderSelector(
           selected: _gender,
           isDark: isDark,
-          onChanged: (g) => setState(() => _gender = g),
+          onChanged: (g) {
+            setState(() {
+              _gender = g;
+            });
+          },
         ).animate(delay: 300.ms).fadeIn().slideY(begin: 0.15, end: 0),
+
         const SizedBox(height: 12),
+
         CustomInputField(
           controller: _phoneController,
-          hint: 'Phone number',
+          hint: 'Phone number (+963...)',
           icon: Icons.phone_android_rounded,
           isDark: isDark,
           keyboardType: TextInputType.phone,
         ).animate(delay: 350.ms).fadeIn().slideY(begin: 0.15, end: 0),
+
         const SizedBox(height: 24),
+
         CustomButton(
           isLoading: false,
           onTap: _goNext,
@@ -429,7 +618,9 @@ class _RegisterState extends State<Register> {
           isDark: isDark,
           keyboardType: TextInputType.emailAddress,
         ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.15, end: 0),
+
         const SizedBox(height: 12),
+
         CustomInputField(
           controller: _passController,
           hint: 'Password',
@@ -446,10 +637,16 @@ class _RegisterState extends State<Register> {
                   ? AppColors.textDark.withOpacity(0.4)
                   : AppColors.textLight.withOpacity(0.4),
             ),
-            onPressed: () => setState(() => _obscure1 = !_obscure1),
+            onPressed: () {
+              setState(() {
+                _obscure1 = !_obscure1;
+              });
+            },
           ),
         ).animate(delay: 260.ms).fadeIn().slideY(begin: 0.15, end: 0),
+
         const SizedBox(height: 12),
+
         CustomInputField(
           controller: _rePassController,
           hint: 'Confirm password',
@@ -466,15 +663,21 @@ class _RegisterState extends State<Register> {
                   ? AppColors.textDark.withOpacity(0.4)
                   : AppColors.textLight.withOpacity(0.4),
             ),
-            onPressed: () => setState(() => _obscure2 = !_obscure2),
+            onPressed: () {
+              setState(() {
+                _obscure2 = !_obscure2;
+              });
+            },
           ),
         ).animate(delay: 320.ms).fadeIn().slideY(begin: 0.15, end: 0),
+
         const SizedBox(height: 24),
+
         Row(
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: _goBack,
+                onPressed: _sendingOtp ? null : _goBack,
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   side: BorderSide(
@@ -494,27 +697,28 @@ class _RegisterState extends State<Register> {
                 ),
               ),
             ),
+
             const SizedBox(width: 12),
+
             Expanded(
               flex: 2,
-              child: BlocBuilder<RegisterBloc, RegisterState>(
-                builder: (context, state) {
-                  return CustomButton(
-                    isLoading: state is RegisterLoading,
-                    onTap: _onCreateAccount,
-                    text: 'Create account',
-                  );
-                },
+              child: CustomButton(
+                isLoading: _sendingOtp,
+                onTap: _sendingOtp ? () {} : _onCreateAccount,
+                text: 'Continue',
               ),
             ),
           ],
         ).animate(delay: 380.ms).fadeIn(),
+
         const SizedBox(height: 20),
+
         Row(
           children: [
             Expanded(
               child: Divider(color: isDark ? Colors.white12 : Colors.black12),
             ),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
@@ -527,12 +731,15 @@ class _RegisterState extends State<Register> {
                 ),
               ),
             ),
+
             Expanded(
               child: Divider(color: isDark ? Colors.white12 : Colors.black12),
             ),
           ],
         ).animate(delay: 420.ms).fadeIn(),
+
         const SizedBox(height: 14),
+
         Row(
           children: [
             SocialButton(
@@ -541,14 +748,18 @@ class _RegisterState extends State<Register> {
               iconColor: const Color(0xFFEA4335),
               isDark: isDark,
             ),
+
             const SizedBox(width: 10),
+
             SocialButton(
               label: 'Facebook',
               icon: FontAwesomeIcons.facebook,
               iconColor: const Color(0xFF1877F2),
               isDark: isDark,
             ),
+
             const SizedBox(width: 10),
+
             SocialButton(
               label: 'Twitter',
               icon: FontAwesomeIcons.twitter,
@@ -557,7 +768,9 @@ class _RegisterState extends State<Register> {
             ),
           ],
         ).animate(delay: 460.ms).fadeIn(),
+
         const SizedBox(height: 16),
+
         Center(
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -571,10 +784,17 @@ class _RegisterState extends State<Register> {
                       : AppColors.textLight.withOpacity(0.5),
                 ),
               ),
+
               GestureDetector(
-                onTap: () => Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const SigninScreen()),
-                ),
+                onTap: _sendingOtp
+                    ? null
+                    : () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (_) => const SigninScreen(),
+                          ),
+                        );
+                      },
                 child: Text(
                   'Sign in',
                   style: TextStyle(
@@ -587,100 +807,6 @@ class _RegisterState extends State<Register> {
             ],
           ),
         ).animate(delay: 500.ms).fadeIn(),
-      ],
-    );
-  }
-}
-
-class _StepDots extends StatelessWidget {
-  final int currentStep;
-  final bool isDark;
-  const _StepDots({required this.currentStep, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    Widget dot(bool active) => Container(
-      width: 26,
-      height: 4,
-      margin: const EdgeInsets.symmetric(horizontal: 3),
-      decoration: BoxDecoration(
-        color: active
-            ? AppColors.primary
-            : (isDark ? Colors.white12 : Colors.black12),
-        borderRadius: BorderRadius.circular(2),
-      ),
-    );
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [dot(currentStep >= 0), dot(currentStep >= 1)],
-    );
-  }
-}
-
-class _GenderSelector extends StatelessWidget {
-  final String selected;
-  final bool isDark;
-  final ValueChanged<String> onChanged;
-  const _GenderSelector({
-    required this.selected,
-    required this.isDark,
-    required this.onChanged,
-  });
-
-  Widget _chip(String value, String label, IconData icon) {
-    final isSelected = selected == value;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => onChanged(value),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? AppColors.primary.withOpacity(0.12)
-                : (isDark ? AppColors.inputDark : AppColors.backgroundLight),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isSelected ? AppColors.primary : Colors.transparent,
-              width: 1.2,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 16,
-                color: isSelected
-                    ? AppColors.primary
-                    : (isDark
-                          ? AppColors.textDark.withOpacity(0.5)
-                          : AppColors.textLight.withOpacity(0.5)),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: isSelected
-                      ? AppColors.primary
-                      : (isDark ? AppColors.textDark : AppColors.textLight),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _chip('M', 'Male', Icons.male_rounded),
-        const SizedBox(width: 10),
-        _chip('F', 'Female', Icons.female_rounded),
       ],
     );
   }
