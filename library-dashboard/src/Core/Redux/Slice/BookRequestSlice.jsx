@@ -24,13 +24,12 @@ const adminBookRequestsSlice = createSlice({
   initialState,
 
   reducers: {
-   BookRequestState: (state) => {
+    clearBookRequestState: (state) => {
       state.error = null;
       state.successMessage = null;
       state.updatedRequest = null;
     },
 
-   
     clearBookRequestError: (state) => {
       state.error = null;
       state.fetchError = null;
@@ -50,7 +49,6 @@ const adminBookRequestsSlice = createSlice({
         state.fetchLoading = false;
         state.fetchError = null;
 
-       
         state.requests = Array.isArray(action.payload)
           ? action.payload
           : [];
@@ -67,6 +65,7 @@ const adminBookRequestsSlice = createSlice({
         state.requests = [];
       })
 
+    
       .addCase(updateBookRequestStatus.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -84,8 +83,6 @@ const adminBookRequestsSlice = createSlice({
           state.successMessage =
             action.payload?.message ||
             "Book request updated successfully";
-
-         
 
           const updated =
             action.payload?.data ||
