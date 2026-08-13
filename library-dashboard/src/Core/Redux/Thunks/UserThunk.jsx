@@ -3,9 +3,14 @@ import api from "../../Api/aixos";
 
 export const fetchUsers = createAsyncThunk(
   "user/fetchUsers",
-  async (_, thunkAPI) => {
+  async (page = 1, thunkAPI) => {
     try {
-      const response = await api.get("/users");
+      const response = await api.get("/users", {
+        params: {
+          page,
+        },
+      });
+
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -20,12 +25,12 @@ export const deleteUser = createAsyncThunk(
   async (userId, thunkAPI) => {
     try {
       const response = await api.delete(`/users/${userId}`);
-      return response.data;
-      
+      return {
+        id: userId,
+        data: response.data,
+      };
     } catch (error) {
-      console.log("Error details:", error.response);
       return thunkAPI.rejectWithValue(
-        
         error.response?.data || error.message
       );
     }
@@ -53,7 +58,11 @@ export const getAllOperationForUser = createAsyncThunk(
       const response = await api.get(
         `/users/${userId}/full-details`
       );
-      return response.data;
+
+      return {
+        userId,
+        data: response.data.data,
+      };
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data || error.message

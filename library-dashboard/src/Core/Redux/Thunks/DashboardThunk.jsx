@@ -3,9 +3,10 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export const getDashboardStats = createAsyncThunk(
   "dashboard/getDashboardStats",
-  async (thunkAPI) => {
+  async (_, thunkAPI) => {
     try {
-      const response = await api.get(`/dashboard-stats`);
+      const response = await api.get("/dashboard-stats");
+
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -14,15 +15,14 @@ export const getDashboardStats = createAsyncThunk(
     }
   }
 );
-//  هي فيها اغلب البيانات الباقي لصفحة التحليلات اذا عملتا
-
 
 
 export const getWeeklySales = createAsyncThunk(
   "dashboard/getWeeklySales",
-  async ( thunkAPI) => {
+  async (_, thunkAPI) => {
     try {
       const response = await api.get("/statistics/weekly-sales");
+
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -31,14 +31,15 @@ export const getWeeklySales = createAsyncThunk(
     }
   }
 );
-
-
 
 export const getTopSellingBooks = createAsyncThunk(
   "dashboard/getTopSellingBooks",
-  async ( thunkAPI) => {
+  async (_, thunkAPI) => {
     try {
-      const response = await api.get("/statistics/top-selling-books");
+      const response = await api.get(
+        "/statistics/top-selling-books"
+      );
+
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -48,12 +49,14 @@ export const getTopSellingBooks = createAsyncThunk(
   }
 );
 
-
 export const getWeeklyBorrows = createAsyncThunk(
   "dashboard/getWeeklyBorrows",
-  async ( thunkAPI) => {
+  async (_, thunkAPI) => {
     try {
-      const response = await api.get("/statistics/weekly-borrows");
+      const response = await api.get(
+        "/statistics/weekly-borrows"
+      );
+
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(

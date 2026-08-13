@@ -1,17 +1,25 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback, memo } from "react";
 
 import { useDispatch, useSelector } from "react-redux";
 
-import {BookOpen, TrendingUp, TrendingDown, Minus, RefreshCw,Receipt, BookMarked, Brain, AlertCircle, Crown} from "lucide-react";
+import { BookOpen, TrendingUp, TrendingDown, Minus, RefreshCw, Receipt, BookMarked, Brain, AlertCircle, Crown } from "lucide-react";
 
-import {getDashboardStats, getWeeklySales,getTopSellingBooks,getWeeklyBorrows} from "../../Core/Redux/Thunks/DashboardThunk";
+import { getDashboardStats, getWeeklySales, getTopSellingBooks, getWeeklyBorrows } from "../../Core/Redux/Thunks/DashboardThunk";
 
 import { getTotalPaidOrder, getTotalBorrows } from "../../Core/Redux/Thunks/AnalayistThunk";
 
-import { useAIChat } from "../Utils/useInsight";
-import AIChatCard from "../Utils/insightCard";
 import { GOLD, GOLD_DARK, GOLD_DEEP, INK, PAGE_BG, CARD_BG, CARD_BG_HOVER, inkA, goldA } from "../../Core/Constants/ColorsUse";
 
+const FONT_LINK_ID = "dashboard-command-center-fonts";
+function injectFontsOnce() {
+  if (document.getElementById(FONT_LINK_ID)) return;
+  const link = document.createElement("link");
+  link.id = FONT_LINK_ID;
+  link.rel = "stylesheet";
+  link.href =
+    "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap";
+  document.head.appendChild(link);
+}
 
 function normalizeSeries(raw) {
   if (!raw) return [];
@@ -71,6 +79,14 @@ function extractBorrowsBreakdown(payload) {
   return { returned, active, expired, total: returned + active + expired };
 }
 
+function trendOf(series) {
+  if (!series || series.length < 2) return null;
+  const first = series[0].value;
+  const last = series[series.length - 1].value;
+  if (last > first) return "up";
+  if (last < first) return "down";
+  return "flat";
+}
 
 export default function DashboardCommandCenter() {
   const dispatch = useDispatch();
@@ -78,14 +94,25 @@ export default function DashboardCommandCenter() {
   const [isNarrow, setIsNarrow] = useState(
     typeof window !== "undefined" ? window.innerWidth < 880 : false
   );
+
   useEffect(() => {
-    const onResize = () => setIsNarrow(window.innerWidth < 880);
+    injectFontsOnce();
+  }, []);
+
+  useEffect(() => {
+    let frame;
+    const onResize = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => setIsNarrow(window.innerWidth < 880));
+    };
     window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", onResize);
+    };
   }, []);
 
   const {
-    
     weeklySales,
     weeklyBorrows,
     topSellingBooks,
@@ -103,14 +130,15 @@ export default function DashboardCommandCenter() {
   const loading = dashboardLoading || analystLoading;
   const error = dashboardError || analystError;
 
-  const loadAll = () => {
+
+  const loadAll = useCallback(() => {
     dispatch(getDashboardStats());
     dispatch(getWeeklySales());
     dispatch(getWeeklyBorrows());
     dispatch(getTopSellingBooks());
     dispatch(getTotalPaidOrder());
     dispatch(getTotalBorrows());
-  };
+  }, [dispatch]);
 
   useEffect(() => {
     loadAll();
@@ -131,18 +159,6 @@ export default function DashboardCommandCenter() {
 
   const salesTrend = trendOf(salesSeries);
   const borrowsTrend = trendOf(borrowsSeries);
-
-  const { messages, loading: aiLoading, error: aiError, sendMessage, resetChat } = useAIChat();
-
-  const handleSendMessage = (text) => {
-    sendMessage(text, {
-      salesSeries,
-      borrowsSeries,
-      topSellingBooks,
-      totalOrdersCount,
-      borrowsBreakdown,
-    });
-  };
 
   return (
     <div style={styles.page}>
@@ -216,34 +232,14 @@ export default function DashboardCommandCenter() {
       </div>
 
       <TopSellingCard books={topSellingBooks} loading={loading} />
-
-      <div style={{ marginTop: 20 }}>
-        <AIChatCard
-          messages={messages}
-          loading={aiLoading}
-          error={aiError}
-          onSend={handleSendMessage}
-          onReset={resetChat}
-        />
-      </div>
     </div>
   );
 }
 
-function trendOf(series) {
-  if (!series || series.length < 2) return null;
-  const first = series[0].value;
-  const last = series[series.length - 1].value;
-  if (last > first) return "up";
-  if (last < first) return "down";
-  return "flat";
-}
 
-
-function GlobalStyle() {
+const GlobalStyle = memo(function GlobalStyle() {
   return (
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
       @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
       @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -258,9 +254,10 @@ function GlobalStyle() {
       }
     `}</style>
   );
-}
+});
 
-function TopBar({ loading, reportDate, onRefresh }) {
+
+const TopBar = memo(function TopBar({ loading, reportDate, onRefresh }) {
   return (
     <div style={styles.topBar}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -282,9 +279,9 @@ function TopBar({ loading, reportDate, onRefresh }) {
       </div>
     </div>
   );
-}
+});
 
-function StatusPill({ loading, reportDate }) {
+const StatusPill = memo(function StatusPill({ loading, reportDate }) {
   return (
     <div style={styles.statusPill}>
       <span
@@ -308,9 +305,9 @@ function StatusPill({ loading, reportDate }) {
       </span>
     </div>
   );
-}
+});
 
-function ErrorBanner({ message, onRetry }) {
+const ErrorBanner = memo(function ErrorBanner({ message, onRetry }) {
   return (
     <div style={styles.errorBanner}>
       <AlertCircle size={15} style={{ color: "#e0655f", flexShrink: 0 }} />
@@ -322,9 +319,9 @@ function ErrorBanner({ message, onRetry }) {
       </button>
     </div>
   );
-}
+});
 
-function StatCard({ icon, accent, label, value, loading, subtext }) {
+const StatCard = memo(function StatCard({ icon, accent, label, value, loading, subtext }) {
   return (
     <div style={{ ...styles.statCard, borderColor: `${accent}2e` }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
@@ -352,9 +349,9 @@ function StatCard({ icon, accent, label, value, loading, subtext }) {
       )}
     </div>
   );
-}
+});
 
-function SeriesCard({ title, icon, accent, series, trend, loading, emptyText }) {
+const SeriesCard = memo(function SeriesCard({ title, icon, accent, series, trend, loading, emptyText }) {
   const max = Math.max(1, ...series.map((s) => s.value));
   const DirIcon = trend === "down" ? TrendingDown : trend === "flat" ? Minus : TrendingUp;
 
@@ -406,9 +403,9 @@ function SeriesCard({ title, icon, accent, series, trend, loading, emptyText }) 
       )}
     </div>
   );
-}
+});
 
-function TopSellingCard({ books, loading }) {
+const TopSellingCard = memo(function TopSellingCard({ books, loading }) {
   const list = Array.isArray(books) ? books : [];
   return (
     <div style={{ ...styles.systemCard, marginTop: 20, borderColor: "rgba(207,98,201,0.2)" }}>
@@ -475,9 +472,9 @@ function TopSellingCard({ books, loading }) {
       )}
     </div>
   );
-}
+});
 
-function SkeletonBlock({ width, height }) {
+const SkeletonBlock = memo(function SkeletonBlock({ width, height }) {
   return (
     <div
       style={{
@@ -489,7 +486,7 @@ function SkeletonBlock({ width, height }) {
       }}
     />
   );
-}
+});
 
 const styles = {
   page: {
@@ -498,7 +495,7 @@ const styles = {
     color: INK,
     fontFamily: "'Inter', sans-serif",
     padding: "28px 28px 80px",
-    marginLeft:"-16px",
+    marginLeft: "-16px",
   },
   topBar: {
     display: "flex",

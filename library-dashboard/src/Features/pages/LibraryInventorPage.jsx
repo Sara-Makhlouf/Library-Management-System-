@@ -17,740 +17,2462 @@ import {
   DialogActions,
   Pagination,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AnimatePresence, motion } from "framer-motion";
 
-import AutoStoriesIcon        from "@mui/icons-material/AutoStories";
-import DeleteOutlineIcon      from "@mui/icons-material/DeleteOutline";
-import SwapHorizIcon          from "@mui/icons-material/SwapHoriz";
-import AddIcon                from "@mui/icons-material/Add";
-import SearchIcon             from "@mui/icons-material/Search";
-import CategoryOutlinedIcon   from "@mui/icons-material/CategoryOutlined";
-
-import EditIcon               from "@mui/icons-material/Edit";
-import TrendingUpIcon         from "@mui/icons-material/TrendingUp";
-import CloseIcon              from "@mui/icons-material/Close";
+import AutoStoriesIcon from "@mui/icons-material/AutoStories";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import AddIcon from "@mui/icons-material/Add";
+import SearchIcon from "@mui/icons-material/Search";
+import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
+import EditIcon from "@mui/icons-material/Edit";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import CloseIcon from "@mui/icons-material/Close";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 
-import { fetchBooks, deletBooks, updateBooks } from "../../Core/Redux/Thunks/BookThunk";
-import AddBookPage from "./AddNewBook";
-import { IMAGE_BASE_URL } from "../../Core/Constants/utils";
-import {KPI,StockBar} from "../Utils/bookData";
-import {GOLD_DARK , MUTED,SURFACE,goldA,TEXT,GOLD,BG,BORDER,GOLD_DIM,SURFACE_HOV,inkA,MUTED2} from "../../Core/Constants/ColorsUse";
+import {
+  fetchBooks,
+  deletBooks,
+  updateBooks,
+} from "../../Core/Redux/Thunks/BookThunk";
 
+import AddBookPage from "./AddNewBook";
+
+import { IMAGE_BASE_URL } from "../../Core/Constants/utils";
+
+import { KPI, StockBar } from "../Utils/bookData";
+
+import {
+  GOLD_DARK,
+  MUTED,
+  SURFACE,
+  goldA,
+  TEXT,
+  GOLD,
+  BG,
+  BORDER,
+  GOLD_DIM,
+  SURFACE_HOV,
+  inkA,
+  MUTED2,
+} from "../../Core/Constants/ColorsUse";
+
+
+// ======================================================
+// Fonts
+// ======================================================
 
 const FONT_IMPORT_ID = "lib-fonts";
+
 const FONT_HREF =
   "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap";
 
 function injectFonts() {
   if (document.getElementById(FONT_IMPORT_ID)) return;
+
   const link = document.createElement("link");
+
   link.id = FONT_IMPORT_ID;
   link.rel = "stylesheet";
   link.href = FONT_HREF;
+
   document.head.appendChild(link);
 }
 
+const display = {
+  fontFamily: "'Fraunces', serif",
+};
+
+const mono = {
+  fontFamily: "'IBM Plex Mono', monospace",
+};
 
 
-
-const display = { fontFamily: "'Fraunces', serif" };
-const mono = { fontFamily: "'IBM Plex Mono', monospace" };
 
 export default function LibraryInventoryPage() {
   const dispatch = useDispatch();
 
-  useEffect(() => { injectFonts(); }, []);
+  
 
-  const booksData   = useSelector((state) => state.books.books) || {};
-  const books       = booksData.data         || [];
-  const totalPages  = booksData.last_page    || 1;
-  const currentPage = booksData.current_page || 1;
-  const loading     = useSelector((state) => state.books.loading);
+  const booksData = useSelector((state) => state.books.books) || {};
 
-  const [search,   setSearch]   = useState("");
-  const [genre,    setGenre]    = useState("");
-  const [status]                = useState("");
-  const [openAdd,  setOpenAdd]  = useState(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const books = Array.isArray(booksData?.data)
+    ? booksData.data
+    : [];
+
+  const totalPages = Number(booksData?.last_page) || 1;
+
+  const currentPage =
+    Number(booksData?.current_page) || 1;
+
+  const loading = useSelector(
+    (state) => state.books.loading
+  );
+
+
+  
+
+  const [search, setSearch] = useState("");
+
+  const [genre, setGenre] = useState("");
+
+  const [openAdd, setOpenAdd] = useState(false);
+
   const [editBook, setEditBook] = useState(null);
-  const [editForm, setEditForm] = useState({ title: "", price: "", sale_price: "" });
+
+  const [editForm, setEditForm] = useState({
+    title: "",
+    price: "",
+    sale_price: "",
+  });
+
   const [viewBook, setViewBook] = useState(null);
+
   const [deleteBook, setDeleteBook] = useState(null);
+
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => { dispatch(fetchBooks(1)); }, [dispatch]);
+  const [savingEdit, setSavingEdit] = useState(false);
 
+
+
+  useEffect(() => {
+    injectFonts();
+  }, []);
+
+
+  
+  useEffect(() => {
+    dispatch(fetchBooks(1));
+  }, [dispatch]);
+
+
+  
+  const genres = useMemo(() => {
+    const categoryMap = new Map();
+
+    books.forEach((book) => {
+      const category = book?.category;
+
+      if (!category) return;
+
+      const categoryId =
+        category.id ?? category.name;
+
+      if (!categoryMap.has(categoryId)) {
+        categoryMap.set(categoryId, category);
+      }
+    });
+
+    return Array.from(categoryMap.values());
+  }, [books]);
+
+
+
+  const filteredBooks = useMemo(() => {
+    const normalizedSearch = search
+      .trim()
+      .toLowerCase();
+
+    return books.filter((book) => {
+      if (!book) return false;
+
+
+     
+      const title =
+        book.title?.toLowerCase() || "";
+
+      const authors =
+        Array.isArray(book.authors)
+          ? book.authors
+              .map((author) =>
+                author?.name?.toLowerCase() || ""
+              )
+              .join(" ")
+          : "";
+
+      const categoryName =
+        book.category?.name?.toLowerCase() || "";
+
+
+      const matchSearch =
+        !normalizedSearch ||
+        title.includes(normalizedSearch) ||
+        authors.includes(normalizedSearch) ||
+        categoryName.includes(normalizedSearch);
+
+
+     
+      const matchGenre =
+        !genre ||
+        String(book.category?.id) === String(genre) ||
+        book.category?.name === genre;
+
+
+      return matchSearch && matchGenre;
+    });
+  }, [books, search, genre]);
+
+
+
+  const maxStock = useMemo(() => {
+    if (!filteredBooks.length) {
+      return 0;
+    }
+
+    return Math.max(
+      ...filteredBooks.map(
+        (book) => Number(book?.stock) || 0
+      )
+    );
+  }, [filteredBooks]);
+
+
+  
   const handlePageChange = (_, value) => {
     dispatch(fetchBooks(value));
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
+
+  
   const handleConfirmDelete = async () => {
     if (!deleteBook) return;
+
     setDeleting(true);
+
     try {
-      await dispatch(deletBooks(deleteBook.id)).unwrap();
-      dispatch(fetchBooks(currentPage));
+      await dispatch(
+        deletBooks(deleteBook.id)
+      ).unwrap();
+
+      await dispatch(
+        fetchBooks(currentPage)
+      );
+
       setDeleteBook(null);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(
+        "Delete book error:",
+        error
+      );
     } finally {
       setDeleting(false);
     }
   };
 
+
+  
   const handleToggleStatus = async (book) => {
-    const updated = { ...book, stock: book.stock > 0 ? 0 : 5 };
-    await dispatch(updateBooks({ bookId: book.id, bookData: updated }));
-    dispatch(fetchBooks(currentPage));
-  };
+    if (!book) return;
 
-const handleOpenEdit = (book) => {
-  if (!book) return; 
-  setEditBook(book);
-  setEditForm({ 
-    title: book.title || "", 
-    price: book.price || 0, 
-    sale_price: book.sale_price || 0 
-  });
-};
-  const handleSaveEdit = async () => {
+    const updated = {
+      ...book,
+      stock:
+        Number(book.stock) > 0
+          ? 0
+          : 5,
+    };
+
     try {
-      await dispatch(updateBooks({ bookId: editBook.id, bookData: editForm })).unwrap();
-      setEditBook(null);
-      dispatch(fetchBooks(currentPage));
-    } catch (err) { console.error(err); }
+      await dispatch(
+        updateBooks({
+          bookId: book.id,
+          bookData: updated,
+        })
+      ).unwrap();
+
+      await dispatch(
+        fetchBooks(currentPage)
+      );
+    } catch (error) {
+      console.error(
+        "Update stock error:",
+        error
+      );
+    }
   };
 
+
+  const handleOpenEdit = (book) => {
+    if (!book) return;
+
+    setEditBook(book);
+
+    setEditForm({
+      title: book.title || "",
+      price: book.price ?? "",
+      sale_price: book.sale_price ?? "",
+    });
+  };
+
+
+  const handleSaveEdit = async () => {
+    if (!editBook) return;
+
+    setSavingEdit(true);
+
+    try {
+      await dispatch(
+        updateBooks({
+          bookId: editBook.id,
+
+          bookData: {
+            title: editForm.title,
+
+            price:
+              editForm.price === ""
+                ? 0
+                : Number(editForm.price),
+
+            sale_price:
+              editForm.sale_price === ""
+                ? 0
+                : Number(editForm.sale_price),
+          },
+        })
+      ).unwrap();
+
+      setEditBook(null);
+
+      await dispatch(
+        fetchBooks(currentPage)
+      );
+    } catch (error) {
+      console.error(
+        "Edit book error:",
+        error
+      );
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+
+  
   const handleOpenView = (book) => {
-    if (!book || !book.file_path) return;
+    if (!book?.file_path) return;
+
     setViewBook(book);
   };
 
-const filteredBooks = Array.isArray(books) ? books.filter((book) => {
-  if (!book) return false; 
-  
-  const searchLower = search.toLowerCase();
-  const matchSearch = 
-    book.title?.toLowerCase().includes(searchLower) ||
-    book.authors?.some((a) => a.name.toLowerCase().includes(searchLower));
-    
-  const matchGenre = genre ? book.category?.name === genre : true;
-  const matchStatus = status === "" ? true : status === "Available" ? book.stock > 0 : book.stock === 0;
-  
-  return matchSearch && matchGenre && matchStatus;
-}) : [];
 
-const maxStock = filteredBooks.length > 0 
-  ? Math.max(...filteredBooks.map((b) => b.stock || 0)) 
-  : 0;
   if (loading) {
     return (
-      <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", bgcolor: BG }}>
-        <CircularProgress sx={{ color: GOLD }} />
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          bgcolor: BG,
+        }}
+      >
+        <CircularProgress
+          sx={{
+            color: GOLD,
+          }}
+        />
       </Box>
     );
   }
 
-  return (
-    <Box sx={{ minHeight: "100vh", bgcolor: BG, p: { xs: 2, md: "20px 24px" }, fontFamily: "Inter, sans-serif" }}>
 
+
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: BG,
+        p: {
+          xs: 2,
+          md: "20px 24px",
+        },
+        fontFamily: "Inter, sans-serif",
+      }}
+    >
+
+     
       <Box
         sx={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          mb: 3, px: "20px", height: 60,
-          bgcolor: "rgba(255,255,255,0.75)",
-          border: `1px solid ${BORDER}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+
+          mb: 3,
+          px: "20px",
+          height: 60,
+
+          bgcolor:
+            "rgba(255,255,255,0.75)",
+
+          border:
+            `1px solid ${BORDER}`,
+
           borderRadius: "16px",
-          position: "sticky", top: 0, zIndex: 10,
+
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+
           backdropFilter: "blur(16px)",
-          boxShadow: "0 2px 16px rgba(201,168,76,.08)",
+
+          boxShadow:
+            "0 2px 16px rgba(201,168,76,.08)",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+          }}
+        >
+
           <Box
             sx={{
-              width: 32, height: 32, borderRadius: "10px",
-              background: `linear-gradient(135deg,${GOLD},${GOLD_DIM})`,
-              display: "flex", alignItems: "center", justifyContent: "center",
+              width: 32,
+              height: 32,
+              borderRadius: "10px",
+
+              background:
+                `linear-gradient(135deg,${GOLD},${GOLD_DIM})`,
+
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            <AutoStoriesIcon sx={{ fontSize: 17, color: "#fff" }} />
+            <AutoStoriesIcon
+              sx={{
+                fontSize: 17,
+                color: "#fff",
+              }}
+            />
           </Box>
-          <Typography sx={{ ...display, fontWeight: 600, fontSize: 16, color: TEXT, letterSpacing: -0.2 }}>
+
+          <Typography
+            sx={{
+              ...display,
+              fontWeight: 600,
+              fontSize: 16,
+              color: TEXT,
+              letterSpacing: -0.2,
+            }}
+          >
             Library Inventory
           </Typography>
+
         </Box>
 
+
         <Button
-          startIcon={<AddIcon sx={{ fontSize: 15 }} />}
+          startIcon={
+            <AddIcon
+              sx={{
+                fontSize: 15,
+              }}
+            />
+          }
           onClick={() => setOpenAdd(true)}
           sx={{
-            px: 2.5, py: 0.9, borderRadius: "10px",
-            fontWeight: 700, textTransform: "none", fontSize: 13,
+            px: 2.5,
+            py: 0.9,
+
+            borderRadius: "10px",
+
+            fontWeight: 700,
+            textTransform: "none",
+            fontSize: 13,
+
             color: "#fff",
-            background: `linear-gradient(135deg,${GOLD},${GOLD_DIM})`,
+
+            background:
+              `linear-gradient(135deg,${GOLD},${GOLD_DIM})`,
+
             "&:hover": {
-              background: `linear-gradient(135deg,#d4b562,#9e6c20)`,
-              transform: "translateY(-1px)",
-              boxShadow: "0 12px 28px rgba(201,168,76,0.25)",
+              background:
+                "linear-gradient(135deg,#d4b562,#9e6c20)",
+
+              transform:
+                "translateY(-1px)",
+
+              boxShadow:
+                "0 12px 28px rgba(201,168,76,0.25)",
             },
+
             transition: "all 0.25s",
           }}
         >
           Add New Book
         </Button>
+
       </Box>
 
+
+    
       <Box
         sx={{
-          p: { xs: 3, md: "36px 40px" },
+          p: {
+            xs: 3,
+            md: "36px 40px",
+          },
+
           borderRadius: "20px",
+
           background: SURFACE,
-          border: `1px solid ${goldA(0.22)}`,
-          boxShadow: "0 4px 20px rgba(201,168,76,.1)",
-          position: "relative", overflow: "hidden",
+
+          border:
+            `1px solid ${goldA(0.22)}`,
+
+          boxShadow:
+            "0 4px 20px rgba(201,168,76,.1)",
+
+          position: "relative",
+          overflow: "hidden",
+
           mb: 2.5,
         }}
       >
-        <Box sx={{ position: "absolute", top: -100, right: -80, width: 300, height: 300, background: "radial-gradient(circle,rgba(201,168,76,0.16) 0%,transparent 70%)", pointerEvents: "none" }} />
-        <Box sx={{ position: "absolute", bottom: -60, left: -40, width: 200, height: 200, background: "radial-gradient(circle,rgba(139,94,26,0.08) 0%,transparent 70%)", pointerEvents: "none" }} />
-        <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg,transparent,rgba(201,168,76,0.4),transparent)" }} />
+
+        <Box
+          sx={{
+            position: "absolute",
+            top: -100,
+            right: -80,
+
+            width: 300,
+            height: 300,
+
+            background:
+              "radial-gradient(circle,rgba(201,168,76,0.16) 0%,transparent 70%)",
+
+            pointerEvents: "none",
+          }}
+        />
+
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: -60,
+            left: -40,
+
+            width: 200,
+            height: 200,
+
+            background:
+              "radial-gradient(circle,rgba(139,94,26,0.08) 0%,transparent 70%)",
+
+            pointerEvents: "none",
+          }}
+        />
+
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 1,
+
+            background:
+              "linear-gradient(90deg,transparent,rgba(201,168,76,0.4),transparent)",
+          }}
+        />
+
 
         <Chip
           label="● Inventory System"
           size="small"
           sx={{
             mb: 2.5,
-            bgcolor: "rgba(201,168,76,0.1)",
-            border: "1px solid rgba(201,168,76,0.2)",
-            color: GOLD_DARK, fontWeight: 600, fontSize: 11,
-            letterSpacing: 0.5, height: 24, borderRadius: "20px",
-            "& .MuiChip-label": { px: 1.5 },
+
+            bgcolor:
+              "rgba(201,168,76,0.1)",
+
+            border:
+              "1px solid rgba(201,168,76,0.2)",
+
+            color: GOLD_DARK,
+
+            fontWeight: 600,
+            fontSize: 11,
+
+            letterSpacing: 0.5,
+
+            height: 24,
+
+            borderRadius: "20px",
+
+            "& .MuiChip-label": {
+              px: 1.5,
+            },
           }}
         />
+
 
         <Typography
           sx={{
             ...display,
-            fontSize: { xs: 26, md: 34 }, fontWeight: 600,
-            letterSpacing: -0.5, lineHeight: 1.1, mb: 1.5,
+
+            fontSize: {
+              xs: 26,
+              md: 34,
+            },
+
+            fontWeight: 600,
+
+            letterSpacing: -0.5,
+            lineHeight: 1.1,
+
+            mb: 1.5,
+
             color: TEXT,
           }}
         >
-          Manage your <Box component="span" sx={{ color: GOLD_DARK, fontStyle: "italic" }}>book collection</Box>
+          Manage your{" "}
+          <Box
+            component="span"
+            sx={{
+              color: GOLD_DARK,
+              fontStyle: "italic",
+            }}
+          >
+            book collection
+          </Box>
         </Typography>
 
-        <Typography sx={{ fontSize: 14, color: inkA(0.58), lineHeight: 1.7, maxWidth: 440 }}>
-          Search, filter, edit, and track stock levels across your entire library in one unified view.
+
+        <Typography
+          sx={{
+            fontSize: 14,
+            color: inkA(0.58),
+            lineHeight: 1.7,
+            maxWidth: 440,
+          }}
+        >
+          Search, filter, edit, and track stock
+          levels across your entire library in
+          one unified view.
         </Typography>
+
       </Box>
 
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(3,1fr)" }, gap: 2, mb: 2.5 }}>
+
+  
+      <Box
+        sx={{
+          display: "grid",
+
+          gridTemplateColumns: {
+            xs: "1fr 1fr",
+            md: "repeat(3,1fr)",
+          },
+
+          gap: 2,
+
+          mb: 2.5,
+        }}
+      >
+
         {[
-          { ...KPI[0], value: booksData.total || 0 },
-          { ...KPI[1], value: books.length },
-          { ...KPI[2], value: totalPages },
+          {
+            ...KPI[0],
+            value: booksData.total || 0,
+          },
+
+          {
+            ...KPI[1],
+            value: books.length,
+          },
+
+          {
+            ...KPI[2],
+            value: totalPages,
+          },
         ].map((item, i) => (
+
           <Box
             key={item.label}
             component={motion.div}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: i * 0.06 }}
+
+            initial={{
+              opacity: 0,
+              y: 10,
+            }}
+
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+
+            transition={{
+              duration: 0.35,
+              delay: i * 0.06,
+            }}
+
             sx={{
-              p: "20px", borderRadius: "18px",
-              bgcolor: SURFACE, border: `1px solid ${goldA(0.15)}`,
-              boxShadow: "0 2px 14px rgba(201,168,76,.08)",
-              cursor: "pointer", transition: "all 0.25s",
-              "&:hover": { borderColor: `${item.accent}40`, transform: "translateY(-3px)", bgcolor: SURFACE_HOV, boxShadow: "0 10px 26px rgba(201,168,76,.16)" },
+              p: "20px",
+
+              borderRadius: "18px",
+
+              bgcolor: SURFACE,
+
+              border:
+                `1px solid ${goldA(0.15)}`,
+
+              boxShadow:
+                "0 2px 14px rgba(201,168,76,.08)",
+
+              transition: "all 0.25s",
+
+              "&:hover": {
+                borderColor:
+                  `${item.accent}40`,
+
+                transform:
+                  "translateY(-3px)",
+
+                bgcolor: SURFACE_HOV,
+
+                boxShadow:
+                  "0 10px 26px rgba(201,168,76,.16)",
+              },
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
-              <Typography sx={{ fontSize: 11, fontWeight: 600, color: inkA(0.4), letterSpacing: "0.8px", textTransform: "uppercase" }}>
+
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                mb: 1.5,
+              }}
+            >
+
+              <Typography
+                sx={{
+                  fontSize: 11,
+                  fontWeight: 600,
+
+                  color: inkA(0.4),
+
+                  letterSpacing: "0.8px",
+
+                  textTransform:
+                    "uppercase",
+                }}
+              >
                 {item.label}
               </Typography>
-              <Box sx={{ width: 28, height: 28, borderRadius: "8px", bgcolor: `${item.accent}18`, color: item.accent, display: "flex", alignItems: "center", justifyContent: "center" }}>
+
+
+              <Box
+                sx={{
+                  width: 28,
+                  height: 28,
+
+                  borderRadius: "8px",
+
+                  bgcolor:
+                    `${item.accent}18`,
+
+                  color:
+                    item.accent,
+
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 {item.icon}
               </Box>
+
             </Box>
-            <Typography sx={{ ...display, fontSize: 28, fontWeight: 600, letterSpacing: -0.5, color: TEXT, mb: 0.5 }}>
-              {Number(item.value).toLocaleString()}
+
+
+            <Typography
+              sx={{
+                ...display,
+
+                fontSize: 28,
+                fontWeight: 600,
+
+                letterSpacing: -0.5,
+
+                color: TEXT,
+
+                mb: 0.5,
+              }}
+            >
+              {Number(
+                item.value
+              ).toLocaleString()}
             </Typography>
-            <Typography sx={{ fontSize: 11, color: item.accent, display: "flex", alignItems: "center", gap: 0.3, fontWeight: 600 }}>
-              <TrendingUpIcon sx={{ fontSize: 12 }} /> {item.trend}
+
+
+            <Typography
+              sx={{
+                fontSize: 11,
+
+                color:
+                  item.accent,
+
+                display: "flex",
+                alignItems: "center",
+
+                gap: 0.3,
+
+                fontWeight: 600,
+              }}
+            >
+              <TrendingUpIcon
+                sx={{
+                  fontSize: 12,
+                }}
+              />
+
+              {item.trend}
             </Typography>
+
           </Box>
+
         ))}
+
       </Box>
+
 
     
       <Box
         sx={{
-          p: "14px 18px", mb: 2.5,
+          p: "14px 18px",
+
+          mb: 2.5,
+
           borderRadius: "16px",
+
           bgcolor: SURFACE,
-          border: `1px solid ${goldA(0.15)}`,
-          boxShadow: "0 2px 14px rgba(201,168,76,.08)",
-          display: "flex", gap: 1.5, flexWrap: "wrap", alignItems: "center",
+
+          border:
+            `1px solid ${goldA(0.15)}`,
+
+          boxShadow:
+            "0 2px 14px rgba(201,168,76,.08)",
+
+          display: "flex",
+
+          gap: 1.5,
+
+          flexWrap: "wrap",
+
+          alignItems: "center",
         }}
       >
+
+
         <TextField
           placeholder="Search books or authors…"
+
           size="small"
+
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+
+          onChange={(e) =>
+            setSearch(e.target.value)
+          }
+
           InputProps={{
             startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ fontSize: 17, color: inkA(0.4) }} />
+              <InputAdornment
+                position="start"
+              >
+                <SearchIcon
+                  sx={{
+                    fontSize: 17,
+                    color: inkA(0.4),
+                  }}
+                />
               </InputAdornment>
             ),
           }}
+
           sx={{
-            flex: { xs: "100%", md: 2 },
-            "& .MuiOutlinedInput-root": {
-              borderRadius: "10px", fontSize: 13.5,
-              bgcolor: goldA(0.05), color: TEXT,
-              "& fieldset": { borderColor: BORDER },
-              "&:hover fieldset": { borderColor: goldA(0.32) },
-              "&.Mui-focused fieldset": { borderColor: `${GOLD}60` },
+            flex: {
+              xs: "100%",
+              md: 2,
             },
-            "& input::placeholder": { color: MUTED2, opacity: 1 },
-            "& input": { color: TEXT },
+
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "10px",
+
+              fontSize: 13.5,
+
+              bgcolor:
+                goldA(0.05),
+
+              color: TEXT,
+
+              "& fieldset": {
+                borderColor: BORDER,
+              },
+
+              "&:hover fieldset": {
+                borderColor:
+                  goldA(0.32),
+              },
+
+              "&.Mui-focused fieldset": {
+                borderColor:
+                  `${GOLD}60`,
+              },
+            },
+
+            "& input::placeholder": {
+              color: MUTED2,
+              opacity: 1,
+            },
+
+            "& input": {
+              color: TEXT,
+            },
           }}
         />
 
+
+    
         <Select
           size="small"
+
           value={genre}
-          onChange={(e) => setGenre(e.target.value)}
+
+          onChange={(e) =>
+            setGenre(e.target.value)
+          }
+
           displayEmpty
-          startAdornment={<CategoryOutlinedIcon sx={{ fontSize: 16, color: inkA(0.4), mr: 0.5 }} />}
+
+          startAdornment={
+            <CategoryOutlinedIcon
+              sx={{
+                fontSize: 16,
+                color: inkA(0.4),
+                mr: 0.5,
+              }}
+            />
+          }
+
           sx={{
-            flex: { xs: "100%", sm: 1 },
-            borderRadius: "10px", fontSize: 13.5,
-            bgcolor: goldA(0.05), color: TEXT,
-            "& fieldset": { borderColor: BORDER },
-            "& .MuiSelect-icon": { color: inkA(0.4) },
-            "&:hover fieldset": { borderColor: goldA(0.32) },
+            flex: {
+              xs: "100%",
+              sm: 1,
+            },
+
+            borderRadius: "10px",
+
+            fontSize: 13.5,
+
+            bgcolor:
+              goldA(0.05),
+
+            color: TEXT,
+
+            "& fieldset": {
+              borderColor: BORDER,
+            },
+
+            "& .MuiSelect-icon": {
+              color: inkA(0.4),
+            },
+
+            "&:hover fieldset": {
+              borderColor:
+                goldA(0.32),
+            },
           }}
-          MenuProps={{ PaperProps: { sx: { bgcolor: SURFACE, border: `1px solid ${BORDER}`, color: TEXT } } }}
+
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                bgcolor: SURFACE,
+
+                border:
+                  `1px solid ${BORDER}`,
+
+                color: TEXT,
+              },
+            },
+          }}
         >
-          <MenuItem value="">All Genres</MenuItem>
-          <MenuItem value="روايات">Novels / روايات</MenuItem>
-          <MenuItem value="تكنولوجيا">Technology / تكنولوجيا</MenuItem>
-          <MenuItem value="تاريخ">History / تاريخ</MenuItem>
-          <MenuItem value="علوم">Science / علوم</MenuItem>
-          <MenuItem value="فلسفة">Philosophy / فلسفة</MenuItem>
+
+
+          <MenuItem value="">
+            All Genres
+          </MenuItem>
+
+
+
+          {genres.map((category) => (
+
+            <MenuItem
+              key={
+                category.id ??
+                category.name
+              }
+
+              value={
+                category.id ??
+                category.name
+              }
+            >
+              {category.name}
+            </MenuItem>
+
+          ))}
+
         </Select>
+
       </Box>
 
-      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 2, mb: 3 }}>
-        <AnimatePresence mode="wait">
-          {filteredBooks.map((book) => (
-            <Box
-              key={book.id}
-              component={motion.div}
-              layout
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.18 }}
-            >
+
+   
+      {filteredBooks.length === 0 ? (
+
+        <Box
+          sx={{
+            minHeight: 300,
+
+            display: "flex",
+
+            alignItems: "center",
+
+            justifyContent: "center",
+
+            flexDirection: "column",
+
+            gap: 1,
+
+            bgcolor: SURFACE,
+
+            border:
+              `1px solid ${goldA(0.15)}`,
+
+            borderRadius: "18px",
+
+            mb: 3,
+          }}
+        >
+
+          <AutoStoriesIcon
+            sx={{
+              fontSize: 40,
+              color: MUTED2,
+            }}
+          />
+
+          <Typography
+            sx={{
+              ...display,
+
+              fontSize: 18,
+
+              fontWeight: 600,
+
+              color: TEXT,
+            }}
+          >
+            No books found
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: 13,
+              color: MUTED,
+            }}
+          >
+            Try another search or genre.
+          </Typography>
+
+        </Box>
+
+      ) : (
+
+        <Box
+          sx={{
+            display: "grid",
+
+            gridTemplateColumns:
+              "repeat(auto-fill, minmax(220px, 1fr))",
+
+            gap: 2,
+
+            mb: 3,
+          }}
+        >
+
+          <AnimatePresence mode="wait">
+
+            {filteredBooks.map((book) => (
+
               <Box
-                sx={{
-                  borderRadius: "18px",
-                  bgcolor: SURFACE,
-                  border: `1px solid ${goldA(0.15)}`,
-                  boxShadow: "0 2px 14px rgba(201,168,76,.08)",
-                  overflow: "hidden",
-                  display: "flex", flexDirection: "column",
-                  transition: "all 0.25s",
-                  cursor: "pointer",
-                  "&:hover": {
-                    borderColor: `${GOLD}40`,
-                    transform: "translateY(-3px)",
-                    bgcolor: SURFACE_HOV,
-                    boxShadow: "0 10px 26px rgba(201,168,76,.16)",
-                  },
+                key={book.id}
+
+                component={motion.div}
+
+                layout
+
+                initial={{
+                  opacity: 0,
+                  scale: 0.96,
+                }}
+
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                }}
+
+                exit={{
+                  opacity: 0,
+                  scale: 0.96,
+                }}
+
+                transition={{
+                  duration: 0.18,
                 }}
               >
+
                 <Box
-                  onClick={() => handleOpenView(book)}
                   sx={{
-                    aspectRatio: "3/2",
-                    bgcolor: goldA(0.04),
-                    position: "relative",
+                    borderRadius: "18px",
+
+                    bgcolor: SURFACE,
+
+                    border:
+                      `1px solid ${goldA(0.15)}`,
+
+                    boxShadow:
+                      "0 2px 14px rgba(201,168,76,.08)",
+
                     overflow: "hidden",
-                    cursor: book.file_path ? "pointer" : "default",
+
+                    display: "flex",
+
+                    flexDirection: "column",
+
+                    transition: "all 0.25s",
+
+                    cursor: "pointer",
+
+                    "&:hover": {
+                      borderColor:
+                        `${GOLD}40`,
+
+                      transform:
+                        "translateY(-3px)",
+
+                      bgcolor:
+                        SURFACE_HOV,
+
+                      boxShadow:
+                        "0 10px 26px rgba(201,168,76,.16)",
+                    },
                   }}
                 >
-                  <Avatar
-                    src={book.cover ? `${IMAGE_BASE_URL}${book.cover}` : "/history book.jpg"}
-                    variant="square"
-                    sx={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
+
                   <Box
+                    onClick={() =>
+                      handleOpenView(book)
+                    }
+
                     sx={{
-                      position: "absolute", top: 10, right: 10,
-                      px: 1.2, py: 0.3, borderRadius: "6px",
-                      bgcolor: book.stock > 0 ? "rgba(74,222,128,0.14)" : "rgba(239,68,68,0.14)",
+                      aspectRatio: "3/2",
+
+                      bgcolor:
+                        goldA(0.04),
+
+                      position: "relative",
+
+                      overflow: "hidden",
+
+                      cursor:
+                        book.file_path
+                          ? "pointer"
+                          : "default",
                     }}
                   >
-                    <Typography sx={{ ...mono, fontSize: 9.5, fontWeight: 600, letterSpacing: 0.4, color: book.stock > 0 ? "#2f9b62" : "#c8433d" }}>
-                      {book.stock > 0 ? `STOCK ${book.stock}` : "OUT OF STOCK"}
-                    </Typography>
-                  </Box>
-                </Box>
 
-                <Box sx={{ p: "14px 16px", flex: 1, display: "flex", flexDirection: "column" }}>
-                  <Typography sx={{ ...display, fontWeight: 600, fontSize: 14, color: TEXT, mb: 0.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {book.title}
-                  </Typography>
-                  <Typography sx={{ fontSize: 11.5, color: MUTED, mb: 1.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {book.authors?.map((a) => a.name).join(", ") || "Unknown Author"}
-                  </Typography>
+                    <Avatar
+                      src={
+                        book.cover
+                          ? `${IMAGE_BASE_URL}${book.cover}`
+                          : "/history book.jpg"
+                      }
 
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+                      variant="square"
+
+                      sx={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+
+
+
                     <Box
                       sx={{
-                        px: 1.2, py: 0.3, borderRadius: "6px",
-                        bgcolor: "rgba(201,168,76,0.1)",
-                        border: "1px solid rgba(201,168,76,0.15)",
+                        position: "absolute",
+
+                        top: 10,
+                        right: 10,
+
+                        px: 1.2,
+                        py: 0.3,
+
+                        borderRadius: "6px",
+
+                        bgcolor:
+                          Number(book.stock) > 0
+                            ? "rgba(74,222,128,0.14)"
+                            : "rgba(239,68,68,0.14)",
                       }}
                     >
-                      <Typography sx={{ fontSize: 10, fontWeight: 700, color: GOLD_DARK, letterSpacing: 0.4 }}>
-                        {book.category?.name || "General"}
+
+                      <Typography
+                        sx={{
+                          ...mono,
+
+                          fontSize: 9.5,
+
+                          fontWeight: 600,
+
+                          letterSpacing: 0.4,
+
+                          color:
+                            Number(book.stock) > 0
+                              ? "#2f9b62"
+                              : "#c8433d",
+                        }}
+                      >
+                        {Number(book.stock) > 0
+                          ? `STOCK ${book.stock}`
+                          : "OUT OF STOCK"}
                       </Typography>
+
                     </Box>
 
-                    <Typography sx={{ ...mono, fontSize: 13, fontWeight: 600, color: GOLD_DARK, letterSpacing: -0.2 }}>
-                      {Number(book.sale_price).toLocaleString()}
-                      <Box component="span" sx={{ fontFamily: "Inter, sans-serif", fontSize: 10, fontWeight: 400, color: MUTED, ml: 0.4 }}>SAR</Box>
-                    </Typography>
                   </Box>
 
-                  <Typography sx={{ ...mono, fontSize: 10.5, color: MUTED2, mb: 1.5 }}>
-                    Cost: {Number(book.price).toLocaleString()} · Sale: {Number(book.sale_price).toLocaleString()}
-                  </Typography>
 
-                  <StockBar stock={book.stock || 0} max={maxStock} accent={GOLD} />
-
+              
                   <Box
                     sx={{
-                      display: "flex", gap: 1, mt: 2,
-                      pt: 1.5, borderTop: `1px solid ${inkA(0.08)}`,
+                      p: "14px 16px",
+
+                      flex: 1,
+
+                      display: "flex",
+
+                      flexDirection:
+                        "column",
                     }}
                   >
-                    <Button
-                      size="small"
-                      startIcon={<SwapHorizIcon sx={{ fontSize: 13 }} />}
-                      onClick={() => handleToggleStatus(book)}
+
+
+                    <Typography
                       sx={{
-                        flex: 1, borderRadius: "8px", textTransform: "none",
-                        fontSize: 12, fontWeight: 600,
-                        color: inkA(0.5),
-                        border: `1px solid ${BORDER}`,
-                        bgcolor: goldA(0.04),
-                        "&:hover": { bgcolor: goldA(0.09), color: TEXT, borderColor: goldA(0.3) },
-                        transition: "all 0.2s",
+                        ...display,
+
+                        fontWeight: 600,
+
+                        fontSize: 14,
+
+                        color: TEXT,
+
+                        mb: 0.3,
+
+                        whiteSpace:
+                          "nowrap",
+
+                        overflow:
+                          "hidden",
+
+                        textOverflow:
+                          "ellipsis",
                       }}
                     >
-                      Status
-                    </Button>
+                      {book.title}
+                    </Typography>
 
-                    <Tooltip title="Edit" arrow>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleOpenEdit(book)}
+
+
+                    <Typography
+                      sx={{
+                        fontSize: 11.5,
+
+                        color: MUTED,
+
+                        mb: 1.5,
+
+                        whiteSpace:
+                          "nowrap",
+
+                        overflow:
+                          "hidden",
+
+                        textOverflow:
+                          "ellipsis",
+                      }}
+                    >
+                      {Array.isArray(
+                        book.authors
+                      )
+                        ? book.authors
+                            .map(
+                              (a) =>
+                                a?.name
+                            )
+                            .filter(Boolean)
+                            .join(", ")
+                        : "Unknown Author"}
+                    </Typography>
+
+
+
+                    <Box
+                      sx={{
+                        display: "flex",
+
+                        alignItems:
+                          "center",
+
+                        justifyContent:
+                          "space-between",
+
+                        mb: 1,
+                      }}
+                    >
+
+
+                      <Box
                         sx={{
-                          borderRadius: "8px",
-                          border: `1px solid ${BORDER}`,
-                          bgcolor: goldA(0.04),
-                          color: "#7f77dd",
-                          "&:hover": { bgcolor: "rgba(127,119,221,0.1)", borderColor: "rgba(127,119,221,0.3)" },
-                          transition: "all 0.2s",
+                          px: 1.2,
+                          py: 0.3,
+
+                          borderRadius:
+                            "6px",
+
+                          bgcolor:
+                            "rgba(201,168,76,0.1)",
+
+                          border:
+                            "1px solid rgba(201,168,76,0.15)",
                         }}
                       >
-                        <EditIcon sx={{ fontSize: 15 }} />
-                      </IconButton>
-                    </Tooltip>
 
-                    <Tooltip title="Delete" arrow>
-                      <IconButton
-                        size="small"
-                        onClick={() => setDeleteBook(book)}
+                        <Typography
+                          sx={{
+                            fontSize: 10,
+
+                            fontWeight: 700,
+
+                            color:
+                              GOLD_DARK,
+
+                            letterSpacing:
+                              0.4,
+                          }}
+                        >
+                          {book.category
+                            ?.name ||
+                            "General"}
+                        </Typography>
+
+                      </Box>
+
+
+
+                      <Typography
                         sx={{
-                          borderRadius: "8px",
-                          border: `1px solid ${BORDER}`,
-                          bgcolor: goldA(0.04),
-                          color: "#c8433d",
-                          "&:hover": { bgcolor: "rgba(248,113,113,0.12)", borderColor: "rgba(248,113,113,0.35)" },
-                          transition: "all 0.2s",
+                          ...mono,
+
+                          fontSize: 13,
+
+                          fontWeight: 600,
+
+                          color:
+                            GOLD_DARK,
+
+                          letterSpacing:
+                            -0.2,
                         }}
                       >
-                        <DeleteOutlineIcon sx={{ fontSize: 15 }} />
-                      </IconButton>
-                    </Tooltip>
+                        {Number(
+                          book.sale_price || 0
+                        ).toLocaleString()}
+
+                        <Box
+                          component="span"
+
+                          sx={{
+                            fontFamily:
+                              "Inter, sans-serif",
+
+                            fontSize: 10,
+
+                            fontWeight: 400,
+
+                            color: MUTED,
+
+                            ml: 0.4,
+                          }}
+                        >
+                          SAR
+                        </Box>
+
+                      </Typography>
+
+                    </Box>
+
+
+
+                    <Typography
+                      sx={{
+                        ...mono,
+
+                        fontSize: 10.5,
+
+                        color: MUTED2,
+
+                        mb: 1.5,
+                      }}
+                    >
+                      Cost:{" "}
+                      {Number(
+                        book.price || 0
+                      ).toLocaleString()}
+
+                      {" · "}
+
+                      Sale:{" "}
+                      {Number(
+                        book.sale_price || 0
+                      ).toLocaleString()}
+                    </Typography>
+
+
+
+                    <StockBar
+                      stock={
+                        Number(
+                          book.stock
+                        ) || 0
+                      }
+
+                      max={maxStock}
+
+                      accent={GOLD}
+                    />
+
+
+
+                    <Box
+                      sx={{
+                        display: "flex",
+
+                        gap: 1,
+
+                        mt: 2,
+
+                        pt: 1.5,
+
+                        borderTop:
+                          `1px solid ${inkA(0.08)}`,
+                      }}
+                    >
+
+
+                      <Button
+                        size="small"
+
+                        startIcon={
+                          <SwapHorizIcon
+                            sx={{
+                              fontSize: 13,
+                            }}
+                          />
+                        }
+
+                        onClick={() =>
+                          handleToggleStatus(
+                            book
+                          )
+                        }
+
+                        sx={{
+                          flex: 1,
+
+                          borderRadius:
+                            "8px",
+
+                          textTransform:
+                            "none",
+
+                          fontSize: 12,
+
+                          fontWeight: 600,
+
+                          color:
+                            inkA(0.5),
+
+                          border:
+                            `1px solid ${BORDER}`,
+
+                          bgcolor:
+                            goldA(0.04),
+
+                          "&:hover": {
+                            bgcolor:
+                              goldA(0.09),
+
+                            color: TEXT,
+
+                            borderColor:
+                              goldA(0.3),
+                          },
+
+                          transition:
+                            "all 0.2s",
+                        }}
+                      >
+                        Status
+                      </Button>
+
+
+
+                      <Tooltip
+                        title="Edit"
+                        arrow
+                      >
+                        <IconButton
+                          size="small"
+
+                          onClick={() =>
+                            handleOpenEdit(
+                              book
+                            )
+                          }
+
+                          sx={{
+                            borderRadius:
+                              "8px",
+
+                            border:
+                              `1px solid ${BORDER}`,
+
+                            bgcolor:
+                              goldA(0.04),
+
+                            color:
+                              "#7f77dd",
+
+                            "&:hover": {
+                              bgcolor:
+                                "rgba(127,119,221,0.1)",
+
+                              borderColor:
+                                "rgba(127,119,221,0.3)",
+                            },
+
+                            transition:
+                              "all 0.2s",
+                          }}
+                        >
+                          <EditIcon
+                            sx={{
+                              fontSize: 15,
+                            }}
+                          />
+                        </IconButton>
+                      </Tooltip>
+
+
+
+                      <Tooltip
+                        title="Delete"
+                        arrow
+                      >
+                        <IconButton
+                          size="small"
+
+                          onClick={() =>
+                            setDeleteBook(
+                              book
+                            )
+                          }
+
+                          sx={{
+                            borderRadius:
+                              "8px",
+
+                            border:
+                              `1px solid ${BORDER}`,
+
+                            bgcolor:
+                              goldA(0.04),
+
+                            color:
+                              "#c8433d",
+
+                            "&:hover": {
+                              bgcolor:
+                                "rgba(248,113,113,0.12)",
+
+                              borderColor:
+                                "rgba(248,113,113,0.35)",
+                            },
+
+                            transition:
+                              "all 0.2s",
+                          }}
+                        >
+                          <DeleteOutlineIcon
+                            sx={{
+                              fontSize: 15,
+                            }}
+                          />
+                        </IconButton>
+                      </Tooltip>
+
+                    </Box>
+
                   </Box>
-                </Box>
-              </Box>
-            </Box>
-          ))}
-        </AnimatePresence>
-      </Box>
 
-      <Box sx={{ display: "flex", justifyContent: "center", pb: 4 }}>
+                </Box>
+
+              </Box>
+
+            ))}
+
+          </AnimatePresence>
+
+        </Box>
+
+      )}
+
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          pb: 4,
+        }}
+      >
+
         <Pagination
           count={totalPages}
+
           page={currentPage}
-          onChange={handlePageChange}
+
+          onChange={
+            handlePageChange
+          }
+
           size="medium"
+
           sx={{
-            "& .MuiPaginationItem-root": {
-              ...mono,
-              borderRadius: "8px", fontWeight: 600, fontSize: 13,
-              color: MUTED, border: `1px solid ${BORDER}`, bgcolor: SURFACE,
-              "&:hover": { bgcolor: goldA(0.09), borderColor: goldA(0.3), color: TEXT },
-              transition: "all 0.2s",
-            },
+            "& .MuiPaginationItem-root":
+              {
+                ...mono,
+
+                borderRadius:
+                  "8px",
+
+                fontWeight: 600,
+
+                fontSize: 13,
+
+                color: MUTED,
+
+                border:
+                  `1px solid ${BORDER}`,
+
+                bgcolor: SURFACE,
+
+                "&:hover": {
+                  bgcolor:
+                    goldA(0.09),
+
+                  borderColor:
+                    goldA(0.3),
+
+                  color: TEXT,
+                },
+
+                transition:
+                  "all 0.2s",
+              },
+
             "& .Mui-selected": {
-              background: `linear-gradient(135deg,${GOLD},${GOLD_DIM}) !important`,
-              color: "#fff !important",
-              border: "none !important",
-              boxShadow: "0 4px 14px rgba(201,168,76,0.3)",
+              background:
+                `linear-gradient(135deg,${GOLD},${GOLD_DIM}) !important`,
+
+              color:
+                "#fff !important",
+
+              border:
+                "none !important",
+
+              boxShadow:
+                "0 4px 14px rgba(201,168,76,0.3)",
             },
           }}
         />
+
       </Box>
+
+
 
       {openAdd && (
         <AddBookPage
           onClose={() => {
             setOpenAdd(false);
-            dispatch(fetchBooks(currentPage));
+
+            dispatch(
+              fetchBooks(currentPage)
+            );
           }}
         />
       )}
 
+
       <Dialog
         open={Boolean(editBook)}
-        onClose={() => setEditBook(null)}
-        PaperProps={{
-          sx: {
-            borderRadius: "18px", p: 1, minWidth: "360px",
-            bgcolor: SURFACE,
-            border: "1px solid rgba(201,168,76,0.2)",
-            boxShadow: "0 24px 60px rgba(43,36,22,0.18)",
-          },
-        }}
-      >
-        <DialogTitle sx={{ ...display, fontWeight: 600, fontSize: 16, color: TEXT, pb: 0.5 }}>
-          Edit book details
-        </DialogTitle>
 
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1.5 }}>
-          {[
-            { label: "Book Title",              key: "title",      type: "text"   },
-            { label: "Price — سعر التكلفة",     key: "price",      type: "number" },
-            { label: "Sale Price — سعر المبيع", key: "sale_price", type: "number" },
-          ].map(({ label, key, type }) => (
-            <TextField
-              key={key}
-              label={label}
-              type={type}
-              fullWidth
-              size="small"
-              value={editForm[key]}
-              onChange={(e) => setEditForm({ ...editForm, [key]: e.target.value })}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "10px", fontSize: 13.5, color: TEXT,
-                  bgcolor: goldA(0.05),
-                  "& fieldset": { borderColor: BORDER },
-                  "&:hover fieldset": { borderColor: goldA(0.32) },
-                  "&.Mui-focused fieldset": { borderColor: `${GOLD}60` },
-                },
-                "& .MuiInputLabel-root": { fontSize: 13.5, color: inkA(0.45) },
-                "& .MuiInputLabel-root.Mui-focused": { color: GOLD_DARK },
-                "& input": { color: TEXT },
-              }}
-            />
-          ))}
-        </DialogContent>
+        onClose={() =>
+          !savingEdit &&
+          setEditBook(null)
+        }
 
-        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
-          <Button
-            onClick={() => setEditBook(null)}
-            sx={{
-              borderRadius: "10px", textTransform: "none", fontWeight: 600,
-              fontSize: 13.5, color: MUTED,
-              border: `1px solid ${BORDER}`, px: 2.5,
-              "&:hover": { bgcolor: goldA(0.06), color: TEXT },
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSaveEdit}
-            variant="contained"
-            disableElevation
-            sx={{
-              borderRadius: "10px", textTransform: "none",
-              fontWeight: 700, fontSize: 13.5, px: 3,
-              color: "#fff",
-              background: `linear-gradient(135deg,${GOLD},${GOLD_DIM})`,
-              "&:hover": {
-                background: "linear-gradient(135deg,#d4b562,#9e6c20)",
-                transform: "translateY(-1px)",
-                boxShadow: "0 12px 28px rgba(201,168,76,0.25)",
-              },
-              transition: "all 0.25s",
-            }}
-          >
-            Save changes
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-   
-      <Dialog
-        open={Boolean(deleteBook)}
-        onClose={() => !deleting && setDeleteBook(null)}
-        PaperProps={{
-          sx: {
-            borderRadius: "20px",
-            minWidth: "380px",
-            maxWidth: "420px",
-            bgcolor: SURFACE,
-            border: "1px solid rgba(248,113,113,0.25)",
-            boxShadow: "0 24px 60px rgba(43,36,22,0.18)",
-          },
-        }}
-      >
-        <DialogContent sx={{ p: "28px 26px 8px" }}>
-          <Box
-            sx={{
-              width: 44, height: 44, borderRadius: "12px",
-              bgcolor: "rgba(248,113,113,0.14)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              mb: 2,
-            }}
-          >
-            <WarningAmberRoundedIcon sx={{ fontSize: 22, color: "#c8433d" }} />
-          </Box>
-
-          <Typography sx={{ ...display, fontSize: 17, fontWeight: 600, color: TEXT, mb: 0.8 }}>
-            Delete this book?
-          </Typography>
-          <Typography sx={{ fontSize: 13, color: inkA(0.55), lineHeight: 1.6, mb: 2.2 }}>
-            This removes it from the inventory permanently. This can't be undone.
-          </Typography>
-
-          {deleteBook && (
-            <Box
-              sx={{
-                display: "flex", alignItems: "center", gap: 1.4,
-                p: "10px 12px", borderRadius: "12px",
-                bgcolor: goldA(0.05),
-                border: `1px solid ${BORDER}`,
-              }}
-            >
-              <Avatar
-                src={deleteBook.cover ? `${IMAGE_BASE_URL}${deleteBook.cover}` : "/history book.jpg"}
-                variant="rounded"
-                sx={{ width: 36, height: 48 }}
-              />
-              <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ ...display, fontWeight: 600, fontSize: 13, color: TEXT, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {deleteBook.title}
-                </Typography>
-                <Typography sx={{ fontSize: 11, color: MUTED2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {deleteBook.authors?.map((a) => a.name).join(", ") || "Unknown Author"}
-                </Typography>
-              </Box>
-            </Box>
-          )}
-        </DialogContent>
-
-        <DialogActions sx={{ px: "26px", pb: "24px", pt: 2, gap: 1 }}>
-          <Button
-            onClick={() => setDeleteBook(null)}
-            disabled={deleting}
-            sx={{
-              borderRadius: "10px", textTransform: "none", fontWeight: 600,
-              fontSize: 13.5, color: MUTED,
-              border: `1px solid ${BORDER}`, px: 2.5,
-              "&:hover": { bgcolor: goldA(0.06), color: TEXT },
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleConfirmDelete}
-            disabled={deleting}
-            variant="contained"
-            disableElevation
-            startIcon={!deleting ? <DeleteOutlineIcon sx={{ fontSize: 16 }} /> : null}
-            sx={{
-              borderRadius: "10px", textTransform: "none",
-              fontWeight: 700, fontSize: 13.5, px: 2.8,
-              color: "#fff",
-              background: "linear-gradient(135deg,#f87171,#c83737)",
-              "&:hover": {
-                background: "linear-gradient(135deg,#fb8585,#d94545)",
-                boxShadow: "0 12px 28px rgba(248,113,113,0.25)",
-              },
-              "&.Mui-disabled": { color: "rgba(255,255,255,0.6)" },
-            }}
-          >
-            {deleting ? <CircularProgress size={16} sx={{ color: "#fff" }} /> : "Delete book"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog
-        open={Boolean(viewBook)}
-        onClose={() => setViewBook(null)}
-        maxWidth="md"
-        fullWidth
         PaperProps={{
           sx: {
             borderRadius: "18px",
+
+            p: 1,
+
+            minWidth: "360px",
+
             bgcolor: SURFACE,
-            border: "1px solid rgba(201,168,76,0.2)",
-            boxShadow: "0 24px 60px rgba(43,36,22,0.18)",
+
+            border:
+              "1px solid rgba(201,168,76,0.2)",
+
+            boxShadow:
+              "0 24px 60px rgba(43,36,22,0.18)",
+          },
+        }}
+      >
+
+        <DialogTitle
+          sx={{
+            ...display,
+
+            fontWeight: 600,
+
+            fontSize: 16,
+
+            color: TEXT,
+
+            pb: 0.5,
+          }}
+        >
+          Edit book details
+        </DialogTitle>
+
+
+        <DialogContent
+          sx={{
+            display: "flex",
+
+            flexDirection:
+              "column",
+
+            gap: 2,
+
+            mt: 1.5,
+          }}
+        >
+
+          {[
+            {
+              label: "Book Title",
+              key: "title",
+              type: "text",
+            },
+
+            {
+              label:
+                "Price — سعر التكلفة",
+              key: "price",
+              type: "number",
+            },
+
+            {
+              label:
+                "Sale Price — سعر المبيع",
+              key: "sale_price",
+              type: "number",
+            },
+          ].map(
+            ({
+              label,
+              key,
+              type,
+            }) => (
+
+              <TextField
+                key={key}
+
+                label={label}
+
+                type={type}
+
+                fullWidth
+
+                size="small"
+
+                value={
+                  editForm[key]
+                }
+
+                onChange={(e) =>
+                  setEditForm(
+                    (prev) => ({
+                      ...prev,
+
+                      [key]:
+                        e.target.value,
+                    })
+                  )
+                }
+
+                sx={{
+                  "& .MuiOutlinedInput-root":
+                    {
+                      borderRadius:
+                        "10px",
+
+                      fontSize: 13.5,
+
+                      color: TEXT,
+
+                      bgcolor:
+                        goldA(0.05),
+
+                      "& fieldset": {
+                        borderColor:
+                          BORDER,
+                      },
+
+                      "&:hover fieldset":
+                        {
+                          borderColor:
+                            goldA(0.32),
+                        },
+
+                      "&.Mui-focused fieldset":
+                        {
+                          borderColor:
+                            `${GOLD}60`,
+                        },
+                    },
+
+                  "& .MuiInputLabel-root":
+                    {
+                      fontSize:
+                        13.5,
+
+                      color:
+                        inkA(0.45),
+                    },
+
+                  "& .MuiInputLabel-root.Mui-focused":
+                    {
+                      color:
+                        GOLD_DARK,
+                    },
+
+                  "& input": {
+                    color: TEXT,
+                  },
+                }}
+              />
+
+            )
+          )}
+
+        </DialogContent>
+
+
+        <DialogActions
+          sx={{
+            px: 3,
+            pb: 2.5,
+            gap: 1,
+          }}
+        >
+
+          <Button
+            onClick={() =>
+              setEditBook(null)
+            }
+
+            disabled={
+              savingEdit
+            }
+
+            sx={{
+              borderRadius:
+                "10px",
+
+              textTransform:
+                "none",
+
+              fontWeight: 600,
+
+              fontSize: 13.5,
+
+              color: MUTED,
+
+              border:
+                `1px solid ${BORDER}`,
+
+              px: 2.5,
+
+              "&:hover": {
+                bgcolor:
+                  goldA(0.06),
+
+                color: TEXT,
+              },
+            }}
+          >
+            Cancel
+          </Button>
+
+
+          <Button
+            onClick={
+              handleSaveEdit
+            }
+
+            variant="contained"
+
+            disableElevation
+
+            disabled={
+              savingEdit
+            }
+
+            sx={{
+              borderRadius:
+                "10px",
+
+              textTransform:
+                "none",
+
+              fontWeight: 700,
+
+              fontSize: 13.5,
+
+              px: 3,
+
+              color: "#fff",
+
+              background:
+                `linear-gradient(135deg,${GOLD},${GOLD_DIM})`,
+
+              "&:hover": {
+                background:
+                  "linear-gradient(135deg,#d4b562,#9e6c20)",
+
+                transform:
+                  "translateY(-1px)",
+
+                boxShadow:
+                  "0 12px 28px rgba(201,168,76,0.25)",
+              },
+
+              transition:
+                "all 0.25s",
+            }}
+          >
+            {savingEdit ? (
+              <CircularProgress
+                size={18}
+                sx={{
+                  color: "#fff",
+                }}
+              />
+            ) : (
+              "Save changes"
+            )}
+          </Button>
+
+        </DialogActions>
+
+      </Dialog>
+
+
+     
+
+      <Dialog
+        open={Boolean(deleteBook)}
+
+        onClose={() =>
+          !deleting &&
+          setDeleteBook(null)
+        }
+
+        PaperProps={{
+          sx: {
+            borderRadius: "20px",
+
+            minWidth: "380px",
+
+            maxWidth: "420px",
+
+            bgcolor: SURFACE,
+
+            border:
+              "1px solid rgba(248,113,113,0.25)",
+
+            boxShadow:
+              "0 24px 60px rgba(43,36,22,0.18)",
+          },
+        }}
+      >
+
+        <DialogContent
+          sx={{
+            p: "28px 26px 8px",
+          }}
+        >
+
+          <Box
+            sx={{
+              width: 44,
+              height: 44,
+
+              borderRadius:
+                "12px",
+
+              bgcolor:
+                "rgba(248,113,113,0.14)",
+
+              display: "flex",
+
+              alignItems:
+                "center",
+
+              justifyContent:
+                "center",
+
+              mb: 2,
+            }}
+          >
+
+            <WarningAmberRoundedIcon
+              sx={{
+                fontSize: 22,
+                color: "#c8433d",
+              }}
+            />
+
+          </Box>
+
+
+          <Typography
+            sx={{
+              ...display,
+
+              fontSize: 17,
+
+              fontWeight: 600,
+
+              color: TEXT,
+
+              mb: 0.8,
+            }}
+          >
+            Delete this book?
+          </Typography>
+
+
+          <Typography
+            sx={{
+              fontSize: 13,
+
+              color:
+                inkA(0.55),
+
+              lineHeight: 1.6,
+
+              mb: 2.2,
+            }}
+          >
+            This removes it from the
+            inventory permanently.
+            This can't be undone.
+          </Typography>
+
+
+          {deleteBook && (
+
+            <Box
+              sx={{
+                display: "flex",
+
+                alignItems:
+                  "center",
+
+                gap: 1.4,
+
+                p: "10px 12px",
+
+                borderRadius:
+                  "12px",
+
+                bgcolor:
+                  goldA(0.05),
+
+                border:
+                  `1px solid ${BORDER}`,
+              }}
+            >
+
+              <Avatar
+                src={
+                  deleteBook.cover
+                    ? `${IMAGE_BASE_URL}${deleteBook.cover}`
+                    : "/history book.jpg"
+                }
+
+                variant="rounded"
+
+                sx={{
+                  width: 36,
+                  height: 48,
+                }}
+              />
+
+
+              <Box
+                sx={{
+                  minWidth: 0,
+                }}
+              >
+
+                <Typography
+                  sx={{
+                    ...display,
+
+                    fontWeight: 600,
+
+                    fontSize: 13,
+
+                    color: TEXT,
+
+                    whiteSpace:
+                      "nowrap",
+
+                    overflow:
+                      "hidden",
+
+                    textOverflow:
+                      "ellipsis",
+                  }}
+                >
+                  {deleteBook.title}
+                </Typography>
+
+
+                <Typography
+                  sx={{
+                    fontSize: 11,
+
+                    color: MUTED2,
+
+                    whiteSpace:
+                      "nowrap",
+
+                    overflow:
+                      "hidden",
+
+                    textOverflow:
+                      "ellipsis",
+                  }}
+                >
+                  {Array.isArray(
+                    deleteBook.authors
+                  )
+                    ? deleteBook.authors
+                        .map(
+                          (a) =>
+                            a?.name
+                        )
+                        .filter(Boolean)
+                        .join(", ")
+                    : "Unknown Author"}
+                </Typography>
+
+              </Box>
+
+            </Box>
+
+          )}
+
+        </DialogContent>
+
+
+        <DialogActions
+          sx={{
+            px: "26px",
+
+            pb: "24px",
+
+            pt: 2,
+
+            gap: 1,
+          }}
+        >
+
+          <Button
+            onClick={() =>
+              setDeleteBook(null)
+            }
+
+            disabled={deleting}
+
+            sx={{
+              borderRadius:
+                "10px",
+
+              textTransform:
+                "none",
+
+              fontWeight: 600,
+
+              fontSize: 13.5,
+
+              color: MUTED,
+
+              border:
+                `1px solid ${BORDER}`,
+
+              px: 2.5,
+
+              "&:hover": {
+                bgcolor:
+                  goldA(0.06),
+
+                color: TEXT,
+              },
+            }}
+          >
+            Cancel
+          </Button>
+
+
+          <Button
+            onClick={
+              handleConfirmDelete
+            }
+
+            disabled={deleting}
+
+            variant="contained"
+
+            disableElevation
+
+            startIcon={
+              !deleting ? (
+                <DeleteOutlineIcon
+                  sx={{
+                    fontSize: 16,
+                  }}
+                />
+              ) : null
+            }
+
+            sx={{
+              borderRadius:
+                "10px",
+
+              textTransform:
+                "none",
+
+              fontWeight: 700,
+
+              fontSize: 13.5,
+
+              px: 2.8,
+
+              color: "#fff",
+
+              background:
+                "linear-gradient(135deg,#f87171,#c83737)",
+
+              "&:hover": {
+                background:
+                  "linear-gradient(135deg,#fb8585,#d94545)",
+
+                boxShadow:
+                  "0 12px 28px rgba(248,113,113,0.25)",
+              },
+
+              "&.Mui-disabled": {
+                color:
+                  "rgba(255,255,255,0.6)",
+              },
+            }}
+          >
+            {deleting ? (
+              <CircularProgress
+                size={16}
+                sx={{
+                  color: "#fff",
+                }}
+              />
+            ) : (
+              "Delete book"
+            )}
+          </Button>
+
+        </DialogActions>
+
+      </Dialog>
+
+
+   
+
+      <Dialog
+        open={Boolean(viewBook)}
+
+        onClose={() =>
+          setViewBook(null)
+        }
+
+        maxWidth="md"
+
+        fullWidth
+
+        PaperProps={{
+          sx: {
+            borderRadius: "18px",
+
+            bgcolor: SURFACE,
+
+            border:
+              "1px solid rgba(201,168,76,0.2)",
+
+            boxShadow:
+              "0 24px 60px rgba(43,36,22,0.18)",
+
             height: "85vh",
           },
         }}
       >
+
         <DialogTitle
           sx={{
             ...display,
-            fontWeight: 600, fontSize: 16, color: TEXT,
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            borderBottom: `1px solid ${BORDER}`,
+
+            fontWeight: 600,
+
+            fontSize: 16,
+
+            color: TEXT,
+
+            display: "flex",
+
+            alignItems:
+              "center",
+
+            justifyContent:
+              "space-between",
+
+            borderBottom:
+              `1px solid ${BORDER}`,
           }}
         >
-          {viewBook?.title || "Book preview"}
-          <IconButton onClick={() => setViewBook(null)} size="small" sx={{ color: MUTED }}>
-            <CloseIcon sx={{ fontSize: 18 }} />
+
+          {viewBook?.title ||
+            "Book preview"}
+
+
+          <IconButton
+            onClick={() =>
+              setViewBook(null)
+            }
+
+            size="small"
+
+            sx={{
+              color: MUTED,
+            }}
+          >
+            <CloseIcon
+              sx={{
+                fontSize: 18,
+              }}
+            />
           </IconButton>
+
         </DialogTitle>
 
-        <DialogContent sx={{ p: 0, height: "100%" }}>
+
+        <DialogContent
+          sx={{
+            p: 0,
+
+            height: "100%",
+          }}
+        >
+
           {viewBook?.file_path && (
+
             <iframe
               src={`${IMAGE_BASE_URL}${viewBook.file_path}`}
-              title={viewBook?.title || "Book PDF"}
-              style={{ width: "100%", height: "100%", border: "none" }}
+
+              title={
+                viewBook?.title ||
+                "Book PDF"
+              }
+
+              style={{
+                width: "100%",
+
+                height: "100%",
+
+                border: "none",
+              }}
             />
+
           )}
+
         </DialogContent>
+
       </Dialog>
+
     </Box>
   );
 }

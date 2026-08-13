@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+
 import {
   fetchUsers,
   deleteUser,
@@ -6,76 +7,144 @@ import {
   getAllOperationForUser,
 } from "../Thunks/UserThunk";
 
+const initialState = {
+  users: [],
+
+  pagination: null,
+
+  profiles: {},
+
+  profilesLoading: {},
+
+  selectedUserOperations: null,
+
+  operationsLoading: false,
+
+  loading: false,
+
+  error: null,
+};
+
 const userSlice = createSlice({
   name: "user",
-  initialState: {
-    users: [],
-    pagination: null,
-    selectedUserOperations: null,   // ← كان ناقص
-    operationsLoading: false,       // ← loading منفصل للعمليات
-    error: null,
-    loading: false,
+
+  initialState,
+
+  reducers: {
+    clearSelectedUser: (state) => {
+      state.selectedUserOperations = null;
+    },
   },
 
   extraReducers: (builder) => {
     builder
-      // ── Fetch Users ──────────────────────────────────────────
+
+
       .addCase(fetchUsers.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
+
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.loading = false;
-        state.users = action.payload.data.data;
+
+        const data = action.payload?.data;
+
+        state.users = data?.data || [];
+
         state.pagination = {
-          current_page: action.payload.data.current_page,
-          total: action.payload.data.total,
-          last_page: action.payload.data.last_page,
+          current_page: data?.current_page || 1,
+          total: data?.total || 0,
+          last_page: data?.last_page || 1,
+          per_page: data?.per_page || state.users.length,
         };
       })
+
       .addCase(fetchUsers.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+
+        state.error =
+          action.payload || action.error.message;
       })
 
+     
       .addCase(deleteUser.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(deleteUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.users = state.users.filter((u) => u.id !== action.payload);
-      })
-      .addCase(deleteUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      })
-
-      .addCase(fetchUserWithDetails.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchUserWithDetails.fulfilled, (state, action) => {
-        state.loading = false;
-        state.selectedUserOperations = action.payload.data;
-      })
-      .addCase(fetchUserWithDetails.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      })
-
-      .addCase(getAllOperationForUser.pending, (state) => {
-        state.operationsLoading = true;
-        state.selectedUserOperations = null; 
         state.error = null;
       })
-      .addCase(getAllOperationForUser.fulfilled, (state, action) => {
-        state.operationsLoading = false;
-        state.selectedUserOperations = action.payload.data;
+
+      .addCase(deleteUser.fulfilled, (state, action) => {
+        const deletedId = action.payload.id;
+
+        state.users = state.users.filter(
+          (user) => user.id !== deletedId
+        );
+
+        delete state.profiles[deletedId];
       })
-      .addCase(getAllOperationForUser.rejected, (state, action) => {
+
+      .addCase(deleteUser.rejected, (state, action) => {
+        state.error =
+          action.payload || action.error.message;
+      })
+
+      
+      .addCase(fetchUserWithDetails.pending, (state) => {
+        state.operationsLoading = true;
+        state.error = null;
+      })
+
+      .addCase(fetchUserWithDetails.fulfilled, (state, action) => {
         state.operationsLoading = false;
-        state.error = action.error.message;
-      });
+
+        state.selectedUserOperations =
+          action.payload?.data || null;
+      })
+
+      .addCase(fetchUserWithDetails.rejected, (state, action) => {
+        state.operationsLoading = false;
+
+        state.error =
+          action.payload || action.error.message;
+      })
+
+      
+      .addCase(
+        getAllOperationForUser.pending,
+        (state, action) => {
+          const userId = action.meta.arg;
+
+          state.profilesLoading[userId] = true;
+        }
+      )
+
+      .addCase(
+        getAllOperationForUser.fulfilled,
+        (state, action) => {
+          const { userId, data } = action.payload;
+
+          state.profilesLoading[userId] = false;
+
+         
+          state.profiles[userId] = data;
+        }
+      )
+
+      .addCase(
+        getAllOperationForUser.rejected,
+        (state, action) => {
+          const userId = action.meta.arg;
+
+          state.profilesLoading[userId] = false;
+
+          state.error =
+            action.payload || action.error.message;
+        }
+      );
   },
 });
+
+export const {
+  clearSelectedUser,
+} = userSlice.actions;
 
 export default userSlice.reducer;
