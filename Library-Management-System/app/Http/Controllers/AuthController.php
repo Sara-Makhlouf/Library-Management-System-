@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\OTPController;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -29,22 +30,19 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name'              => ['required', 'string', 'max:255'],
-            'email'             => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password'          => ['required', 'confirmed', 'min:8'],
-            'gender'            => ['required', 'in:M,F'],
-            'phone'             => ['required', 'digits:10', 'unique:customers,phone'],
-            'DOB'               => ['required', 'date', 'before:today'],
-            'lang'              => ['sometimes', 'in:ar,en'],
-            'avatar'            => ['nullable', 'image', 'max:2048'],
-            'fcm_token'         => ['nullable', 'string'],
-            'firebase_id_token' => ['required', 'string'],
+            'name'        => ['required', 'string', 'max:255'],
+            'email'       => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password'    => ['required', 'confirmed', 'min:8'],
+            'gender'      => ['required', 'in:M,F'],
+            'phone'       => ['required', 'digits:10', 'unique:customers,phone'],
+            'DOB'         => ['required', 'date', 'before:today'],
+            'lang'        => ['sometimes', 'in:ar,en'],
+            'avatar'      => ['nullable', 'image', 'max:2048'],
+            'fcm_token'   => ['nullable', 'string'],
+            'otp_code'    => ['required', 'string'],
         ]);
 
-        try {
-            $auth = app('firebase.auth');
-            $verifiedIdToken = $auth->verifyIdToken($validated['firebase_id_token']);
-        } catch (\Exception $e) {
+        if (!OTPController::verifyOtp($validated['phone'], $validated['otp_code'])) {
             return response()->json([
                 'status'  => 'error',
                 'message' => 'رمز التحقق (OTP) غير صحيح أو منتهي الصلاحية.'
@@ -111,7 +109,6 @@ class AuthController extends Controller
             ]
         ], 201);
     }
-
     public function login(Request $request)
     {
         $validated = $request->validate([
@@ -243,27 +240,24 @@ class AuthController extends Controller
     public function resetPassword(Request $request)
     {
         $request->validate([
-            'phone'             => ['required', 'digits:10', 'exists:customers,phone'],
-            'firebase_id_token' => ['required', 'string'],
-            'password'          => ['required', 'confirmed', 'min:8'],
+            'phone'     => ['required', 'digits:10', 'exists:customers,phone'],
+            'otp_code'  => ['required', 'string'],
+            'password'  => ['required', 'confirmed', 'min:8'],
         ], [
-            'phone.required'             => 'يرجى إدخال رقم الهاتف.',
-            'phone.digits'               => 'يجب أن يتكون رقم الهاتف من 10 أرقام.',
-            'phone.exists'               => 'رقم الهاتف هذا غير مسجل لدينا.',
-            'firebase_id_token.required' => 'رمز التوثيق الخاص بـ Firebase مطلوب.',
-            'password.required'          => 'يرجى إدخال كلمة المرور الجديدة.',
-            'password.confirmed'         => 'تأكيد كلمة المرور غير مطابق.',
-            'password.min'               => 'يجب أن لا تقل كلمة المرور عن 8 خانات.',
+            'phone.required'    => 'يرجى إدخال رقم الهاتف.',
+            'phone.digits'      => 'يجب أن يتكون رقم الهاتف من 10 أرقام.',
+            'phone.exists'      => 'رقم الهاتف هذا غير مسجل لدينا.',
+            'otp_code.required' => 'رمز التحقق (OTP) مطلوب.',
+            'password.required' => 'يرجى إدخال كلمة المرور الجديدة.',
+            'password.confirmed' => 'تأكيد كلمة المرور غير مطابق.',
+            'password.min'      => 'يجب أن لا تقل كلمة المرور عن 8 خانات.',
         ]);
 
-        try {
-            $auth = app('firebase.auth');
-            $verifiedIdToken = $auth->verifyIdToken($request->firebase_id_token);
-        } catch (\Exception $e) {
+        if (!OTPController::verifyOtp($request->phone, $request->otp_code)) {
             return response()->json([
                 'status'  => 'error',
-                'message' => 'رمز التحقق الخاص بـ Firebase غير صالح أو انتهت صلاحيته.'
-            ], 401);
+                'message' => 'رمز التحقق (OTP) غير صحيح أو منتهي الصلاحية.'
+            ], 422);
         }
 
         $customer = Customer::where('phone', $request->phone)->first();
@@ -280,6 +274,7 @@ class AuthController extends Controller
             'message' => 'تم إعادة تعيين كلمة المرور بنجاح، يمكنك الآن تسجيل الدخول.'
         ], 200);
     }
+
     public function deleteAccount(Request $request)
     {
         /** @var \App\Models\User $user */

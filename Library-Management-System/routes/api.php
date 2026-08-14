@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\WaitingListController;
+use App\Http\Controllers\OTPController;
 
 
 /*
@@ -29,6 +30,7 @@ use App\Http\Controllers\Api\Admin\WaitingListController;
 |--------------------------------------------------------------------------
 */
 
+Route::post('/send-otp', [OTPController::class, 'sendOtp']);
 // --- المصادقة ---
 Route::post('/register',     [AuthController::class, 'register']);     // تسجيل زبون جديد
 Route::post('/login',        [AuthController::class, 'login']);        // تسجيل دخول زبون (برقم الهاتف)
