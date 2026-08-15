@@ -8,38 +8,10 @@ abstract class RegisterEvent extends Equatable {
 }
 
 class RegisterSubmitted extends RegisterEvent {
-  final String name;
-  final String email;
-  final String password;
-  final String passwordConfirmation;
-  final String gender;
-  final String phone;
-  final String dob;
-  final String? lang;
-  final String? fcmToken;
+  final Map<String, dynamic> registerData;
 
-  const RegisterSubmitted({
-    required this.name,
-    required this.email,
-    required this.password,
-    required this.passwordConfirmation,
-    required this.gender,
-    required this.phone,
-    required this.dob,
-    this.lang,
-    this.fcmToken,
-  });
+  const RegisterSubmitted({required this.registerData});
 
   @override
-  List<Object?> get props => [
-    name,
-    email,
-    password,
-    passwordConfirmation,
-    gender,
-    phone,
-    dob,
-    lang,
-    fcmToken,
-  ];
+  List<Object?> get props => [registerData];
 }
