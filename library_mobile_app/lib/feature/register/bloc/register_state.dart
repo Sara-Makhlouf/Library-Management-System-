@@ -14,7 +14,7 @@ class RegisterLoading extends RegisterState {}
 class RegisterSuccess extends RegisterState {
   final Map<String, dynamic> data;
 
-  const RegisterSuccess(this.data);
+  const RegisterSuccess({required this.data});
 
   @override
   List<Object?> get props => [data];
@@ -23,7 +23,7 @@ class RegisterSuccess extends RegisterState {
 class RegisterFailure extends RegisterState {
   final String message;
 
-  const RegisterFailure(this.message);
+  const RegisterFailure({required this.message});
 
   @override
   List<Object?> get props => [message];
