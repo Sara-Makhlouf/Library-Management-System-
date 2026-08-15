@@ -1,16 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:library_mobile_app/feature/register/bloc/register_bloc.dart';
-import 'package:library_mobile_app/feature/register/bloc/register_event.dart';
-import 'package:library_mobile_app/feature/register/bloc/register_state.dart';
-import 'package:library_mobile_app/feature/register/data/register_repository.dart';
-import 'package:library_mobile_app/feature/register/helper/colors.dart';
-import 'package:library_mobile_app/feature/register/widgets/buildicon.dart';
-import 'package:library_mobile_app/feature/register/widgets/buildtitleblock.dart';
+import 'package:library_mobile_app/core/theme.dart';
+import 'package:library_mobile_app/core/components/custom_button.dart';
+import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
+import 'package:library_mobile_app/feature/homepage/presentation/screens/home_page.dart';
+
+import '../bloc/register_bloc.dart';
+import '../bloc/register_event.dart';
+import '../bloc/register_state.dart';
+import '../data/register_repository.dart';
 
 class OtpPage extends StatefulWidget {
   final String phone;
@@ -31,554 +32,378 @@ class OtpPage extends StatefulWidget {
 }
 
 class _OtpPageState extends State<OtpPage> {
-  @override
-  void dispose() {
-    _countdownTimer?.cancel();
+  final List<TextEditingController> _controllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
 
-    otpController.dispose();
-
-    otpFocusNode.dispose();
-
-    super.dispose();
-  }
-
-  static const int otpLength = 6;
-
-  static const int resendSeconds = 60;
-
-  final TextEditingController otpController = TextEditingController();
-
-  final FocusNode otpFocusNode = FocusNode();
+  final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
 
   final RegisterRepository _repository = RegisterRepository();
 
-  bool loading = false;
+  bool _sendingOtp = false;
 
-  bool sendingOtp = false;
+  bool _verifying = false;
 
-  int secondsLeft = 0;
+  int _seconds = 60;
 
-  Timer? _countdownTimer;
-
-  bool get canResend => !loading && !sendingOtp && secondsLeft == 0;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
 
-    otpController.addListener(() {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    _startTimer();
 
-    _sendOtp();
+    // إرسال OTP مرة واحدة فقط
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _sendOtp();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+
+    for (final controller in _controllers) {
+      controller.dispose();
+    }
+
+    for (final node in _focusNodes) {
+      node.dispose();
+    }
+
+    super.dispose();
   }
 
   Future<void> _sendOtp() async {
-    if (sendingOtp) return;
+    if (_sendingOtp) return;
 
     setState(() {
-      sendingOtp = true;
+      _sendingOtp = true;
     });
 
     try {
       final result = await _repository.sendOtp(phone: widget.phone);
 
-      debugPrint('🟢 OTP Response: $result');
+      debugPrint('🟢 OTP RESPONSE: $result');
 
       if (!mounted) return;
 
-      setState(() {
-        sendingOtp = false;
-      });
-
-      _startCountdown();
-
-      _showSuccess(
-        result['message']?.toString() ?? 'Verification code sent to WhatsApp',
+      _showMessage(
+        result['message']?.toString() ?? 'Verification code sent',
+        success: true,
       );
     } catch (e) {
-      debugPrint('🔴 WhatsApp OTP Error: $e');
+      debugPrint('🔴 OTP ERROR: $e');
 
       if (!mounted) return;
 
-      setState(() {
-        sendingOtp = false;
-        loading = false;
-      });
+      String message = e.toString();
 
-      _showError(e.toString().replaceFirst('Exception: ', ''));
+      if (message.startsWith('Exception: ')) {
+        message = message.substring(11);
+      }
+
+      _showMessage(message, success: false);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _sendingOtp = false;
+        });
+      }
     }
   }
 
-  Future<void> _verifyOtp() async {
-    final otp = otpController.text.trim();
-
-    if (otp.length != otpLength) {
-      _showError('Please enter the 6-digit verification code');
-      return;
-    }
+  void _startTimer() {
+    _timer?.cancel();
 
     setState(() {
-      loading = true;
+      _seconds = 60;
     });
 
-    try {
-      final result = await _repository.verifyOtp(phone: widget.phone, otp: otp);
-
-      debugPrint('🟢 OTP verified');
-      debugPrint('🟢 Response: $result');
-
-      if (!mounted) return;
-
-      _showSuccess(
-        result['message']?.toString() ?? 'Phone verified successfully',
-      );
-
-      widget.registerBloc.add(
-        RegisterSubmitted(
-          name: widget.registerData['name'],
-          email: widget.registerData['email'],
-          password: widget.registerData['password'],
-          passwordConfirmation: widget.registerData['password_confirmation'],
-          gender: widget.registerData['gender'],
-          phone: widget.registerData['phone'],
-          dob: widget.registerData['DOB'],
-          lang: widget.registerData['lang'] ?? 'ar',
-          fcmToken: widget.registerData['fcm_token'] ?? '',
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-
-      setState(() {
-        loading = false;
-      });
-
-      _showError(e.toString().replaceFirst('Exception: ', ''));
-    }
-  }
-
-  void _startCountdown() {
-    _countdownTimer?.cancel();
-
-    setState(() {
-      secondsLeft = resendSeconds;
-    });
-
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_seconds <= 1) {
         timer.cancel();
+
+        if (mounted) {
+          setState(() {
+            _seconds = 0;
+          });
+        }
+
         return;
       }
 
-      if (secondsLeft <= 1) {
-        timer.cancel();
-
+      if (mounted) {
         setState(() {
-          secondsLeft = 0;
-        });
-      } else {
-        setState(() {
-          secondsLeft -= 1;
+          _seconds--;
         });
       }
     });
   }
 
-  void _showError(String message) {
+ 
+  void _onChanged(int index, String value) {
+    if (value.length == 1 && index < 5) {
+      _focusNodes[index + 1].requestFocus();
+    }
+
+    if (value.isEmpty && index > 0) {
+      _focusNodes[index - 1].requestFocus();
+    }
+
+    if (index == 5 && value.isNotEmpty) {
+      _focusNodes[index].unfocus();
+    }
+  }
+
+  String _getOtp() {
+    return _controllers.map((controller) => controller.text).join();
+  }
+
+ 
+  void _verifyOtp() {
+    if (_verifying) return;
+
+    final otp = _getOtp();
+
+    if (otp.length != 6) {
+      _showMessage(
+        'Please enter the 6-digit verification code',
+        success: false,
+      );
+      return;
+    }
+
+    final data = Map<String, dynamic>.from(widget.registerData);
+
+    data['phone'] = _normalizePhone(widget.phone);
+
+    data['otp_code'] = otp;
+
+    debugPrint('================================');
+    debugPrint('REGISTER DATA');
+    debugPrint(data.toString());
+    debugPrint('================================');
+
+    widget.registerBloc.add(RegisterSubmitted(registerData: data));
+  }
+
+
+  String _normalizePhone(String phone) {
+    phone = phone.trim().replaceAll(' ', '').replaceAll('-', '');
+
+    if (phone.startsWith('+963')) {
+      return '0${phone.substring(4)}';
+    }
+
+    if (phone.startsWith('00963')) {
+      return '0${phone.substring(5)}';
+    }
+
+    if (phone.startsWith('963')) {
+      return '0${phone.substring(3)}';
+    }
+
+    return phone;
+  }
+
+ 
+  void _showMessage(String message, {required bool success}) {
     if (!mounted) return;
 
-    final messenger = ScaffoldMessenger.of(context);
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
-    messenger.hideCurrentSnackBar();
-
-    messenger.showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.error_outline_rounded, color: Colors.white),
+            Icon(
+              success ? Icons.check_circle_outline : Icons.error_outline,
+              color: Colors.white,
+            ),
             const SizedBox(width: 10),
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: OtpColors.error,
+        backgroundColor: success ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
 
-  void _showSuccess(String message) {
-    if (!mounted) return;
-
-    final messenger = ScaffoldMessenger.of(context);
-
-    messenger.hideCurrentSnackBar();
-
-    messenger.showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle_outline_rounded, color: Colors.white),
-            const SizedBox(width: 10),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: OtpColors.success,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-  }
-
+ 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<RegisterBloc, RegisterState>(
-      bloc: widget.registerBloc,
-      listener: (context, state) {
-        if (state is RegisterLoading) {
-          if (!mounted) return;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-          setState(() {
-            loading = true;
-          });
-        } else if (state is RegisterSuccess) {
-          if (!mounted) return;
+    return BlocProvider.value(
+      value: widget.registerBloc,
+      child: BlocListener<RegisterBloc, RegisterState>(
+        listener: (context, state) {
+          if (state is RegisterLoading) {
+            setState(() {
+              _verifying = true;
+            });
+          }
 
-          setState(() {
-            loading = false;
-          });
+          if (state is RegisterSuccess) {
+            setState(() {
+              _verifying = false;
+            });
 
-          _showSuccess('Account created successfully 🎉');
+            _showMessage('Account created successfully 🎉', success: true);
 
-          Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
-        } else if (state is RegisterFailure) {
-          if (!mounted) return;
-
-          setState(() {
-            loading = false;
-          });
-
-          _showError(state.message);
-        }
-      },
-
-      child: Scaffold(
-        backgroundColor: OtpColors.bgTop,
-        extendBodyBehindAppBar: true,
-
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          iconTheme: const IconThemeData(color: OtpColors.ink),
-          title: const Text(
-            'Verify phone number',
-            style: TextStyle(color: OtpColors.ink, fontWeight: FontWeight.w600),
-          ),
-        ),
-
-        body: Container(
-          width: double.infinity,
-          height: double.infinity,
-
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [OtpColors.bgTop, OtpColors.bgBottom],
-            ),
-          ),
-
-          child: SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 16,
-                  ),
-
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight - 32,
-                    ),
-
-                    child: IntrinsicHeight(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-
-                        children: [
-                          const SizedBox(height: 16),
-
-                          buildIcon(),
-
-                          const SizedBox(height: 28),
-
-                          buildTitleBlock(),
-
-                          const SizedBox(height: 36),
-
-                          _buildOtpBoxes(),
-
-                          const SizedBox(height: 28),
-
-                          _buildVerifyButton(),
-
-                          const SizedBox(height: 18),
-
-                          _buildResendRow(),
-
-                          const Spacer(),
-
-                          _buildFooterNote(),
-
-                          const SizedBox(height: 8),
-                        ],
-                      ),
+            Future.delayed(const Duration(milliseconds: 700), () {
+              if (mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BlocProvider.value(
+                      value: context.read<HomeBloc>(),
+                      child: const HomeScreen(),
                     ),
                   ),
+                  (route) => false,
                 );
-              },
-            ),
+              }
+            });
+          }
+
+          if (state is RegisterFailure) {
+            setState(() {
+              _verifying = false;
+            });
+
+            _showMessage(state.message, success: false);
+          }
+        },
+        child: Scaffold(
+          backgroundColor: isDark
+              ? AppColors.backgroundDark
+              : AppColors.accentLight,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: const Text('Verify phone'),
           ),
-        ),
-      ),
-    );
-  }
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                children: [
+                  const SizedBox(height: 40),
 
-  Widget _buildOtpBoxes() {
-    final value = otpController.text;
-
-    return GestureDetector(
-      onTap: () {
-        otpFocusNode.requestFocus();
-      },
-
-      child: Stack(
-        alignment: Alignment.center,
-
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-
-            children: List.generate(otpLength, (index) {
-              final filled = index < value.length;
-
-              final isCurrent = index == value.length && otpFocusNode.hasFocus;
-
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-
-                margin: const EdgeInsets.symmetric(horizontal: 5),
-
-                width: 46,
-                height: 56,
-
-                alignment: Alignment.center,
-
-                decoration: BoxDecoration(
-                  color: Colors.white,
-
-                  borderRadius: BorderRadius.circular(14),
-
-                  border: Border.all(
-                    color: isCurrent
-                        ? OtpColors.primaryStart
-                        : filled
-                        ? OtpColors.primaryEnd.withOpacity(0.6)
-                        : OtpColors.boxBorder,
-                    width: isCurrent ? 2 : 1.4,
+                  Icon(
+                    Icons.mark_email_read_outlined,
+                    size: 70,
+                    color: AppColors.primary,
                   ),
 
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+                  const SizedBox(height: 24),
+
+                  Text(
+                    'Verify your phone number',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? AppColors.textDark : AppColors.textLight,
                     ),
-                  ],
-                ),
-
-                child: Text(
-                  filled ? value[index] : '',
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: OtpColors.ink,
                   ),
-                ),
-              );
-            }),
-          ),
 
-          Opacity(
-            opacity: 0,
+                  const SizedBox(height: 12),
 
-            child: SizedBox(
-              width: double.infinity,
-              height: 56,
+                  Text(
+                    'We sent a 6-digit verification code to',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: isDark
+                          ? AppColors.textDark.withOpacity(.6)
+                          : AppColors.textLight.withOpacity(.6),
+                    ),
+                  ),
 
-              child: TextField(
-                controller: otpController,
-                focusNode: otpFocusNode,
+                  const SizedBox(height: 6),
 
-                keyboardType: TextInputType.number,
+                  Text(
+                    widget.phone,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
 
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
+                  const SizedBox(height: 40),
 
-                  LengthLimitingTextInputFormatter(otpLength),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: List.generate(6, (index) {
+                      return SizedBox(
+                        width: 45,
+                        height: 55,
+                        child: TextField(
+                          controller: _controllers[index],
+                          focusNode: _focusNodes[index],
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          maxLength: 1,
+                          onChanged: (value) {
+                            _onChanged(index, value);
+                          },
+                          decoration: InputDecoration(
+                            counterText: '',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  CustomButton(
+                    isLoading: _verifying,
+                    onTap: _verifying ? () {} : _verifyOtp,
+                    text: 'Verify & Create Account',
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  if (_seconds > 0)
+                    Text(
+                      'Resend code in $_seconds s',
+                      style: TextStyle(
+                        color: isDark
+                            ? AppColors.textDark.withOpacity(.5)
+                            : AppColors.textLight.withOpacity(.5),
+                      ),
+                    )
+                  else
+                    TextButton(
+                      onPressed: _sendingOtp
+                          ? null
+                          : () {
+                              _startTimer();
+                              _sendOtp();
+                            },
+                      child: const Text('Resend code'),
+                    ),
+
+                  if (_sendingOtp)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 12),
+                      child: Text('Sending verification code...'),
+                    ),
                 ],
-
-                onChanged: (_) {
-                  if (otpController.text.length == otpLength) {
-                    FocusScope.of(context).unfocus();
-                  }
-                },
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  _buildVerifyButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 54,
-
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-
-          gradient: LinearGradient(
-            colors: loading
-                ? [Colors.grey.shade400, Colors.grey.shade400]
-                : const [OtpColors.primaryStart, OtpColors.primaryEnd],
-          ),
-
-          boxShadow: loading
-              ? []
-              : [
-                  BoxShadow(
-                    color: OtpColors.primaryStart.withOpacity(0.30),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-        ),
-
-        child: ElevatedButton(
-          onPressed: loading ? null : _verifyOtp,
-
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            elevation: 0,
-
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-
-          child: loading
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.4,
-                    color: Colors.white,
-                  ),
-                )
-              : const Text(
-                  'Verify & create account',
-
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
         ),
       ),
-    );
-  }
-
-  Widget _buildResendRow() {
-    if (sendingOtp) {
-      return const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-
-        children: [
-          SizedBox(
-            width: 16,
-            height: 16,
-
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: OtpColors.primaryStart,
-            ),
-          ),
-
-          SizedBox(width: 10),
-
-          Text(
-            'Sending code...',
-            style: TextStyle(color: OtpColors.inkMuted, fontSize: 14),
-          ),
-        ],
-      );
-    }
-
-    if (!canResend) {
-      return Text(
-        'Resend code in ${secondsLeft}s',
-
-        style: const TextStyle(color: OtpColors.inkMuted, fontSize: 14),
-      );
-    }
-
-    return TextButton(
-      onPressed: _sendOtp,
-
-      style: TextButton.styleFrom(foregroundColor: OtpColors.primaryStart),
-
-      child: const Text(
-        'Resend verification code',
-
-        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-      ),
-    );
-  }
-
-  Widget _buildFooterNote() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-
-      children: [
-        Icon(
-          Icons.lock_outline_rounded,
-          size: 14,
-          color: OtpColors.inkMuted.withOpacity(0.8),
-        ),
-
-        const SizedBox(width: 6),
-
-        Text(
-          'Your number is used only to verify your account',
-
-          style: TextStyle(
-            fontSize: 12,
-            color: OtpColors.inkMuted.withOpacity(0.8),
-          ),
-        ),
-      ],
     );
   }
 }
