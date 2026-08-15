@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -37,7 +37,6 @@ class _RegisterState extends State<Register> {
   final _shakeKey = GlobalKey<ShakeWidgetState>();
 
   late RegisterBloc _registerBloc;
-
   late RegisterRepository _registerRepository;
 
   int _currentStep = 0;
@@ -47,7 +46,6 @@ class _RegisterState extends State<Register> {
   bool _obscure1 = true;
   bool _obscure2 = true;
 
-  // مهم حتى ما يضغط المستخدم Continue عدة مرات
   bool _sendingOtp = false;
 
   @override
@@ -73,6 +71,7 @@ class _RegisterState extends State<Register> {
     super.dispose();
   }
 
+ 
   Future<void> _pickDob() async {
     final now = DateTime.now();
 
@@ -111,10 +110,53 @@ class _RegisterState extends State<Register> {
     }
   }
 
+ 
+  String _normalizePhone(String phone) {
+    phone = phone
+        .trim()
+        .replaceAll(' ', '')
+        .replaceAll('-', '')
+        .replaceAll('(', '')
+        .replaceAll(')', '');
+
+    // +963934426849
+    if (phone.startsWith('+963')) {
+      phone = '0${phone.substring(4)}';
+    }
+    // 00963934426849
+    else if (phone.startsWith('00963')) {
+      phone = '0${phone.substring(5)}';
+    }
+    // 963934426849
+    else if (phone.startsWith('963')) {
+      phone = '0${phone.substring(3)}';
+    }
+
+    return phone;
+  }
+
+ 
+  bool _isValidSyrianPhone(String phone) {
+    final normalized = _normalizePhone(phone);
+
+    if (normalized.length != 10) {
+      return false;
+    }
+
+    if (!normalized.startsWith('09')) {
+      return false;
+    }
+
+   
+
+    return RegExp(r'^09[0-9]{8}$').hasMatch(normalized);
+  }
+
+ 
   void _goNext() {
     final name = _fullNameController.text.trim();
     final dob = _dobController.text.trim();
-    final phone = _phoneController.text.trim();
+    final rawPhone = _phoneController.text.trim();
 
     if (name.isEmpty) {
       _showError('Please enter your full name');
@@ -126,21 +168,29 @@ class _RegisterState extends State<Register> {
       return;
     }
 
-    if (phone.isEmpty) {
+    if (rawPhone.isEmpty) {
       _showError('Please enter your phone number');
       return;
     }
 
-    if (phone.length < 8) {
-      _showError('Please enter a valid phone number');
+    final phone = _normalizePhone(rawPhone);
+
+    if (!_isValidSyrianPhone(phone)) {
+      _showError(
+        'Please enter a valid Syrian phone number\n'
+        'Example: 0934426849',
+      );
       return;
     }
+
+    _phoneController.text = phone;
 
     setState(() {
       _currentStep = 1;
     });
   }
 
+ 
   void _goBack() {
     if (_sendingOtp) return;
 
@@ -149,6 +199,7 @@ class _RegisterState extends State<Register> {
     });
   }
 
+  
   String? _validatePasswords() {
     final pass = _passController.text;
     final rePass = _rePassController.text;
@@ -172,33 +223,13 @@ class _RegisterState extends State<Register> {
     return null;
   }
 
+
   bool _isValidEmail(String email) {
     final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
     return emailRegex.hasMatch(email);
   }
 
-  String _normalizePhone(String phone) {
-    phone = phone.trim().replaceAll(' ', '');
-
-    if (phone.startsWith('09')) {
-      return '+963${phone.substring(1)}';
-    }
-
-    if (phone.startsWith('9')) {
-      return '+963$phone';
-    }
-
-    if (phone.startsWith('963')) {
-      return '+$phone';
-    }
-
-    if (phone.startsWith('+963')) {
-      return phone;
-    }
-
-    return phone;
-  }
 
   void _showError(String message) {
     if (!mounted) return;
@@ -224,6 +255,7 @@ class _RegisterState extends State<Register> {
     );
   }
 
+ 
   void _showSuccess(String message) {
     if (!mounted) return;
 
@@ -246,6 +278,7 @@ class _RegisterState extends State<Register> {
     );
   }
 
+ 
   Future<void> _onCreateAccount() async {
     if (_sendingOtp) return;
 
@@ -253,6 +286,7 @@ class _RegisterState extends State<Register> {
 
     final phone = _normalizePhone(_phoneController.text);
 
+  
     if (email.isEmpty) {
       _showError('Please enter your email');
       return;
@@ -263,6 +297,7 @@ class _RegisterState extends State<Register> {
       return;
     }
 
+   
     final passwordError = _validatePasswords();
 
     if (passwordError != null) {
@@ -270,16 +305,19 @@ class _RegisterState extends State<Register> {
       return;
     }
 
-    if (phone.isEmpty) {
-      _showError('Please enter your phone number');
+  
+    if (!_isValidSyrianPhone(phone)) {
+      _showError(
+        'Please enter a valid Syrian phone number\n'
+        'Example: 0934426849',
+      );
       return;
     }
 
-    if (!phone.startsWith('+963')) {
-      _showError('Please enter a valid Syrian phone number');
-      return;
-    }
+ 
+    _phoneController.text = phone;
 
+  
     final registerData = <String, dynamic>{
       'name': _fullNameController.text.trim(),
       'email': email,
@@ -292,19 +330,27 @@ class _RegisterState extends State<Register> {
       'fcm_token': '',
     };
 
+    debugPrint('================================');
+    debugPrint('REGISTER DATA');
+    debugPrint(registerData.toString());
+    debugPrint('PHONE: $phone');
+    debugPrint('================================');
+
     setState(() {
       _sendingOtp = true;
     });
 
     try {
+   
       final result = await _registerRepository.sendOtp(phone: phone);
 
-      debugPrint('🟢 OTP response: $result');
+      debugPrint('🟢 OTP RESPONSE: $result');
 
       if (!mounted) return;
 
       _showSuccess('Verification code sent to your WhatsApp');
 
+    
       await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) {
@@ -317,7 +363,7 @@ class _RegisterState extends State<Register> {
         ),
       );
     } catch (e) {
-      debugPrint('🔴 Send OTP failed: $e');
+      debugPrint('🔴 SEND OTP FAILED: $e');
 
       if (!mounted) return;
 
@@ -337,6 +383,7 @@ class _RegisterState extends State<Register> {
     }
   }
 
+ 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -466,7 +513,6 @@ class _RegisterState extends State<Register> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Handle
                                 Center(
                                   child: Container(
                                     width: 40,
@@ -547,6 +593,7 @@ class _RegisterState extends State<Register> {
     );
   }
 
+
   Widget _buildStepOne(bool isDark) {
     return Column(
       key: const ValueKey('step1'),
@@ -589,7 +636,7 @@ class _RegisterState extends State<Register> {
 
         CustomInputField(
           controller: _phoneController,
-          hint: 'Phone number (+963...)',
+          hint: 'Phone number (09xxxxxxxx)',
           icon: Icons.phone_android_rounded,
           isDark: isDark,
           keyboardType: TextInputType.phone,
@@ -606,6 +653,7 @@ class _RegisterState extends State<Register> {
     );
   }
 
+  
   Widget _buildStepTwo(bool isDark) {
     return Column(
       key: const ValueKey('step2'),
