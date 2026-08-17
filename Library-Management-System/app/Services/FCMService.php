@@ -76,12 +76,12 @@ class FCMService
 
     private function generateJWT(array $payload, string $privateKey): string
     {
-        $header = base64_encode(json_encode(['alg' => 'RS256', 'typ' => 'JWT']));
-        $body   = base64_encode(json_encode($payload));
+        $header = rtrim(strtr(base64_encode(json_encode(['alg' => 'RS256', 'typ' => 'JWT'])), '+/', '-_'), '=');
+        $body   = rtrim(strtr(base64_encode(json_encode($payload)), '+/', '-_'), '=');
 
         $data = "{$header}.{$body}";
         openssl_sign($data, $signature, $privateKey, 'SHA256');
 
-        return "{$data}." . base64_encode($signature);
+        return "{$data}." . rtrim(strtr(base64_encode($signature), '+/', '-_'), '=');
     }
 }

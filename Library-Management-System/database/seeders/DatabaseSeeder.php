@@ -18,15 +18,25 @@ use App\Models\BookRequest;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-
+        Storage::disk('public')->deleteDirectory('covers');
+        Storage::disk('public')->makeDirectory('covers');
         $this->call([AdminSeeder::class]);
 
-        $categoryNames = ['روايات', 'تكنولوجيا', 'تاريخ', 'علوم', 'فن وأدب', 'فلسفة', 'اقتصاد'];
+        $categoryNames = [
+            'Novels',
+            'Technology',
+            'History',
+            'Science',
+            'Art & Literature',
+            'Philosophy',
+            'Economics'
+        ];
         foreach ($categoryNames as $name) {
             Category::create(['name' => $name]);
         }

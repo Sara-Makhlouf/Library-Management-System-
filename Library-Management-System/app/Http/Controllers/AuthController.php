@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\OTPController;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -29,16 +30,24 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', 'min:8'],
-            'gender'   => ['required', 'in:M,F'],
-            'phone'    => ['required', 'digits:10', 'unique:customers,phone'],
-            'DOB'      => ['required', 'date', 'before:today'],
-            'lang'     => ['sometimes', 'in:ar,en'],
-            'avatar'   => ['nullable', 'image', 'max:2048'],
-            'fcm_token' => ['nullable', 'string'],
+            'name'        => ['required', 'string', 'max:255'],
+            'email'       => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password'    => ['required', 'confirmed', 'min:8'],
+            'gender'      => ['required', 'in:M,F'],
+            'phone'       => ['required', 'digits:10', 'unique:customers,phone'],
+            'DOB'         => ['required', 'date', 'before:today'],
+            'lang'        => ['sometimes', 'in:ar,en'],
+            'avatar'      => ['nullable', 'image', 'max:2048'],
+            'fcm_token'   => ['nullable', 'string'],
+            'otp_code'    => ['required', 'string'],
         ]);
+
+        if (!OTPController::verifyOtp($validated['phone'], $validated['otp_code'])) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'رمز التحقق (OTP) غير صحيح أو منتهي الصلاحية.'
+            ], 422);
+        }
 
         $avatarPath = null;
         if ($request->hasFile('avatar')) {
@@ -55,12 +64,12 @@ class AuthController extends Controller
             ]);
 
             $customer = $user->customer()->create([
-                'name'   => $validated['name'],
-                'gender' => $validated['gender'],
-                'phone'  => $validated['phone'],
-                'DOB'    => $validated['DOB'],
-                'lang'   => $validated['lang'] ?? 'ar',
-                'avatar' => $avatarPath,
+                'name'      => $validated['name'],
+                'gender'    => $validated['gender'],
+                'phone'     => $validated['phone'],
+                'DOB'       => $validated['DOB'],
+                'lang'      => $validated['lang'] ?? 'ar',
+                'avatar'    => $avatarPath,
                 'fcm_token' => $validated['fcm_token'] ?? null,
             ]);
 
@@ -72,7 +81,6 @@ class AuthController extends Controller
                 }
             }
 
-            // إرسال إشعار الترحيب
             try {
                 Notification::send(
                     $customer->id,
@@ -89,12 +97,11 @@ class AuthController extends Controller
         });
 
         $token = $user->createToken('auth_token')->plainTextToken;
-
         $customer = $user->customer;
 
         return response()->json([
             'status' => 'success',
-            'data' => [
+            'data'   => [
                 'token'          => $token,
                 'name'           => $validated['name'],
                 'type'           => $user->type,
@@ -102,7 +109,6 @@ class AuthController extends Controller
             ]
         ], 201);
     }
-
     public function login(Request $request)
     {
         $validated = $request->validate([
@@ -205,8 +211,7 @@ class AuthController extends Controller
         ]);
 
         $user = $request->user();
-        $user->update(['password' => $validated['password']]);
-
+        $user->update(['password' => Hash::make($validated['password'])]);
         $user->tokens()->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -227,5 +232,97 @@ class AuthController extends Controller
             'message' => 'تم تغيير كلمة السر بنجاح',
             'data' => ['token' => $token, 'token_type' => 'Bearer']
         ]);
+    }
+
+    /**
+     * إعادة تعيين كلمة المرور
+     */
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'phone'     => ['required', 'digits:10', 'exists:customers,phone'],
+            'otp_code'  => ['required', 'string'],
+            'password'  => ['required', 'confirmed', 'min:8'],
+        ], [
+            'phone.required'    => 'يرجى إدخال رقم الهاتف.',
+            'phone.digits'      => 'يجب أن يتكون رقم الهاتف من 10 أرقام.',
+            'phone.exists'      => 'رقم الهاتف هذا غير مسجل لدينا.',
+            'otp_code.required' => 'رمز التحقق (OTP) مطلوب.',
+            'password.required' => 'يرجى إدخال كلمة المرور الجديدة.',
+            'password.confirmed' => 'تأكيد كلمة المرور غير مطابق.',
+            'password.min'      => 'يجب أن لا تقل كلمة المرور عن 8 خانات.',
+        ]);
+
+        if (!OTPController::verifyOtp($request->phone, $request->otp_code)) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'رمز التحقق (OTP) غير صحيح أو منتهي الصلاحية.'
+            ], 422);
+        }
+
+        $customer = Customer::where('phone', $request->phone)->first();
+        $user = $customer->user;
+
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        $user->tokens()->delete();
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'تم إعادة تعيين كلمة المرور بنجاح، يمكنك الآن تسجيل الدخول.'
+        ], 200);
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'المستخدم غير موجود أو غير مسجل الدخول.'
+            ], 401);
+        }
+
+        try {
+            DB::transaction(function () use ($user) {
+                $user->tokens()->delete();
+
+                $customer = $user->customer;
+                if ($customer) {
+                    DB::table('carts')->where('customer_id', $customer->id)->delete();
+
+                    $customer->update([
+                        'name'      => 'حساب محذوف',
+                        'phone'     => 'deleted_' . $customer->id . '_' . time(),
+                        'fcm_token' => null,
+                        'avatar'    => null,
+                    ]);
+                }
+
+                $user->update([
+                    'name'     => 'Anonymized User',
+                    'email'    => 'deleted_' . $user->id . '@deleted.com',
+                    'password' => bcrypt(\Illuminate\Support\Str::random(32)),
+                ]);
+
+                $user->delete();
+            });
+
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'تم حذف الحساب وتجهيل البيانات بنجاح.'
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Anonymize Account Error: ' . $e->getMessage());
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'حدث خطأ أثناء حذف الحساب: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
