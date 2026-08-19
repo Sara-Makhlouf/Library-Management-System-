@@ -313,7 +313,13 @@ class HomeScreen extends StatelessWidget {
           buildWhen: (previous, current) =>
               previous.searchStatus != current.searchStatus ||
               previous.searchQuery != current.searchQuery ||
-              previous.searchBooks != current.searchBooks,
+              previous.searchBooks != current.searchBooks ||
+              previous.status != current.status ||
+              previous.popularBooks != current.popularBooks ||
+              previous.categoriesStatus != current.categoriesStatus ||
+              previous.categories != current.categories ||
+              previous.booksStatus != current.booksStatus ||
+              previous.categoryBooks != current.categoryBooks,
           builder: (context, state) {
             final bool hasSearchQuery = state.searchQuery.trim().isNotEmpty;
 
