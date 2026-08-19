@@ -8,7 +8,7 @@ class DeleteAccountRepository {
   Future<void> deleteAccount() async {
     final prefs = await SharedPreferences.getInstance();
 
-    final token = prefs.getString('token');
+    final token = prefs.getString('auth_token');
 
     if (token == null || token.isEmpty) {
       throw Exception('Authentication token not found');

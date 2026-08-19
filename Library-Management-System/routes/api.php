@@ -46,6 +46,10 @@ Route::get('/books/{id}',         [BookController::class, 'show']);        // ت
 Route::get('/settings/footer', [SettingController::class, 'footer']);    // إعدادات الفوتر (اسم الموقع، تواصل، سوشيال)
 Route::get('/settings/group',  [SettingController::class, 'getByGroup']); // جلب مجموعة إعدادات بالمفاتيح
 
+// --- التصنيفات (عامة — بدون توكن) ---
+Route::get('/categories', [CategoryController::class, 'index']);
+
+// هذا المسار موجود أيضاً للـ admin، مع الاحتفاظ به كما هو
 Route::get('/admin/categories', [CategoryController::class, 'index']);
 
 /*
@@ -97,9 +101,10 @@ Route::middleware('auth:sanctum')->group(function () {
     |------------------------------------------------------------------
     | القراءة — Reading
     |------------------------------------------------------------------
-    | تتبع تقدم الزبون في قراءة الكتب الرقمية
+    | بث وثائق الـ PDF وتتبع تقدم الزبون في قراءة الكتب الرقمية
     |------------------------------------------------------------------
     */
+    Route::get('/books/{id}/read', [BookController::class, 'readFile']); // بث ملف PDF للقراءة داخل التطبيق
     Route::post('/reading/update-progress', [ReadingController::class, 'updateProgress']); // تحديث الصفحة الحالية
     Route::get('/reading/current',          [ReadingController::class, 'currentReading']);  // قائمة الكتب التي يقرأها حالياً
 
@@ -218,7 +223,7 @@ Route::middleware('auth:sanctum')->group(function () {
         */
         Route::get('/bills',                          [BillController::class, 'index']);               // عرض كل الفواتير
         Route::get('/bills/total-revenue',            [BillController::class, 'totalRevenue']);         // إجمالي الإيرادات من الفواتير المدفوعة
-        Route::get('/bills/{id}',                     [BillController::class, 'show']);                 // تفاصيل فاتورة محددة
+        Route::get('/bills/{id}',                     [BillController::class, 'show']);                // تفاصيل فاتورة محددة
         Route::get('/delivery-requests',              [BillController::class, 'deliveryRequests']);     // طلبات التوصيل مع فلترة بالحالة
         Route::patch('/bills/{id}/delivery-status',   [BillController::class, 'updateDeliveryStatus']); // تحديث حالة التوصيل (pending/preparing/out_for_delivery/delivered)
 

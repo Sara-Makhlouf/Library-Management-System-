@@ -396,6 +396,47 @@ class _RegisterState extends State<Register> {
         backgroundColor: isDark
             ? AppColors.backgroundDark
             : AppColors.accentLight,
+        appBar: AppBar(
+          backgroundColor: isDark
+              ? AppColors.backgroundDark
+              : AppColors.accentLight,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_rounded,
+              color: AppColors.primary,
+              size: 20,
+            ),
+            onPressed: () {
+              Navigator.of(
+                                                context,
+                                              ).pushReplacement(
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      const SigninScreen(),
+                                                ),
+                                              );
+            },
+          )
+              .animate()
+              .scale(
+                begin: const Offset(0.8, 0.8),
+                duration: 300.ms,
+                curve: Curves.easeOutBack,
+              )
+              .fadeIn(duration: 300.ms),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Center(
+                child: ThemeToggle(isDark: isDark)
+                    .animate(delay: 400.ms)
+                    .fadeIn(duration: 400.ms)
+                    .slideX(begin: 0.3, end: 0),
+              ),
+            ),
+          ],
+        ),
         body: Stack(
           children: [
             Positioned(
@@ -467,15 +508,6 @@ class _RegisterState extends State<Register> {
                   ).animate(delay: 350.ms).fadeIn(duration: 500.ms),
                 ],
               ),
-            ),
-
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 12,
-              right: 16,
-              child: ThemeToggle(isDark: isDark)
-                  .animate(delay: 400.ms)
-                  .fadeIn(duration: 400.ms)
-                  .slideX(begin: 0.3, end: 0),
             ),
 
             Align(

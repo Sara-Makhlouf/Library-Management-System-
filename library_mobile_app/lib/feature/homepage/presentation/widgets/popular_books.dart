@@ -1,11 +1,17 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:library_mobile_app/core/constant.dart';
+import 'package:library_mobile_app/core/constants.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/books/bloc/bloc.dart';
 import 'package:library_mobile_app/feature/books/data/repository.dart';
 import 'package:library_mobile_app/feature/books/presentation/book_details_screen.dart';
+import 'package:library_mobile_app/feature/pdf_reader/bloc/read_book_cubit.dart';
+import 'package:library_mobile_app/feature/pdf_reader/data/repo/pdf_book_repo.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
 import 'package:library_mobile_app/l10n/app_localizations.dart';
 
@@ -147,10 +153,35 @@ class _PopularBooksSliderState extends State<PopularBooksSlider> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => BlocProvider(
-                                    create: (context) => BookDetailsBloc(
-                                      repository: BookRepository(),
-                                    ),
+                                  builder: (context) => MultiBlocProvider(
+                                    providers: [
+                                      BlocProvider(
+                                        create: (context) => BookDetailsBloc(
+                                          repository: BookRepository(),
+                                        ),
+                                      ),
+                                      BlocProvider(
+                                        create: (context) => ReadBookCubit(
+                                          PdfBookRepository(
+                                            dio: Dio(
+                                              BaseOptions(
+                                                baseUrl: baseUrl,
+                                                connectTimeout: const Duration(seconds: 20),
+                                                receiveTimeout: const Duration(seconds: 20),
+                                                headers: {
+                                                  'Accept': 'application/json',
+                                                  'Content-Type': 'application/json',
+                                                },
+                                              ),
+                                            ),
+                                            tokenProvider: () async {
+                                              final prefs = await SharedPreferences.getInstance();
+                                              return prefs.getString(tokenKey);
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                     child: BookDetailsScreen(
                                       bookId: book.id.toString(),
                                     ),

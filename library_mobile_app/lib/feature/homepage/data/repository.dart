@@ -37,29 +37,51 @@ class HomeRepository {
   }
 
   Future<List<CategoryModel>> fetchCategories() async {
-    final fullUrl = Uri.parse(
-      _dio.options.baseUrl,
-    ).resolve('categories').toString();
+    const requestPath = 'admin/categories';
+    final fullUrl = Uri.parse(_dio.options.baseUrl)
+        .resolve(requestPath)
+        .toString();
+
     try {
-      print('🟡 fetchCategories request URL: $fullUrl');
-      final response = await _dio.get('categories');
+      print('🟡 [HomeRepository] جلب الفئات - URL: $fullUrl');
+      final response = await _dio.get(requestPath);
+
       if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = response.data;
-        if (responseData['status'] == 'success') {
-          final List<dynamic> categoriesJson = responseData['data'];
+        final dynamic responseData = response.data;
+
+        if (responseData is Map<String, dynamic> &&
+            responseData['status'] == 'success') {
+          final List<dynamic> categoriesJson = responseData['data'] ?? [];
           final items = categoriesJson
               .map((json) => CategoryModel.fromJson(json))
               .toList();
-          print('🟡 fetchCategories response data length: ${items.length}');
+
+          print('✅ [HomeRepository] تم جلب ${items.length} فئة بنجاح');
           return items;
         }
       }
+
       throw Exception('فشل جلب الفئات من السيرفر');
     } on DioException catch (e) {
-      print('🟡 fetchCategories DioException: $e');
-      throw Exception('حدث خطأ أثناء جلب الفئات: $e');
+      print('⚠️ [HomeRepository] DioException في fetchCategories: $e');
+
+      if (e.response?.statusCode == 404) {
+        throw Exception(
+          'المسار غير موجود: لا يوجد endpoint للفئات في هذا النطاق. الرجاء التحقق من المسار /admin/categories.',
+        );
+      }
+
+      if (e.response?.statusCode == 401) {
+        throw Exception('غير مصرح لك بالوصول إلى الفئات. يرجى تسجيل الدخول مرة أخرى.');
+      }
+
+      if (e.response?.statusCode == 403) {
+        throw Exception('ليس لديك صلاحية للوصول إلى قائمة الفئات.');
+      }
+
+      throw Exception('حدث خطأ أثناء جلب الفئات: ${e.message ?? 'يرجى المحاولة مرة أخرى'}');
     } catch (e) {
-      print('🟡 fetchCategories error: $e');
+      print('❌ [HomeRepository] fetchCategories error: $e');
       throw Exception('حدث خطأ أثناء جلب الفئات: $e');
     }
   }
