@@ -4,18 +4,14 @@ import 'package:http/http.dart' as http;
 import 'package:library_mobile_app/core/constants.dart';
 
 class RegisterRepository {
-  
-
-  Future<Map<String, dynamic>> sendOtp({required String phone}) async {
-    final normalizedPhone = _normalizePhone(phone);
-
+  Future<Map<String, dynamic>> sendOtp({required String email}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/send-otp'),
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({'phone': normalizedPhone}),
+      body: jsonEncode({'email': email}),
     );
 
     final body = _decodeResponse(response);
@@ -29,13 +25,11 @@ class RegisterRepository {
     );
   }
 
-
   Future<Map<String, dynamic>> register({
     required Map<String, dynamic> registerData,
   }) async {
     final data = Map<String, dynamic>.from(registerData);
-
-    data['phone'] = _normalizePhone(data['phone']?.toString() ?? '');
+    // keep register data as provided (email-based OTP flow)
 
     final response = await http.post(
       Uri.parse('$baseUrl/register'),
@@ -77,8 +71,6 @@ class RegisterRepository {
     throw Exception(body['message']?.toString() ?? 'Registration failed');
   }
 
-
-
   String _normalizePhone(String phone) {
     phone = phone.trim();
 
@@ -102,8 +94,6 @@ class RegisterRepository {
 
     return phone;
   }
-
-
 
   Map<String, dynamic> _decodeResponse(http.Response response) {
     try {

@@ -25,13 +25,9 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     emit(RegisterLoading());
 
     try {
-  
-
       final result = await repository.register(
         registerData: event.registerData,
       );
-
-     
 
       final data = result['data'];
 
@@ -41,8 +37,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         );
       }
 
- 
-
       final token = data['token']?.toString();
 
       if (token == null || token.isEmpty) {
@@ -50,7 +44,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
           'Account created successfully, but no authentication token was returned.',
         );
       }
-
 
       final prefs = await SharedPreferences.getInstance();
 
@@ -62,8 +55,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       print('KEY: $tokenKey');
       print('================================');
 
-    
-
       final profileResponse = await customerRepository.getProfile();
 
       print('================================');
@@ -71,16 +62,12 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       print(profileResponse);
       print('================================');
 
-   
-
       await prefs.setString(userKey, jsonEncode(profileResponse));
 
       print('================================');
       print('✅ USER DATA SAVED');
       print('KEY: $userKey');
       print('================================');
-
-    
 
       emit(RegisterSuccess(data: {...result, 'profile': profileResponse}));
     } catch (e) {

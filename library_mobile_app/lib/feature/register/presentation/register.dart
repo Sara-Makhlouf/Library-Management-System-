@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -77,7 +77,6 @@ class _RegisterState extends State<Register> {
     super.dispose();
   }
 
- 
   Future<void> _pickDob() async {
     final now = DateTime.now();
 
@@ -116,53 +115,11 @@ class _RegisterState extends State<Register> {
     }
   }
 
- 
-  String _normalizePhone(String phone) {
-    phone = phone
-        .trim()
-        .replaceAll(' ', '')
-        .replaceAll('-', '')
-        .replaceAll('(', '')
-        .replaceAll(')', '');
-
-    // +963934426849
-    if (phone.startsWith('+963')) {
-      phone = '0${phone.substring(4)}';
-    }
-    // 00963934426849
-    else if (phone.startsWith('00963')) {
-      phone = '0${phone.substring(5)}';
-    }
-    // 963934426849
-    else if (phone.startsWith('963')) {
-      phone = '0${phone.substring(3)}';
-    }
-
-    return phone;
-  }
-
- 
-  bool _isValidSyrianPhone(String phone) {
-    final normalized = _normalizePhone(phone);
-
-    if (normalized.length != 10) {
-      return false;
-    }
-
-    if (!normalized.startsWith('09')) {
-      return false;
-    }
-
-   
-
-    return RegExp(r'^09[0-9]{8}$').hasMatch(normalized);
-  }
-
- 
   void _goNext() {
     final name = _fullNameController.text.trim();
     final dob = _dobController.text.trim();
-    final rawPhone = _phoneController.text.trim();
+    final phone = _phoneController.text.trim();
+    final email = _emailController.text.trim();
 
     if (name.isEmpty) {
       _showError('Please enter your full name');
@@ -174,29 +131,31 @@ class _RegisterState extends State<Register> {
       return;
     }
 
-    if (rawPhone.isEmpty) {
+    if (phone.isEmpty) {
       _showError('Please enter your phone number');
       return;
     }
 
-    final phone = _normalizePhone(rawPhone);
-
-    if (!_isValidSyrianPhone(phone)) {
-      _showError(
-        'Please enter a valid Syrian phone number\n'
-        'Example: 0934426849',
-      );
+    if (phone.length < 8) {
+      _showError('Please enter a valid phone number');
       return;
     }
 
-    _phoneController.text = phone;
+    if (email.isEmpty) {
+      _showError('Please enter your email');
+      return;
+    }
+
+    if (!_isValidEmail(email)) {
+      _showError('Please enter a valid email');
+      return;
+    }
 
     setState(() {
       _currentStep = 1;
     });
   }
 
- 
   void _goBack() {
     if (_sendingOtp) return;
 
@@ -205,7 +164,6 @@ class _RegisterState extends State<Register> {
     });
   }
 
-  
   String? _validatePasswords() {
     final pass = _passController.text;
     final rePass = _rePassController.text;
@@ -229,13 +187,11 @@ class _RegisterState extends State<Register> {
     return null;
   }
 
-
   bool _isValidEmail(String email) {
     final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
     return emailRegex.hasMatch(email);
   }
-
 
   void _showError(String message) {
     if (!mounted) return;
@@ -261,7 +217,6 @@ class _RegisterState extends State<Register> {
     );
   }
 
- 
   void _showSuccess(String message) {
     if (!mounted) return;
 
@@ -284,15 +239,22 @@ class _RegisterState extends State<Register> {
     );
   }
 
- 
   Future<void> _onCreateAccount() async {
     if (_sendingOtp) return;
 
     final email = _emailController.text.trim();
+    final phone = _phoneController.text.trim();
 
-    final phone = _normalizePhone(_phoneController.text);
+    if (phone.isEmpty) {
+      _showError('Please enter your phone number');
+      return;
+    }
 
-  
+    if (phone.length < 8) {
+      _showError('Please enter a valid phone number');
+      return;
+    }
+
     if (email.isEmpty) {
       _showError('Please enter your email');
       return;
@@ -303,7 +265,6 @@ class _RegisterState extends State<Register> {
       return;
     }
 
-   
     final passwordError = _validatePasswords();
 
     if (passwordError != null) {
@@ -311,26 +272,13 @@ class _RegisterState extends State<Register> {
       return;
     }
 
-  
-    if (!_isValidSyrianPhone(phone)) {
-      _showError(
-        'Please enter a valid Syrian phone number\n'
-        'Example: 0934426849',
-      );
-      return;
-    }
-
- 
-    _phoneController.text = phone;
-
-  
     final registerData = <String, dynamic>{
       'name': _fullNameController.text.trim(),
       'email': email,
+      'phone': phone,
       'password': _passController.text,
       'password_confirmation': _rePassController.text,
       'gender': _gender,
-      'phone': phone,
       'DOB': _dobController.text.trim(),
       'lang': 'ar',
       'fcm_token': '',
@@ -339,7 +287,11 @@ class _RegisterState extends State<Register> {
     debugPrint('================================');
     debugPrint('REGISTER DATA');
     debugPrint(registerData.toString());
-    debugPrint('PHONE: $phone');
+    debugPrint('name: ${_fullNameController.text.trim()}');
+    debugPrint('email: $email');
+    debugPrint('phone: $phone');
+    debugPrint('gender: $_gender');
+    debugPrint('DOB: ${_dobController.text.trim()}');
     debugPrint('================================');
 
     setState(() {
@@ -347,21 +299,19 @@ class _RegisterState extends State<Register> {
     });
 
     try {
-   
-      final result = await _registerRepository.sendOtp(phone: phone);
+      final result = await _registerRepository.sendOtp(email: email);
 
       debugPrint('🟢 OTP RESPONSE: $result');
 
       if (!mounted) return;
 
-      _showSuccess('Verification code sent to your WhatsApp');
+      _showSuccess('Verification code sent to your email');
 
-    
       await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) {
             return OtpPage(
-              phone: phone,
+              email: email,
               registerData: registerData,
               registerBloc: _registerBloc,
             );
@@ -389,7 +339,6 @@ class _RegisterState extends State<Register> {
     }
   }
 
- 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -407,30 +356,26 @@ class _RegisterState extends State<Register> {
               ? AppColors.backgroundDark
               : AppColors.accentLight,
           elevation: 0,
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_rounded,
-              color: AppColors.primary,
-              size: 20,
-            ),
-            onPressed: () {
-              Navigator.of(
-                                                context,
-                                              ).pushReplacement(
-                                                MaterialPageRoute(
-                                                  builder: (_) =>
-                                                      const SigninScreen(),
-                                                ),
-                                              );
-            },
-          )
-              .animate()
-              .scale(
-                begin: const Offset(0.8, 0.8),
-                duration: 300.ms,
-                curve: Curves.easeOutBack,
-              )
-              .fadeIn(duration: 300.ms),
+          leading:
+              IconButton(
+                    icon: Icon(
+                      Icons.arrow_back_ios_rounded,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (_) => const SigninScreen()),
+                      );
+                    },
+                  )
+                  .animate()
+                  .scale(
+                    begin: const Offset(0.8, 0.8),
+                    duration: 300.ms,
+                    curve: Curves.easeOutBack,
+                  )
+                  .fadeIn(duration: 300.ms),
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 16),
@@ -631,7 +576,6 @@ class _RegisterState extends State<Register> {
     );
   }
 
-
   Widget _buildStepOne(bool isDark) {
     return Column(
       key: const ValueKey('step1'),
@@ -660,6 +604,16 @@ class _RegisterState extends State<Register> {
 
         const SizedBox(height: 12),
 
+        CustomInputField(
+          controller: _phoneController,
+          hint: 'Phone number',
+          icon: Icons.phone_outlined,
+          isDark: isDark,
+          keyboardType: TextInputType.phone,
+        ).animate(delay: 275.ms).fadeIn().slideY(begin: 0.15, end: 0),
+
+        const SizedBox(height: 12),
+
         GenderSelector(
           selected: _gender,
           isDark: isDark,
@@ -673,11 +627,11 @@ class _RegisterState extends State<Register> {
         const SizedBox(height: 12),
 
         CustomInputField(
-          controller: _phoneController,
-          hint: 'Phone number (09xxxxxxxx)',
-          icon: Icons.phone_android_rounded,
+          controller: _emailController,
+          hint: 'Email',
+          icon: Icons.email_outlined,
           isDark: isDark,
-          keyboardType: TextInputType.phone,
+          keyboardType: TextInputType.emailAddress,
         ).animate(delay: 350.ms).fadeIn().slideY(begin: 0.15, end: 0),
 
         const SizedBox(height: 24),
@@ -691,22 +645,11 @@ class _RegisterState extends State<Register> {
     );
   }
 
-  
   Widget _buildStepTwo(bool isDark) {
     return Column(
       key: const ValueKey('step2'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CustomInputField(
-          controller: _emailController,
-          hint: 'Email',
-          icon: Icons.email_outlined,
-          isDark: isDark,
-          keyboardType: TextInputType.emailAddress,
-        ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.15, end: 0),
-
-        const SizedBox(height: 12),
-
         CustomInputField(
           controller: _passController,
           hint: 'Password',

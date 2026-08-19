@@ -14,7 +14,7 @@ import '../bloc/register_state.dart';
 import '../data/register_repository.dart';
 
 class OtpPage extends StatefulWidget {
-  final String phone;
+  final String email;
 
   final Map<String, dynamic> registerData;
 
@@ -22,7 +22,7 @@ class OtpPage extends StatefulWidget {
 
   const OtpPage({
     super.key,
-    required this.phone,
+    required this.email,
     required this.registerData,
     required this.registerBloc,
   });
@@ -84,7 +84,7 @@ class _OtpPageState extends State<OtpPage> {
     });
 
     try {
-      final result = await _repository.sendOtp(phone: widget.phone);
+      final result = await _repository.sendOtp(email: widget.email);
 
       debugPrint('🟢 OTP RESPONSE: $result');
 
@@ -143,7 +143,6 @@ class _OtpPageState extends State<OtpPage> {
     });
   }
 
- 
   void _onChanged(int index, String value) {
     if (value.length == 1 && index < 5) {
       _focusNodes[index + 1].requestFocus();
@@ -162,7 +161,6 @@ class _OtpPageState extends State<OtpPage> {
     return _controllers.map((controller) => controller.text).join();
   }
 
- 
   void _verifyOtp() {
     if (_verifying) return;
 
@@ -178,7 +176,7 @@ class _OtpPageState extends State<OtpPage> {
 
     final data = Map<String, dynamic>.from(widget.registerData);
 
-    data['phone'] = _normalizePhone(widget.phone);
+    data['email'] = widget.email;
 
     data['otp_code'] = otp;
 
@@ -190,26 +188,8 @@ class _OtpPageState extends State<OtpPage> {
     widget.registerBloc.add(RegisterSubmitted(registerData: data));
   }
 
+  // phone normalization removed for email-based OTP flow
 
-  String _normalizePhone(String phone) {
-    phone = phone.trim().replaceAll(' ', '').replaceAll('-', '');
-
-    if (phone.startsWith('+963')) {
-      return '0${phone.substring(4)}';
-    }
-
-    if (phone.startsWith('00963')) {
-      return '0${phone.substring(5)}';
-    }
-
-    if (phone.startsWith('963')) {
-      return '0${phone.substring(3)}';
-    }
-
-    return phone;
-  }
-
- 
   void _showMessage(String message, {required bool success}) {
     if (!mounted) return;
 
@@ -233,7 +213,6 @@ class _OtpPageState extends State<OtpPage> {
     );
   }
 
- 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -286,7 +265,7 @@ class _OtpPageState extends State<OtpPage> {
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            title: const Text('Verify phone'),
+            title: const Text('Verify email'),
           ),
           body: SafeArea(
             child: SingleChildScrollView(
@@ -304,7 +283,7 @@ class _OtpPageState extends State<OtpPage> {
                   const SizedBox(height: 24),
 
                   Text(
-                    'Verify your phone number',
+                    'Verify your email',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 24,
@@ -328,7 +307,7 @@ class _OtpPageState extends State<OtpPage> {
                   const SizedBox(height: 6),
 
                   Text(
-                    widget.phone,
+                    widget.email,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: AppColors.primary,
