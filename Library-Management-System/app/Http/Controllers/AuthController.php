@@ -42,7 +42,8 @@ class AuthController extends Controller
             'otp_code'    => ['required', 'string'],
         ]);
 
-        if (!OTPController::verifyOtp($validated['phone'], $validated['otp_code'])) {
+        // التحقق من OTP باستخدام البريد الإلكتروني بدلاً من الهاتف
+        if (!OTPController::verifyOtp($validated['email'], $validated['otp_code'])) {
             return response()->json([
                 'status'  => 'error',
                 'message' => 'رمز التحقق (OTP) غير صحيح أو منتهي الصلاحية.'
@@ -76,8 +77,9 @@ class AuthController extends Controller
             if ($user->type === 'customer') {
                 try {
                     $this->pointsService->addPoints($customer->id, 50, 'earn', 'هدية ترحيبية بمناسبة الانضمام للتطبيق 🎉');
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     // تجاوز الخطأ لضمان استقرار التسجيل
+                    Log::error('Points Service Error: ' . $e->getMessage());
                 }
             }
 
@@ -89,7 +91,9 @@ class AuthController extends Controller
                     'تم إنشاء حسابك بنجاح. استمتع برحلتك الثقافية معنا.',
                     ['icon' => 'welcome_user', 'target_screen' => 'home_dashboard']
                 );
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
+                // \Throwable بدل \Exception عشان يلقط كمان TypeError وأي Error تانية
+                // جاية من FCMService، وما يخلي التسجيل نفسه ينكسر بسببها
                 Log::error('Notification Error: ' . $e->getMessage());
             }
 
@@ -109,11 +113,15 @@ class AuthController extends Controller
             ]
         ], 201);
     }
+
+    /**
+     * تسجيل دخول الزبون
+     */
     public function login(Request $request)
     {
         $validated = $request->validate([
-            'phone'    => ['required', 'digits:10'],
-            'password' => ['required', 'string'],
+            'phone'     => ['required', 'digits:10'],
+            'password'  => ['required', 'string'],
             'fcm_token' => ['nullable', 'string'],
         ]);
 
@@ -134,6 +142,7 @@ class AuthController extends Controller
                 'message' => 'رقم الهاتف أو كلمة المرور غير صحيحة.'
             ], 401);
         }
+
         if ($request->fcm_token) {
             $customer->update(['fcm_token' => $request->fcm_token]);
         }
@@ -142,7 +151,8 @@ class AuthController extends Controller
             try {
                 $this->pointsService->earnPointsForLogin($user->customer->id);
                 $customer->refresh();
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
+                Log::error('Points Service Login Error: ' . $e->getMessage());
             }
         }
 
@@ -159,6 +169,7 @@ class AuthController extends Controller
             ]
         ], 200);
     }
+
     /**
      * تسجيل دخول الإدمن
      */
@@ -191,6 +202,7 @@ class AuthController extends Controller
             ]
         ]);
     }
+
     /**
      * تسجيل الخروج
      */
@@ -223,45 +235,44 @@ class AuthController extends Controller
                 'تم تحديث كلمة المرور الخاصة بحسابك بنجاح.',
                 ['icon' => 'security_shield', 'target_screen' => 'profile_settings']
             );
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Notification Error: ' . $e->getMessage());
         }
 
         return response()->json([
-            'status' => 'success',
+            'status'  => 'success',
             'message' => 'تم تغيير كلمة السر بنجاح',
-            'data' => ['token' => $token, 'token_type' => 'Bearer']
+            'data'    => ['token' => $token, 'token_type' => 'Bearer']
         ]);
     }
 
     /**
-     * إعادة تعيين كلمة المرور
+     * إعادة تعيين كلمة المرور عبر الإيميل
      */
     public function resetPassword(Request $request)
     {
         $request->validate([
-            'phone'     => ['required', 'digits:10', 'exists:customers,phone'],
+            'email'     => ['required', 'email', 'exists:users,email'],
             'otp_code'  => ['required', 'string'],
             'password'  => ['required', 'confirmed', 'min:8'],
         ], [
-            'phone.required'    => 'يرجى إدخال رقم الهاتف.',
-            'phone.digits'      => 'يجب أن يتكون رقم الهاتف من 10 أرقام.',
-            'phone.exists'      => 'رقم الهاتف هذا غير مسجل لدينا.',
-            'otp_code.required' => 'رمز التحقق (OTP) مطلوب.',
-            'password.required' => 'يرجى إدخال كلمة المرور الجديدة.',
+            'email.required'     => 'يرجى إدخال البريد الإلكتروني.',
+            'email.email'        => 'يرجى إدخال بريد إلكتروني صحيح.',
+            'email.exists'       => 'البريد الإلكتروني غير مسجل لدينا.',
+            'otp_code.required'  => 'رمز التحقق (OTP) مطلوب.',
+            'password.required'  => 'يرجى إدخال كلمة المرور الجديدة.',
             'password.confirmed' => 'تأكيد كلمة المرور غير مطابق.',
-            'password.min'      => 'يجب أن لا تقل كلمة المرور عن 8 خانات.',
+            'password.min'        => 'يجب أن لا تقل كلمة المرور عن 8 خانات.',
         ]);
 
-        if (!OTPController::verifyOtp($request->phone, $request->otp_code)) {
+        if (!OTPController::verifyOtp($request->email, $request->otp_code)) {
             return response()->json([
                 'status'  => 'error',
                 'message' => 'رمز التحقق (OTP) غير صحيح أو منتهي الصلاحية.'
             ], 422);
         }
 
-        $customer = Customer::where('phone', $request->phone)->first();
-        $user = $customer->user;
+        $user = User::where('email', $request->email)->first();
 
         $user->update([
             'password' => Hash::make($request->password)
@@ -275,6 +286,9 @@ class AuthController extends Controller
         ], 200);
     }
 
+    /**
+     * حذف الحساب وتجهيل البيانات
+     */
     public function deleteAccount(Request $request)
     {
         /** @var \App\Models\User $user */
@@ -316,7 +330,7 @@ class AuthController extends Controller
                 'status'  => 'success',
                 'message' => 'تم حذف الحساب وتجهيل البيانات بنجاح.'
             ], 200);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Anonymize Account Error: ' . $e->getMessage());
 
             return response()->json([

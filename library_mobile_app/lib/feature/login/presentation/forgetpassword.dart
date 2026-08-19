@@ -20,7 +20,7 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
 
   final _otpController = TextEditingController();
 
@@ -83,7 +83,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _emailController.dispose();
     _otpController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -93,10 +93,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Future<void> _sendOtp() async {
-    final phone = _phoneController.text.trim();
+    final email = _emailController.text.trim();
 
-    if (phone.isEmpty) {
-      _showMessage('Please enter your phone number', isError: true);
+    if (email.isEmpty) {
+      _showMessage('Please enter your email address', isError: true);
       return;
     }
 
@@ -105,7 +105,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     });
 
     try {
-      final message = await _repository.sendOtp(phone: phone);
+      final message = await _repository.sendOtp(email: email);
 
       if (!mounted) return;
 
@@ -129,7 +129,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Future<void> _verifyOtp() async {
-    final phone = _phoneController.text.trim();
+    final email = _emailController.text.trim();
 
     final otp = _otpController.text.trim();
 
@@ -148,7 +148,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     });
 
     try {
-      final token = await _repository.verifyOtp(phone: phone, otp: otp);
+      final token = await _repository.verifyOtp(email: email, otp: otp);
 
       if (!mounted) return;
 
@@ -171,7 +171,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Future<void> _resetPassword() async {
-    final phone = _phoneController.text.trim();
+    final email = _emailController.text.trim();
 
     final password = _passwordController.text;
 
@@ -207,7 +207,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     try {
       final message = await _repository.resetPassword(
-        phone: phone,
+        email: email,
         resetToken: _resetToken!,
         password: password,
         passwordConfirmation: confirmPassword,
@@ -423,8 +423,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             _otpVerified
                                 ? Icons.lock_reset_rounded
                                 : _otpSent
-                                ? Icons.sms_rounded
-                                : Icons.phone_android_rounded,
+                                ? Icons.mark_email_read
+                                : Icons.email_outlined,
                             color: AppColors.primary,
                             size: 26,
                           ),
@@ -443,7 +443,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           _otpVerified
                               ? 'Create new password'
                               : _otpSent
-                              ? 'Verify your number'
+                              ? 'Verify your email'
                               : 'Forgot password?',
                           style: TextStyle(
                             fontSize: 27,
@@ -463,8 +463,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       _otpVerified
                           ? 'Enter your new password below.'
                           : _otpSent
-                          ? 'Enter the code sent to your WhatsApp.'
-                          : 'Enter your phone number and we will send you a verification code on WhatsApp.',
+                          ? 'Enter the code sent to your email.'
+                          : 'Enter your email and we will send you a verification code.',
                       style: TextStyle(
                         fontSize: 14,
                         color: isDark
@@ -500,11 +500,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                     if (!_otpVerified)
                       CustomInputField(
-                        controller: _phoneController,
-                        hint: 'Phone number',
-                        icon: Icons.phone_android_rounded,
+                        controller: _emailController,
+                        hint: 'Email address',
+                        icon: Icons.email_outlined,
                         isDark: isDark,
-                        keyboardType: TextInputType.phone,
+                        keyboardType: TextInputType.emailAddress,
                       ),
 
                     if (_otpSent && !_otpVerified) ...[

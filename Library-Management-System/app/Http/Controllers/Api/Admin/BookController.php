@@ -442,28 +442,4 @@ class BookController extends Controller
             'message' => 'تم تسجيل تقييمك بنجاح، شكراً لمساهمتك!'
         ]);
     }
-    /**
- * بث ملف PDF الخاص بكتاب رقمي للقراءة داخل التطبيق (بدون كشف رابط التخزين).
- *//**
-     * بث ملف PDF الخاص بكتاب رقمي للقراءة داخل التطبيق (بدون كشف رابط التخزين).
-     */
-    public function readStream($id)
-    {
-        $book = Book::findOrFail($id);
-
-        if (!$book->is_digital || !$book->file_path) {
-            return response()->json(['status' => 'error', 'message' => 'هذا الكتاب غير متوفر بصيغة رقمية'], 404);
-        }
-
-        $path = storage_path('app/public/' . $book->file_path);
-
-        if (!file_exists($path)) {
-            return response()->json(['status' => 'error', 'message' => 'ملف الكتاب غير موجود على السيرفر'], 404);
-        }
-
-        return response()->file($path, [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="' . $book->title . '.pdf"'
-        ]);
-    }
 }

@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/core/components/custom_button.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
+import 'package:library_mobile_app/feature/homepage/data/repository.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/screens/home_page.dart';
 
 import '../bloc/register_bloc.dart';
@@ -228,26 +229,20 @@ class _OtpPageState extends State<OtpPage> {
           }
 
           if (state is RegisterSuccess) {
+            if (!mounted) return;
+
             setState(() {
               _verifying = false;
             });
 
-            _showMessage('Account created successfully 🎉', success: true);
-
-            Future.delayed(const Duration(milliseconds: 700), () {
-              if (mounted) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => BlocProvider.value(
-                      value: context.read<HomeBloc>(),
-                      child: const HomeScreen(),
-                    ),
-                  ),
-                  (route) => false,
-                );
-              }
-            });
+            Navigator.of(this.context).pushReplacement(
+              MaterialPageRoute(
+                builder: (_) => BlocProvider(
+                  create: (_) => HomeBloc(repository: HomeRepository()),
+                  child: const HomeScreen(),
+                ),
+              ),
+            );
           }
 
           if (state is RegisterFailure) {

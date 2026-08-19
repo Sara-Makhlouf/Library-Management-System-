@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -244,6 +245,12 @@ class _RegisterState extends State<Register> {
 
     final email = _emailController.text.trim();
     final phone = _phoneController.text.trim();
+    String? fcmToken;
+    try {
+      fcmToken = await FirebaseMessaging.instance.getToken();
+    } catch (e) {
+      debugPrint('Error fetching FCM token from Firebase: $e');
+    }
 
     if (phone.isEmpty) {
       _showError('Please enter your phone number');
@@ -281,7 +288,7 @@ class _RegisterState extends State<Register> {
       'gender': _gender,
       'DOB': _dobController.text.trim(),
       'lang': 'ar',
-      'fcm_token': '',
+      'fcm_token': fcmToken,
     };
 
     debugPrint('================================');

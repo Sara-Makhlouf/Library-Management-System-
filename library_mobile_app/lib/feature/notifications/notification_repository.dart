@@ -24,17 +24,18 @@ class NotificationRepository {
   Future<List<NotificationModel>> getNotifications() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(tokenKey) ?? '';
+    print('TOKEN: $token'); // <-- ضيف هاد
 
     try {
       final response = await _dio.get(
         '/notifications',
         options: token.isEmpty
             ? null
-            : Options(
-                headers: {
-                  'Authorization': 'Bearer $token',
-                },
-              ),
+            : Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      print(
+        'NOTIFICATIONS RESPONSE: ${response.statusCode} -> ${response.data}',
       );
 
       if (response.statusCode != 200) {
@@ -47,18 +48,40 @@ class NotificationRepository {
       if (data is List) {
         items = data;
       } else if (data is Map<String, dynamic>) {
-        if (data['data'] is List) {
-          items = data['data'] as List;
+        final inner = data['data'];
+
+        if (inner is List) {
+          items = inner;
+        } else if (inner is Map<String, dynamic> && inner['data'] is List) {
+          // حالة Laravel pagination: { success, data: { data: [...] } }
+          print('STATUS: ${response.statusCode}');
+          print('🪜🪜🪜🪜🪜🪜RAW DATA: ${response.data}');
+          print('✔️✔️✔️✔️✔️ITEMS COUNT: ${items.length}');
+          items = inner['data'] as List;
         } else if (data['notifications'] is List) {
           items = data['notifications'] as List;
         }
       }
 
       return items
-          .map((json) => NotificationModel.fromJson(json as Map<String, dynamic>))
+          .map(
+            (json) => NotificationModel.fromJson(json as Map<String, dynamic>),
+          )
           .toList();
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message']?.toString() ?? e.message ?? 'Error loading notifications');
+      // Try to extract server-provided message when available
+      final respData = e.response?.data;
+      String message;
+
+      if (respData is Map && respData['message'] != null) {
+        message = respData['message'].toString();
+      } else if (e.message != null && e.message!.isNotEmpty) {
+        message = e.message!;
+      } else {
+        message = 'Error loading notifications';
+      }
+
+      throw Exception(message);
     } catch (e) {
       throw Exception('Error loading notifications: $e');
     }

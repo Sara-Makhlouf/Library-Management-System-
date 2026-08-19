@@ -7,7 +7,7 @@ class ForgotPasswordRepository {
 
   ForgotPasswordRepository({required this.baseUrl});
 
-  Future<String> sendOtp({required String phone}) async {
+  Future<String> sendOtp({required String email}) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/forgot-password'),
@@ -15,7 +15,7 @@ class ForgotPasswordRepository {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({'phone': phone}),
+        body: jsonEncode({'email': email}),
       );
 
       final data = jsonDecode(response.body);
@@ -30,7 +30,7 @@ class ForgotPasswordRepository {
     }
   }
 
-  Future<String> verifyOtp({required String phone, required String otp}) async {
+  Future<String> verifyOtp({required String email, required String otp}) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/verify-reset-otp'),
@@ -38,7 +38,7 @@ class ForgotPasswordRepository {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({'phone': phone, 'otp': otp}),
+        body: jsonEncode({'email': email, 'otp': otp}),
       );
 
       final data = jsonDecode(response.body);
@@ -60,7 +60,7 @@ class ForgotPasswordRepository {
   }
 
   Future<String> resetPassword({
-    required String phone,
+    required String email,
     required String resetToken,
     required String password,
     required String passwordConfirmation,
@@ -73,7 +73,7 @@ class ForgotPasswordRepository {
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'phone': phone,
+          'email': email,
           'reset_token': resetToken,
           'password': password,
           'password_confirmation': passwordConfirmation,

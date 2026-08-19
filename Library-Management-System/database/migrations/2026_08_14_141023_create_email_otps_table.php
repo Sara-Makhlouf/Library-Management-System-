@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('poll_votes', function (Blueprint $table) {
+        Schema::create('email_otps', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('poll_option_id')->constrained()->onDelete('cascade');
-            $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
+            $table->string('email');
+            $table->string('otp_code');
+            $table->timestamp('expires_at');
             $table->timestamps();
         });
     }
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('poll_votes');
+        Schema::dropIfExists('email_otps');
     }
 };
