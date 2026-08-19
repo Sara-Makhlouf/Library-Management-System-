@@ -6,17 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\UserReadingProgress;
 use App\Models\Book;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Notification;
 
 class ReadingController extends Controller
 {
-
     /**
      * تحديث تقدم القراءة لكتاب معين
      */
-
     public function updateProgress(Request $request)
     {
         $request->validate([
@@ -25,23 +22,32 @@ class ReadingController extends Controller
         ]);
 
         $user = Auth::user();
-        $customer = $user->customer;
+        $customer = $user?->customer;
 
         if (!$customer) {
             return response()->json(['status' => 'error', 'message' => 'بيانات العميل غير مكتملة'], 403);
         }
 
         $book = Book::findOrFail($request->book_id);
+        $totalPages = $book->total_pages ?? 0;
 
-        $totalPages = $book->total_pages  ?? 0;
+        $page = ($totalPages > 0 && $request->current_page > $totalPages) ? $totalPages : $request->current_page;
 
-        $page = ($request->current_page > $totalPages && $totalPages > 0) ? $totalPages : $request->current_page;
+        $existingProgress = UserReadingProgress::where('customer_id', $customer->id)
+            ->where('book_id', $request->book_id)
+            ->first();
+
+        $previousPage = $existingProgress?->last_page_read ?? 0;
 
         $progress = UserReadingProgress::updateOrCreate(
             ['customer_id' => $customer->id, 'book_id' => $request->book_id],
             ['last_page_read' => $page]
         );
-        if ($totalPages > 0 && $progress->last_page_read == $totalPages) {
+
+        $isCompleted = ($totalPages > 0) && ($progress->last_page_read == $totalPages);
+
+        // إرسال الإشعار فقط إذا أنهى الكتاب الآن ولم يكن مكملاً له سابقاً
+        if ($isCompleted && $previousPage < $totalPages) {
             Notification::send(
                 $customer->id,
                 'book_completed',
@@ -52,38 +58,48 @@ class ReadingController extends Controller
         }
 
         return response()->json([
-            'status' => 'success',
+            'status'  => 'success',
             'message' => 'تم تحديث تقدم القراءة بنجاح',
-            'data' => [
+            'data'    => [
                 'current_page' => $progress->last_page_read,
                 'total_pages'  => $totalPages,
-                'is_completed' => ($totalPages > 0) ? ($progress->last_page_read == $totalPages) : false,
+                'is_completed' => $isCompleted,
             ]
-        ]);
+        ], 200);
     }
+
     /**
      * جلب قائمة الكتب التي يقرأها المستخدم حالياً (التي لم تنتهِ)
      */
     public function currentReading(Request $request)
     {
         $user = Auth::user();
-        $customer = $user->customer;
+        $customer = $user?->customer;
 
         if (!$customer) {
             return response()->json(['status' => 'error', 'message' => 'بيانات العميل غير موجودة'], 403);
         }
 
         $readingList = UserReadingProgress::where('customer_id', $customer->id)
-            ->with(['book' => function ($q) {
-                $q->select('id', 'title', 'cover', 'total_pages');
-            }])
-            ->whereColumn('last_page_read', '<', DB::raw('(select total_pages from books where books.id = user_reading_progress.book_id)'))
+            ->whereHas('book', function ($query) {
+                $query->whereColumn('user_reading_progress.last_page_read', '<', 'books.total_pages');
+            })
+            ->with(['book:id,title,cover,total_pages'])
             ->orderBy('updated_at', 'desc')
             ->get();
 
+        $readingList->transform(function ($item) {
+            if ($item->book) {
+                $item->book->cover_url = $item->book->cover
+                    ? asset('storage/' . $item->book->cover)
+                    : asset('storage/covers/default.png');
+            }
+            return $item;
+        });
+
         return response()->json([
             'status' => 'success',
-            'data' => $readingList
-        ]);
+            'data'   => $readingList
+        ], 200);
     }
 }
