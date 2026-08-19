@@ -12,6 +12,7 @@ import 'package:library_mobile_app/core/components/custom_input_field.dart';
 import 'package:library_mobile_app/core/theme.dart';
 
 import 'package:library_mobile_app/feature/login/presentation/signin_screen.dart';
+import 'package:library_mobile_app/feature/profile/data/customer_repository.dart';
 
 import 'package:library_mobile_app/feature/register/bloc/register_bloc.dart';
 import 'package:library_mobile_app/feature/register/data/register_repository.dart';
@@ -38,6 +39,7 @@ class _RegisterState extends State<Register> {
 
   late RegisterBloc _registerBloc;
   late RegisterRepository _registerRepository;
+  late CustomerRepository _customerRepository;
 
   int _currentStep = 0;
 
@@ -53,8 +55,12 @@ class _RegisterState extends State<Register> {
     super.initState();
 
     _registerRepository = RegisterRepository();
+    _customerRepository = CustomerRepository();
 
-    _registerBloc = RegisterBloc(repository: _registerRepository);
+    _registerBloc = RegisterBloc(
+      repository: _registerRepository,
+      customerRepository: _customerRepository,
+    );
   }
 
   @override

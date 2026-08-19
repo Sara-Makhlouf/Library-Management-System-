@@ -447,53 +447,23 @@ class BookController extends Controller
  *//**
      * بث ملف PDF الخاص بكتاب رقمي للقراءة داخل التطبيق (بدون كشف رابط التخزين).
      */
-    public function readFile($id)
+    public function readStream($id)
     {
         $book = Book::findOrFail($id);
 
-        if (!$book->is_digital || empty($book->file_path)) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'This book is not available in digital format',
-            ], 404);
+        if (!$book->is_digital || !$book->file_path) {
+            return response()->json(['status' => 'error', 'message' => 'هذا الكتاب غير متوفر بصيغة رقمية'], 404);
         }
 
-        $user = auth('sanctum')->user();
+        $path = storage_path('app/public/' . $book->file_path);
 
-        // السماح للأدمن مباشرة، وإلزام باقي المستخدمين بشرط الشراء أو الاستعارة
-        if (!$user || $user->type !== 'admin') {
-            $hasAccess = \App\Models\Transaction::where('user_id', $user?->id)
-                ->where('book_id', $book->id)
-                ->where(function ($query) {
-                    $query->where(function ($q) {
-                        // عملية شراء تم إتمامها
-                        $q->where('type', 'buy')->where('status', 'sold');
-                    })->orWhere(function ($q) {
-                        // عملية استعارة قائمة (الكتاب بحوزة الزبون ولم يرجعه بعد)
-                        $q->where('type', 'borrow')->where('status', 'received');
-                    });
-                })
-                ->exists();
-
-            if (!$hasAccess) {
-                return response()->json([
-                    'status'  => 'error',
-                    'message' => 'You must purchase or borrow this book to read it',
-                ], 403);
-            }
+        if (!file_exists($path)) {
+            return response()->json(['status' => 'error', 'message' => 'ملف الكتاب غير موجود على السيرفر'], 404);
         }
 
-        if (!Storage::disk('public')->exists($book->file_path)) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'File not found on server',
-            ], 404);
-        }
-
-        return Storage::disk('public')->response(
-            $book->file_path,
-            null,
-            ['Content-Type' => 'application/pdf']
-        );
+        return response()->file($path, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $book->title . '.pdf"'
+        ]);
     }
 }

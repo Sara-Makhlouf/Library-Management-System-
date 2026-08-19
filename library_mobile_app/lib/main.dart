@@ -20,7 +20,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 void main() async {
-   printNetworkConfig();
+  printNetworkConfig();
   Bloc.observer = AppBlocObserver();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -32,6 +32,18 @@ void main() async {
     badge: true,
     sound: true,
   );
+
+  // ----------------------------------------------------
+  // جلب الـ FCM Token وطباعته في الـ Console
+  // ----------------------------------------------------
+  try {
+    String? fcmToken = await FirebaseMessaging.instance.getToken();
+    print("========================================");
+    print("FCM TOKEN: $fcmToken");
+    print("========================================");
+  } catch (e) {
+    print("Error getting FCM Token: $e");
+  }
 
   runApp(const MyApp());
 }

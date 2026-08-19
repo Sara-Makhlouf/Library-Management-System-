@@ -104,7 +104,7 @@ Route::middleware('auth:sanctum')->group(function () {
     | بث وثائق الـ PDF وتتبع تقدم الزبون في قراءة الكتب الرقمية
     |------------------------------------------------------------------
     */
-    Route::get('/books/{id}/read', [BookController::class, 'readFile']); // بث ملف PDF للقراءة داخل التطبيق
+    Route::get('/books/{id}/read', [BookController::class, 'readStream']); 
     Route::post('/reading/update-progress', [ReadingController::class, 'updateProgress']); // تحديث الصفحة الحالية
     Route::get('/reading/current',          [ReadingController::class, 'currentReading']);  // قائمة الكتب التي يقرأها حالياً
 

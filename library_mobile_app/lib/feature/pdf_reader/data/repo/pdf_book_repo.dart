@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:library_mobile_app/core/constants.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PdfBookRepository {
   PdfBookRepository({
@@ -17,7 +19,9 @@ class PdfBookRepository {
   /// Uses up to 3 attempts before final failure.
   Future<File> downloadAndGetBookPdf(int bookId) async {
     const maxAttempts = 3;
-    final token = await _tokenProvider?.call();
+
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(tokenKey);
 
     for (var attempt = 1; attempt <= maxAttempts; attempt++) {
       try {

@@ -25,7 +25,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     emit(RegisterLoading());
 
     try {
-  ===
+  
 
       final result = await repository.register(
         registerData: event.registerData,
@@ -41,7 +41,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         );
       }
 
- =
+ 
 
       final token = data['token']?.toString();
 
@@ -80,7 +80,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       print('KEY: $userKey');
       print('================================');
 
-    =
+    
 
       emit(RegisterSuccess(data: {...result, 'profile': profileResponse}));
     } catch (e) {
