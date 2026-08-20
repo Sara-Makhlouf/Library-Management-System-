@@ -1,4 +1,4 @@
-import 'notification_model.dart';
+import 'package:library_mobile_app/feature/notifications/bloc/notification_model.dart';
 
 abstract class NotificationState {}
 
@@ -7,13 +7,14 @@ class NotificationInitial extends NotificationState {}
 class NotificationLoading extends NotificationState {}
 
 class NotificationLoaded extends NotificationState {
-  NotificationLoaded(this.notifications);
-
   final List<NotificationModel> notifications;
+  final int unreadCount;
+
+  NotificationLoaded({required this.notifications, required this.unreadCount});
 }
 
 class NotificationError extends NotificationState {
-  NotificationError(this.message);
-
   final String message;
+
+  NotificationError(this.message);
 }

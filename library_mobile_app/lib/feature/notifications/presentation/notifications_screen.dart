@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:library_mobile_app/core/theme.dart';
+
 import 'package:library_mobile_app/feature/notifications/presentation/widgets/notification_card.dart';
 import 'package:library_mobile_app/feature/notifications/bloc/notification_cubit.dart';
 import 'package:library_mobile_app/feature/notifications/repo/notification_repository.dart';
@@ -39,69 +40,96 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       create: (_) =>
           NotificationCubit(NotificationRepository())..getNotifications(),
 
-      child: Builder(
-        builder: (context) {
-          return Scaffold(
-            backgroundColor: isDark
-                ? AppColors.backgroundDark
-                : AppColors.backgroundLight,
+      child: Scaffold(
+        backgroundColor: isDark
+            ? AppColors.backgroundDark
+            : AppColors.backgroundLight,
 
-            appBar: AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
+        // =====================================================
+        // APP BAR
+        // =====================================================
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
 
-              title: Text(
-                'Notifications',
-                style: TextStyle(
-                  color: isDark ? Colors.white : AppColors.textLight,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+          title: Text(
+            'Notifications',
+            style: TextStyle(
+              color: isDark ? Colors.white : AppColors.textLight,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
 
-              centerTitle: true,
+          centerTitle: true,
 
-              iconTheme: IconThemeData(
-                color: isDark ? Colors.white : Colors.black,
-              ),
+          iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
 
-              actions: [
-                BlocBuilder<NotificationCubit, NotificationState>(
-                  builder: (context, state) {
-                    if (state is! NotificationLoaded) {
-                      return const SizedBox();
-                    }
+          actions: [
+            // =================================================
+            // READ ALL
+            // =================================================
+            BlocBuilder<NotificationCubit, NotificationState>(
+              builder: (context, state) {
+                if (state is! NotificationLoaded) {
+                  return const SizedBox();
+                }
 
-                    final unread = state.notifications
+                if (state.unreadCount == 0) {
+                  return const SizedBox();
+                }
+
+                return TextButton.icon(
+                  onPressed: () async {
+                    await context.read<NotificationCubit>().markAllAsRead();
+
+                    // نرجع تلقائياً على Unread
+                    _tabController.animateTo(0);
+                  },
+
+                  icon: const Icon(
+                    Icons.done_all_rounded,
+                    size: 19,
+                    color: Colors.red,
+                  ),
+
+                  label: const Text(
+                    'Read all',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+
+          // ===================================================
+          // TABS
+          // ===================================================
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(65),
+
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+
+              child: BlocBuilder<NotificationCubit, NotificationState>(
+                builder: (context, state) {
+                  int unreadCount = 0;
+                  int readCount = 0;
+
+                  if (state is NotificationLoaded) {
+                    unreadCount = state.notifications
                         .where((n) => !n.isRead)
                         .length;
 
-                    if (unread == 0) {
-                      return const SizedBox();
-                    }
+                    readCount = state.notifications
+                        .where((n) => n.isRead)
+                        .length;
+                  }
 
-                    return TextButton.icon(
-                      onPressed: () async {
-                        //  await context.read<NotificationCubit>().markAllAsRead();
-                      },
-
-                      icon: const Icon(Icons.done_all_rounded, size: 18),
-
-                      label: const Text(
-                        'Read all',
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    );
-                  },
-                ),
-              ],
-
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(60),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-
-                  child: Container(
-                    height: 48,
+                  return Container(
+                    height: 50,
 
                     decoration: BoxDecoration(
                       color: isDark
@@ -129,81 +157,190 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                           ? Colors.white54
                           : Colors.black54,
 
-                      tabs: const [
+                      tabs: [
                         Tab(
-                          icon: Icon(
-                            Icons.notifications_active_outlined,
-                            size: 19,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.notifications_active_outlined,
+                                size: 18,
+                              ),
+
+                              const SizedBox(width: 7),
+
+                              const Text('Unread'),
+
+                              if (unreadCount > 0) ...[
+                                const SizedBox(width: 6),
+
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+
+                                  child: Text(
+                                    unreadCount > 99
+                                        ? '99+'
+                                        : unreadCount.toString(),
+
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
-                          text: 'Unread',
                         ),
+
                         Tab(
-                          icon: Icon(
-                            Icons.notifications_none_rounded,
-                            size: 19,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.notifications_none_rounded,
+                                size: 18,
+                              ),
+
+                              const SizedBox(width: 7),
+
+                              const Text('Read'),
+
+                              if (readCount > 0) ...[
+                                const SizedBox(width: 6),
+
+                                Text(
+                                  readCount.toString(),
+                                  style: const TextStyle(fontSize: 11),
+                                ),
+                              ],
+                            ],
                           ),
-                          text: 'Read',
                         ),
                       ],
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
             ),
+          ),
+        ),
 
-            body: BlocBuilder<NotificationCubit, NotificationState>(
-              builder: (context, state) {
-                if (state is NotificationLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+        // =====================================================
+        // BODY
+        // =====================================================
+        body: BlocBuilder<NotificationCubit, NotificationState>(
+          builder: (context, state) {
+            // =================================================
+            // LOADING
+            // =================================================
 
-                if (state is NotificationError) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Text(state.message, textAlign: TextAlign.center),
-                    ),
-                  );
-                }
+            if (state is NotificationLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-                if (state is NotificationLoaded) {
-                  final unread = state.notifications
-                      .where((n) => !n.isRead)
-                      .toList();
+            // =================================================
+            // ERROR
+            // =================================================
 
-                  final read = state.notifications
-                      .where((n) => n.isRead)
-                      .toList();
+            if (state is NotificationError) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
 
-                  return TabBarView(
-                    controller: _tabController,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
 
                     children: [
-                      _buildNotificationList(
-                        context,
-                        unread,
-                        isDark,
-                        emptyText: 'No unread notifications',
+                      Icon(
+                        Icons.error_outline_rounded,
+                        size: 55,
+                        color: Colors.red.withOpacity(.7),
                       ),
 
-                      _buildNotificationList(
-                        context,
-                        read,
-                        isDark,
-                        emptyText: 'No read notifications',
+                      const SizedBox(height: 15),
+
+                      Text(
+                        state.message,
+                        textAlign: TextAlign.center,
+
+                        style: TextStyle(
+                          color: isDark ? Colors.white70 : Colors.black54,
+                        ),
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      ElevatedButton(
+                        onPressed: () {
+                          context.read<NotificationCubit>().getNotifications();
+                        },
+
+                        child: const Text('Retry'),
                       ),
                     ],
-                  );
-                }
+                  ),
+                ),
+              );
+            }
 
-                return const SizedBox();
-              },
-            ),
-          );
-        },
+            // =================================================
+            // LOADED
+            // =================================================
+
+            if (state is NotificationLoaded) {
+              final unread = state.notifications
+                  .where((n) => !n.isRead)
+                  .toList();
+
+              final read = state.notifications.where((n) => n.isRead).toList();
+
+              return TabBarView(
+                controller: _tabController,
+
+                children: [
+                  // ==========================================
+                  // UNREAD
+                  // ==========================================
+                  _buildNotificationList(
+                    context,
+                    unread,
+                    isDark,
+                    emptyText: 'No unread notifications',
+                  ),
+
+                  // ==========================================
+                  // READ
+                  // ==========================================
+                  _buildNotificationList(
+                    context,
+                    read,
+                    isDark,
+                    emptyText: 'No read notifications',
+                  ),
+                ],
+              );
+            }
+
+            return const SizedBox();
+          },
+        ),
       ),
     );
   }
+
+  // ===========================================================
+  // NOTIFICATION LIST
+  // ===========================================================
 
   Widget _buildNotificationList(
     BuildContext context,
@@ -215,10 +352,11 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+
           children: [
             Icon(
               Icons.notifications_none_rounded,
-              size: 60,
+              size: 65,
               color: isDark ? Colors.white24 : Colors.black12,
             ),
 
@@ -236,32 +374,49 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
+    return RefreshIndicator(
+      onRefresh: () async {
+        await context.read<NotificationCubit>().refreshNotifications();
+      },
 
-      itemCount: notifications.length,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
 
-      itemBuilder: (context, index) {
-        final item = notifications[index];
+        itemCount: notifications.length,
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 10),
+        itemBuilder: (context, index) {
+          final item = notifications[index];
 
-          child: NotificationCard(
+          return NotificationCard(
+            id: item.id,
             title: item.title,
             body: item.body,
             time: item.time,
             isDark: isDark,
-            // isRead: item.isRead,
+            isRead: item.isRead,
 
-            /*   onTap: () {
+            // ================================================
+            // PRESS NOTIFICATION
+            // ================================================
+            onTap: () async {
               if (!item.isRead) {
-              //  context.read<NotificationCubit>().markAsRead(item.id);
+                await context.read<NotificationCubit>().markAsRead(item.id);
               }
-            },*/
-          ),
-        );
-      },
+
+              if (!context.mounted) return;
+
+              // إذا بدك ينتقل لصفحة الإشعارات
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+              );
+
+              // إذا عندك target_screen بالـ Model
+              // فينا لاحقاً نضيف navigation هون.
+            },
+          );
+        },
+      ),
     );
   }
 }
