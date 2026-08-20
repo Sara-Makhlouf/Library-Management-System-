@@ -17,6 +17,9 @@ class BookController extends Controller
      */
     public function index(Request $request)
     {
+        $user = auth('sanctum')->user() ?? $request->user();
+        $customerId = ($user && $user->customer) ? $user->customer->id : null;
+
         $filters = $request->only([
             'category_id',
             'author_id',
@@ -29,9 +32,14 @@ class BookController extends Controller
         ]);
 
         $query = Book::with(['authors', 'category'])
-            ->withAvg('ratings as avg_rating', 'ratings.rate');
+            ->withAvg('ratings as avg_rating', 'rate')
+            ->when($customerId, function ($q) use ($customerId) {
+                $q->withExists(['favoritedBy as is_favorite' => function ($favQ) use ($customerId) {
+                    $favQ->where('customer_id', $customerId);
+                }]);
+            });
 
-        if (!$request->user() || $request->user()->type !== 'admin') {
+        if (!$user || $user->type !== 'admin') {
             $query->where('stock', '>', 0);
         }
 
@@ -69,6 +77,11 @@ class BookController extends Controller
         });
 
         $books = $query->latest()->paginate(12);
+
+        $books->getCollection()->transform(function ($book) use ($customerId) {
+            $book->is_favorite = $customerId ? (bool) $book->is_favorite : false;
+            return $book;
+        });
 
         return response()->json([
             'status' => 'success',
@@ -440,6 +453,29 @@ class BookController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'تم تسجيل تقييمك بنجاح، شكراً لمساهمتك!'
+        ]);
+    }
+
+    /**
+     * عرض ملف الـ PDF للقراءة بداخل التطبيق
+     */
+    public function readStream($id)
+    {
+        $book = Book::findOrFail($id);
+
+        if (!$book->is_digital || !$book->file_path) {
+            return response()->json(['status' => 'error', 'message' => 'هذا الكتاب غير متوفر بصيغة رقمية'], 404);
+        }
+
+        $path = storage_path('app/public/' . $book->file_path);
+
+        if (!file_exists($path)) {
+            return response()->json(['status' => 'error', 'message' => 'ملف الكتاب غير موجود على السيرفر'], 404);
+        }
+
+        return response()->file($path, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $book->title . '.pdf"'
         ]);
     }
 }
