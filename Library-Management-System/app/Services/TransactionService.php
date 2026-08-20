@@ -10,40 +10,35 @@ use App\Models\Notification;
 use App\Models\WaitingList;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use Exception;
 
 class TransactionService
 {
+    // نسبة الغرامة اليومية (3% من سعر الكتاب)
     protected const DAILY_FINE_RATE = 0.03;
 
     /**
      * معالجة إرجاع الكتاب وحساب الغرامات + تنبيه قائمة الانتظار
      */
-    public function processReturn(Transaction $transaction, bool $isDamaged = false)
+    public function processReturn(Transaction $transaction, $isDamaged = false)
     {
         return DB::transaction(function () use ($transaction, $isDamaged) {
             $returnedAt = now();
             $fine = 0;
-
-            $book = Book::withTrashed()->lockForUpdate()->find($transaction->book_id);
-
-            if (!$book) {
-                throw new Exception("الكتاب غير موجود.");
-            }
+            $book = $transaction->book;
 
             if ($isDamaged) {
+                // في حال التلف، الغرامة هي سعر البيع أو سعر الإعارة
                 $fine = $book->sale_price ?? $book->price;
-
+                // soft delete للكتاب التالف
                 $book->delete();
-
-                WaitingList::where('book_id', $book->id)->delete();
             } else {
+                // حساب غرامة التأخير
                 if ($transaction->due_date && $returnedAt->gt($transaction->due_date)) {
                     $dueDate = Carbon::parse($transaction->due_date);
                     $daysLate = max(1, (int) $dueDate->diffInDays($returnedAt));
-                    $fine = round($daysLate * ($book->price * self::DAILY_FINE_RATE), 2);
+                    $fine = $daysLate * ($book->price * self::DAILY_FINE_RATE);
                 }
-
+                // إرجاع نسخة للمخزون
                 $book->increment('stock');
             }
 
@@ -53,20 +48,20 @@ class TransactionService
                 'status'      => 'returned',
             ]);
 
+            // إعادة تفعيل حساب المستخدم إذا لم يكن لديه تأخيرات أخرى
             $hasOtherLateBooks = Transaction::where('user_id', $transaction->user_id)
                 ->where('status', 'received')
                 ->where('due_date', '<', now())
-                ->where('id', '!=', $transaction->id)
                 ->exists();
 
-            if (!$hasOtherLateBooks && $transaction->user && !$transaction->user->is_active) {
+            if (!$hasOtherLateBooks && $transaction->user) {
                 $transaction->user->update(['is_active' => true]);
             }
 
+            // إشعار أول شخص في قائمة الانتظار إن وجد وحذفه بعد التنبيه
             if (!$isDamaged) {
                 $nextWaiter = WaitingList::where('book_id', $book->id)
                     ->oldest()
-                    ->lockForUpdate()
                     ->first();
 
                 if ($nextWaiter) {
@@ -82,9 +77,11 @@ class TransactionService
                                 'book_id'       => $book->id,
                             ]
                         );
+
+                        // حذف الزبون من قائمة الانتظار بعد إشعار بنجاح
                         $nextWaiter->delete();
-                    } catch (Exception $e) {
-                        logger()->error("فشل إرسال إشعار قائمة الانتظار: " . $e->getMessage());
+                    } catch (\Exception $e) {
+                        // التجاهل عند وجود خطأ في سيرفر الإشعارات كي لا تتوقف عملية الإرجاع
                     }
                 }
             }
@@ -94,7 +91,7 @@ class TransactionService
     }
 
     /**
-     * فحص التأخيرات الحرجة وتجميد الحسابات تلقائياً (تُشغل عبر Scheduled Job)
+     * فحص التأخيرات الحرجة وتجميد الحسابات تلقائياً
      */
     public function checkAndEscalateLateReturns()
     {
@@ -121,8 +118,7 @@ class TransactionService
                             ['icon' => 'account_freeze', 'target_screen' => 'my_borrows']
                         );
                     }
-                } catch (Exception $e) {
-                    logger()->error("فشل إرسال إشعار تجميد الحساب: " . $e->getMessage());
+                } catch (\Exception $e) {
                 }
             }
 
@@ -135,7 +131,6 @@ class TransactionService
                         'reason'         => "تأخير حرج (أكثر من 15 يوماً): تم اعتبار الكتاب مفقوداً.",
                         'total_fine'     => ($transaction->book?->price ?? 0) * 1.5,
                     ]);
-
                     $transaction->update(['status' => 'expired']);
                 }
             }
@@ -145,16 +140,16 @@ class TransactionService
     /**
      * معالجة طلب الاستعارة
      */
-    public function processBorrow(array $data)
+    public function processBorrow($data)
     {
         $user = User::with('customer')->find($data['user_id']);
 
         if (!$user) {
-            throw new Exception('المستخدم غير موجود.');
+            return ['error' => 'المستخدم غير موجود.'];
         }
 
         if (!$user->is_active) {
-            throw new Exception('عذراً، حسابك مجمد حالياً بسبب تأخير في إرجاع الكتب.');
+            return ['error' => 'عذراً، حسابك مجمد حالياً بسبب تأخير في إرجاع الكتب.'];
         }
 
         $currentlyBorrowed = Transaction::where('user_id', $user->id)
@@ -163,14 +158,14 @@ class TransactionService
 
         $maxLimit = $user->customer->max_borrowing_limit ?? 3;
         if ($currentlyBorrowed >= $maxLimit) {
-            throw new Exception('لقد وصلت للحد الأقصى من الكتب المستعارة في وقت واحد.');
+            return ['error' => 'لقد وصلت للحد الأقصى من الكتب المستعارة في وقت واحد.'];
         }
 
         return DB::transaction(function () use ($data) {
             $book = Book::lockForUpdate()->find($data['book_id']);
 
             if (!$book || $book->stock <= 0) {
-                throw new Exception('هذا الكتاب غير متاح للاستعارة حالياً.');
+                return ['error' => 'هذا الكتاب غير متاح للاستعارة حالياً.'];
             }
 
             $transaction = Transaction::create([
@@ -193,22 +188,23 @@ class TransactionService
     /**
      * معالجة طلب الشراء
      */
-    public function processPurchase(array $data)
+    public function processPurchase($data)
     {
         return DB::transaction(function () use ($data) {
-            $book = Book::lockForUpdate()->find($data['book_id']);
+            $book = Book::lockForUpdate()->findOrFail($data['book_id']);
 
-            if (!$book || $book->stock <= 0) {
-                throw new Exception('نفدت الكمية المتوفرة من هذا الكتاب.');
+            if ($book->stock <= 0) {
+                return ['error' => 'نفذت الكمية المتوفرة من هذا الكتاب.'];
             }
 
+            // إذا كان الدفع بالنقاط
             if (($data['payment_method'] ?? 'cash') === 'points') {
                 $pointsNeeded = ($book->sale_price ?? $book->price) * 10;
                 $user = User::with('customer')->find($data['user_id']);
                 $customer = $user?->customer;
 
                 if (!$customer || $customer->points_balance < $pointsNeeded) {
-                    throw new Exception("رصيد نقاطك غير كافٍ. تحتاج إلى {$pointsNeeded} نقطة.");
+                    throw new \Exception("رصيد نقاطك غير كافٍ. تحتاج إلى {$pointsNeeded} نقطة.");
                 }
 
                 app(PointsService::class)->deductPoints(

@@ -19,7 +19,17 @@ class FCMService
     public function sendToDevice(string $fcmToken, string $title, string $body, array $data = []): bool
     {
         try {
+            if (empty($fcmToken)) {
+                Log::warning('FCM: Empty token provided, skipping send.');
+                return false;
+            }
+
             $accessToken = $this->getAccessToken();
+
+            if ($accessToken === null) {
+                Log::error('FCM: Failed to obtain access token, aborting send.');
+                return false;
+            }
 
             $response = Http::withToken($accessToken)
                 ->post("https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send", [
@@ -39,39 +49,92 @@ class FCMService
                     ],
                 ]);
 
+            // نطبع الـ response كامل دايماً (نجح أو فشل) لنتأكد من التفاصيل
+            Log::info('FCM Send Response Status: ' . $response->status());
+            Log::info('FCM Send Response Body: ' . $response->body());
+            Log::info('FCM: Token used (full): ' . $fcmToken);
+
             if ($response->failed()) {
-                Log::error('FCM Error: ' . $response->body());
+                Log::error('FCM Send Error: ' . $response->body());
                 return false;
             }
 
+            Log::info('FCM: Notification sent successfully to token ending in ' . substr($fcmToken, -10));
             return true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            // \Throwable يغطي كل من Exception و Error (متل TypeError)
             Log::error('FCM Exception: ' . $e->getMessage());
             return false;
         }
     }
 
-    private function getAccessToken(): string
+    private function getAccessToken(): ?string
     {
-        $credentials = json_decode(file_get_contents($this->credentialsPath), true);
+        try {
+            if (empty($this->credentialsPath)) {
+                Log::error('FCM: credentials path is empty in config/firebase.php');
+                return null;
+            }
 
-        $now     = time();
-        $payload = [
-            'iss'   => $credentials['client_email'],
-            'scope' => 'https://www.googleapis.com/auth/firebase.messaging',
-            'aud'   => 'https://oauth2.googleapis.com/token',
-            'iat'   => $now,
-            'exp'   => $now + 3600,
-        ];
+            if (!file_exists($this->credentialsPath)) {
+                Log::error('FCM: Credentials file not found at path: ' . $this->credentialsPath);
+                return null;
+            }
 
-        $jwt = $this->generateJWT($payload, $credentials['private_key']);
+            $rawContent = file_get_contents($this->credentialsPath);
+            $credentials = json_decode($rawContent, true);
 
-        $response = Http::asForm()->post('https://oauth2.googleapis.com/token', [
-            'grant_type' => 'urn:ietf:params:oauth2:grant-type:jwt-bearer',
-            'assertion'  => $jwt,
-        ]);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error('FCM: Credentials file is not valid JSON. Error: ' . json_last_error_msg());
+                return null;
+            }
 
-        return $response->json('access_token');
+            if (!isset($credentials['client_email'], $credentials['private_key'])) {
+                Log::error('FCM: Credentials file is missing client_email or private_key.');
+                return null;
+            }
+
+            if (empty($this->projectId)) {
+                Log::error('FCM: project_id is empty in config/firebase.php');
+                return null;
+            }
+
+            $now     = time();
+            $payload = [
+                'iss'   => $credentials['client_email'],
+                'scope' => 'https://www.googleapis.com/auth/firebase.messaging',
+                'aud'   => 'https://oauth2.googleapis.com/token',
+                'iat'   => $now,
+                'exp'   => $now + 3600,
+            ];
+
+            $jwt = $this->generateJWT($payload, $credentials['private_key']);
+
+            $response = Http::asForm()->post('https://oauth2.googleapis.com/token', [
+                'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                'assertion'  => $jwt,
+            ]);
+
+            // 🟢 تسجيل تفصيلي لمعرفة سبب الفشل الحقيقي من Google
+            Log::info('FCM OAuth Response Status: ' . $response->status());
+            Log::info('FCM OAuth Response Body: ' . $response->body());
+
+            if ($response->failed()) {
+                return null;
+            }
+
+            $accessToken = $response->json('access_token');
+
+            if (empty($accessToken)) {
+                Log::error('FCM: OAuth response did not contain access_token. Full body: ' . $response->body());
+                return null;
+            }
+
+            return $accessToken;
+        } catch (\Throwable $e) {
+            Log::error('FCM getAccessToken Exception: ' . $e->getMessage());
+            return null;
+        }
     }
 
     private function generateJWT(array $payload, string $privateKey): string

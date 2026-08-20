@@ -99,80 +99,6 @@ class CartController extends Controller
         ]);
     }
 
-    public function updateQuantity(Request $request)
-    {
-        $request->validate([
-            'cart_detail_id' => 'required|exists:cart_details,id',
-            'quantity'       => 'required|integer|min:0',
-        ]);
-
-        $user = $request->user();
-        $customer = $user?->customer;
-
-        if (!$customer) {
-            return response()->json(['status' => 'error', 'message' => 'حساب العميل غير موجود'], 404);
-        }
-
-        $targetDetail = CartDetail::whereHas('cart', function ($q) use ($customer) {
-            $q->where('customer_id', $customer->id);
-        })->find($request->cart_detail_id);
-
-        if (!$targetDetail) {
-            return response()->json(['status' => 'error', 'message' => 'عنصر السلة غير موجود'], 404);
-        }
-
-        $bookId = $targetDetail->book_id;
-        $type   = $targetDetail->type;
-        $price  = $targetDetail->price;
-        $cartId = $targetDetail->cart_id;
-
-        $book = Book::findOrFail($bookId);
-
-        if ($request->quantity > $book->stock) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => "عذراً، الكمية المتوفرة في المخزون حالياً هي ({$book->stock}) فقط."
-            ], 422);
-        }
-
-        $currentCount = CartDetail::where('cart_id', $cartId)
-            ->where('book_id', $bookId)
-            ->where('type', $type)
-            ->count();
-
-        $targetQuantity = (int) $request->quantity;
-
-        if ($targetQuantity > $currentCount) {
-            $rowsToInsert = [];
-            for ($i = 0; $i < ($targetQuantity - $currentCount); $i++) {
-                $rowsToInsert[] = [
-                    'cart_id'    => $cartId,
-                    'book_id'    => $bookId,
-                    'type'       => $type,
-                    'price'      => $price,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
-            CartDetail::insert($rowsToInsert);
-        } elseif ($targetQuantity < $currentCount) {
-
-            CartDetail::where('cart_id', $cartId)
-                ->where('book_id', $bookId)
-                ->where('type', $type)
-                ->limit($currentCount - $targetQuantity)
-                ->delete();
-        }
-
-        $totalCartPrice = CartDetail::where('cart_id', $cartId)->sum('price');
-        Cart::where('id', $cartId)->update(['total_price' => $totalCartPrice]);
-
-        return response()->json([
-            'status'  => 'success',
-            'message' => 'تم تحديث الكمية بنجاح'
-        ]);
-    }
-
     /**
      * 3. إتمام عملية الطلب والـ Checkout
      */
@@ -183,6 +109,10 @@ class CartController extends Controller
             'is_delivery'      => ['required', 'boolean'],
             'delivery_address' => ['required_if:is_delivery,true', 'nullable', 'string', 'max:500'],
             'phone_number'     => ['required_if:is_delivery,true', 'nullable', 'string', 'max:20'],
+
+            'items'            => ['required', 'array', 'min:1'],
+            'items.*.book_id'  => ['required', 'exists:books,id'],
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
         ]);
 
         $user = $request->user();
@@ -204,21 +134,18 @@ class CartController extends Controller
             return response()->json(['status' => 'error', 'message' => 'عذراً، لا توجد سلة مشتريات لهذا المستخدم.'], 422);
         }
 
-        $cartItems = CartDetail::where('cart_id', $cart->id)->get();
-
-        if ($cartItems->isEmpty()) {
+        $cartDetails = CartDetail::where('cart_id', $cart->id)->get()->keyBy('book_id');
+        if ($cartDetails->isEmpty()) {
             return response()->json(['status' => 'error', 'message' => 'عذراً، سلة المشتريات فارغة تماماً.'], 422);
         }
 
-        $groupedCartDetails = $cartItems->groupBy(function ($item) {
-            return $item->book_id . '-' . $item->type;
-        });
+        $inputItems = collect($request->items)->keyBy('book_id');
 
         $borrowItemsCount = 0;
-        foreach ($groupedCartDetails as $items) {
-            $firstItem = $items->first();
-            if ($firstItem->type === 'borrow') {
-                $borrowItemsCount += $items->count();
+        foreach ($cartDetails as $bookId => $cartDetail) {
+            if ($cartDetail->type === 'borrow') {
+                $itemQuantity = (int) ($inputItems[$bookId]['quantity'] ?? 1);
+                $borrowItemsCount += $itemQuantity;
             }
         }
 
@@ -243,24 +170,24 @@ class CartController extends Controller
             $itemsTotal = 0;
             $preparedItems = [];
 
-            foreach ($groupedCartDetails as $groupKey => $items) {
-                $firstItem = $items->first();
-                $book = Book::lockForUpdate()->find($firstItem->book_id);
-                $quantity = $items->count();
+            foreach ($cartDetails as $bookId => $cartDetail) {
+                $book = Book::lockForUpdate()->find($bookId);
+
+                $quantity = (int) ($inputItems[$bookId]['quantity'] ?? 1);
 
                 if (!$book || $book->stock < $quantity) {
                     throw new \Exception("عذراً، الكمية المطلوبة ({$quantity}) من كتاب ({$book?->title}) غير متوفرة في المخزون حالياً.");
                 }
 
-                $unitPrice = $firstItem->price ?? $book->price;
+                $unitPrice = $cartDetail->price ?? $book->price;
                 $itemsTotal += ($unitPrice * $quantity);
 
                 $preparedItems[] = [
-                    'book'       => $book,
-                    'quantity'   => $quantity,
-                    'unit_price' => $unitPrice,
-                    'type'       => $firstItem->type,
-                    'due_at'     => $firstItem->due_at ?? null,
+                    'book'        => $book,
+                    'quantity'    => $quantity,
+                    'unit_price'  => $unitPrice,
+                    'type'        => $cartDetail->type,
+                    'due_at'      => $cartDetail->due_at ?? null,
                 ];
             }
 
@@ -317,6 +244,7 @@ class CartController extends Controller
                 ]);
             }
 
+            $earnedPoints = 0;
             if ($request->payment_method !== 'points') {
                 $earnedPoints = floor($itemsTotal / 1000);
                 if ($earnedPoints > 0) {
@@ -342,6 +270,7 @@ class CartController extends Controller
             ], 422);
         }
     }
+
     /**
      * 4. حذف كتاب واحد من السلة
      */

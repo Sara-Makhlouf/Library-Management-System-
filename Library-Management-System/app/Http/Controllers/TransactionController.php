@@ -12,7 +12,6 @@ use App\Services\PointsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Exception;
 
 class TransactionController extends Controller
 {
@@ -38,6 +37,7 @@ class TransactionController extends Controller
         ]);
 
         $user = Auth::user();
+        $customer = Customer::where('user_id', $user->id)->first();
 
         DB::beginTransaction();
         try {
@@ -59,12 +59,17 @@ class TransactionController extends Controller
                     $result = $this->transactionService->processBorrow($data);
                 }
 
+                if (isset($result['error'])) {
+                    DB::rollBack();
+                    return response()->json(['status' => 'error', 'message' => $result['error']], 400);
+                }
+
                 $results[] = $result;
             }
 
             DB::commit();
 
-            // إرسال الإشعارات بعد نجاح المعاملات المالية بالكامل
+            // إرسال الإشعارات بعد نجاح العملية بالكامل
             foreach ($request->items as $item) {
                 if ($item['action_type'] === 'buy') {
                     $book = Book::find($item['book_id']);
@@ -77,8 +82,8 @@ class TransactionController extends Controller
                                 "تمت عملية شراء كتاب ({$book->title}) بنجاح.",
                                 ['icon' => 'bag_success', 'target_screen' => 'my_library', 'book_id' => $item['book_id']]
                             );
-                        } catch (Exception $e) {
-                            logger()->error("فشل إرسال إشعار الشراء: " . $e->getMessage());
+                        } catch (\Exception $e) {
+                            // تجاوز خطأ الإشعارات
                         }
                     }
                 }
@@ -89,12 +94,9 @@ class TransactionController extends Controller
                 'message' => 'تمت العمليات بنجاح',
                 'data'    => $results
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'status'  => 'error',
-                'message' => $e->getMessage()
-            ], 400);
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -109,38 +111,45 @@ class TransactionController extends Controller
             return response()->json(['status' => 'error', 'message' => 'هذا الكتاب تم إرجاعه مسبقاً'], 400);
         }
 
-        try {
-            $isDamaged = $request->boolean('is_damaged', false);
-            $updatedTransaction = $this->transactionService->processReturn($transaction, $isDamaged);
+        $isDamaged = $request->input('is_damaged', false);
+        $updatedTransaction = $this->transactionService->processReturn($transaction, $isDamaged);
 
-            // إرسال إشعار للمستعير الحالي بإرجاع الكتاب
+        // 1. إرسال إشعار للمستعير الحالي بإرجاع الكتاب
+        try {
+            Notification::send(
+                $transaction->user_id,
+                'book_returned',
+                'تم استلام الكتاب ✅',
+                "تم تسجيل إرجاع كتاب ({$transaction->book->title}) بنجاح." .
+                    ($updatedTransaction->extra_price > 0 ? " غرامة التأخير/الأضرار: {$updatedTransaction->extra_price} ل.س" : ''),
+                ['target_screen' => 'my_borrows']
+            );
+        } catch (\Exception $e) {
+            // تجاوز خطأ سيرفر الإشعارات
+        }
+
+        if (isset($updatedTransaction->next_user_id)) {
             try {
                 Notification::send(
-                    $transaction->user_id,
-                    'book_returned',
-                    'تم استلام الكتاب ✅',
-                    "تم تسجيل إرجاع كتاب ({$transaction->book?->title}) بنجاح." .
-                        ($updatedTransaction->extra_price > 0 ? " غرامة التأخير/الأضرار: {$updatedTransaction->extra_price} ل.س" : ''),
+                    $updatedTransaction->next_user_id,
+                    'waiting_list_turn',
+                    'الكتاب أصبح متاحاً لك! 📚',
+                    "حان دورك لاستلام كتاب ({$transaction->book->title}). تم تحويل الإعارة لحسابك بنجاح.",
                     ['target_screen' => 'my_borrows']
                 );
-            } catch (Exception $e) {
-                logger()->error("فشل إرسال إشعار الإرجاع: " . $e->getMessage());
+            } catch (\Exception $e) {
+                // تجاوز خطأ سيرفر الإشعارات
             }
-
-            return response()->json([
-                'status'  => 'success',
-                'message' => 'تم إرجاع الكتاب بنجاح',
-                'data'    => [
-                    'fine_amount' => $updatedTransaction->extra_price,
-                    'status'      => $updatedTransaction->status
-                ]
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => $e->getMessage()
-            ], 400);
         }
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'تم إرجاع الكتاب بنجاح',
+            'data'    => [
+                'fine_amount' => $updatedTransaction->extra_price,
+                'status'      => $updatedTransaction->status
+            ]
+        ]);
     }
 
     /**
@@ -159,11 +168,11 @@ class TransactionController extends Controller
                     $late->user_id,
                     'overdue_return',
                     'تنبيه: تأخرت في إعادة الكتاب! ⚠️',
-                    "لقد تجاوزت المدة المسموحة لإعادة كتاب ({$late->book?->title}). يرجى إعادته للمكتبة فوراً لتجنب الغرامات وتجميد الحساب.",
+                    "لقد تجاوزت المدة المسموحة لإعادة كتاب ({$late->book->title}). يرجى إعادته للمكتبة فوراً لتجنب الغرامات وتجميد الحساب.",
                     ['icon' => 'danger_alert', 'target_screen' => 'my_borrows', 'transaction_id' => $late->id]
                 );
-            } catch (Exception $e) {
-                logger()->error("فشل إرسال تنبيه التأخير: " . $e->getMessage());
+            } catch (\Exception $e) {
+                // تجاوز خطأ الإشعارات
             }
         }
 

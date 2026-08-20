@@ -76,8 +76,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('cart')->group(function () {
         Route::get('/',                    [CartController::class, 'index']);      // عرض محتويات السلة الحالية
         Route::post('/add',                [CartController::class, 'addBook']);    // إضافة كتاب للسلة (type: buy أو borrow)
-        //  تحديث كمية الكتاب في السلة
-        Route::post('/update-quantity', [CartController::class, 'updateQuantity']);
         Route::delete('/remove/{bookId}',  [CartController::class, 'removeBook']); // حذف كتاب محدد من السلة
         Route::delete('/clear',            [CartController::class, 'clear']);      // تفريغ السلة بالكامل
         Route::post('/checkout',           [CartController::class, 'checkout']);   // إتمام الطلب وإنشاء فاتورة ومعاملات
@@ -104,8 +102,7 @@ Route::middleware('auth:sanctum')->group(function () {
     */
     Route::post('/reading/update-progress', [ReadingController::class, 'updateProgress']); // تحديث الصفحة الحالية
     Route::get('/reading/current',          [ReadingController::class, 'currentReading']);  // قائمة الكتب التي يقرأها حالياً
-    //   قراءة الكتاب الرقمي
-    Route::get('/books/{id}/read', [BookController::class, 'readStream']);
+
     // --- تقييم كتاب (يشترط شراء أو استعارة وإرجاع مسبق) ---
     Route::post('/books/rate', [BookController::class, 'rateBook']); // تقييم كتاب من 1 إلى 5 نجوم
 

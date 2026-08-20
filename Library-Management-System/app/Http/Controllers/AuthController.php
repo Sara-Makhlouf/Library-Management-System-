@@ -77,8 +77,9 @@ class AuthController extends Controller
             if ($user->type === 'customer') {
                 try {
                     $this->pointsService->addPoints($customer->id, 50, 'earn', 'هدية ترحيبية بمناسبة الانضمام للتطبيق 🎉');
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     // تجاوز الخطأ لضمان استقرار التسجيل
+                    Log::error('Points Service Error: ' . $e->getMessage());
                 }
             }
 
@@ -90,7 +91,9 @@ class AuthController extends Controller
                     'تم إنشاء حسابك بنجاح. استمتع برحلتك الثقافية معنا.',
                     ['icon' => 'welcome_user', 'target_screen' => 'home_dashboard']
                 );
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
+                // \Throwable بدل \Exception عشان يلقط كمان TypeError وأي Error تانية
+                // جاية من FCMService، وما يخلي التسجيل نفسه ينكسر بسببها
                 Log::error('Notification Error: ' . $e->getMessage());
             }
 
@@ -148,7 +151,8 @@ class AuthController extends Controller
             try {
                 $this->pointsService->earnPointsForLogin($user->customer->id);
                 $customer->refresh();
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
+                Log::error('Points Service Login Error: ' . $e->getMessage());
             }
         }
 
@@ -231,7 +235,7 @@ class AuthController extends Controller
                 'تم تحديث كلمة المرور الخاصة بحسابك بنجاح.',
                 ['icon' => 'security_shield', 'target_screen' => 'profile_settings']
             );
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Notification Error: ' . $e->getMessage());
         }
 
@@ -326,7 +330,7 @@ class AuthController extends Controller
                 'status'  => 'success',
                 'message' => 'تم حذف الحساب وتجهيل البيانات بنجاح.'
             ], 200);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Anonymize Account Error: ' . $e->getMessage());
 
             return response()->json([
