@@ -206,6 +206,7 @@ class BillController extends Controller
         $bill = Bill::where('id', $billId)
             ->where('customer_id', $customer->id)
             ->with([
+                'transactions',
                 'billDetails.book' => function ($query) {
                     $query->withTrashed()
                         ->select('id', 'title', 'cover')
@@ -236,8 +237,15 @@ class BillController extends Controller
                 'phone_number'     => $bill->phone_number,
                 'created_at'       => $bill->created_at?->format('Y-m-d H:i'),
 
-                'items' => $bill->billDetails->map(function ($detail) use ($locale) {
+                'items' => $bill->billDetails->map(function ($detail) use ($bill, $locale) {
                     $book = $detail->book;
+
+
+                    $transaction = $bill->transactions
+                        ->where('book_id', $detail->book_id)
+                        ->first();
+
+                    $type = $transaction?->type ?? $detail->type ?? 'buy';
 
                     $translatedTitle = $book?->translations
                         ?->where('key', 'title')
@@ -259,12 +267,12 @@ class BillController extends Controller
                         'quantity'   => $quantity,
                         'total_item' => number_format($itemTotal, 2, '.', ''),
 
-                        'type' => $detail->type ?? 'buy',
+                        'type' => $type,
 
-                        'borrow_details' => ($detail->type ?? '') === 'borrow' ? [
-                            'borrow_date' => $detail->borrow_date,
-                            'due_date'    => $detail->due_date,
-                            'returned_at' => $detail->returned_at,
+                        'borrow_details' => $type === 'borrow' ? [
+                            'borrow_date' => $transaction?->delivered_at ?? $transaction?->created_at?->format('Y-m-d H:i'),
+                            'due_date'    => $transaction?->due_date,
+                            'returned_at' => $transaction?->returned_at,
                         ] : null,
                     ];
                 }),
