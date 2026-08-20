@@ -139,6 +139,7 @@ Route::middleware('auth:sanctum')->group(function () {
     |------------------------------------------------------------------
     */
     Route::prefix('notifications')->group(function () {
+        Route::put('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
         Route::get('/',             [NotificationController::class, 'index']);       // عرض كل إشعارات الزبون (paginated)
         Route::get('/unread-count', [NotificationController::class, 'unreadCount']); // عدد الإشعارات غير المقروءة
         Route::patch('/{id}/read',  [NotificationController::class, 'markAsRead']);  // تعيين إشعار كمقروء
