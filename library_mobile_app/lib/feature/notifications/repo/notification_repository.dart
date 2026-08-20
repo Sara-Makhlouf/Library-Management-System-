@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:library_mobile_app/core/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'notification_model.dart';
+import '../bloc/notification_model.dart';
 
 class NotificationRepository {
   NotificationRepository({Dio? dio}) : _dio = dio ?? Dio(_buildDioOptions());

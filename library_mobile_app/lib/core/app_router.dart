@@ -18,7 +18,7 @@ import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
 import 'package:library_mobile_app/feature/homepage/data/model.dart';
 import 'package:library_mobile_app/feature/homepage/data/repository.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/screens/home_page.dart';
-import 'package:library_mobile_app/feature/notifications/notifications_screen.dart';
+import 'package:library_mobile_app/feature/notifications/presentation/notifications_screen.dart';
 import 'package:library_mobile_app/feature/pdf_reader/bloc/read_book_cubit.dart';
 import 'package:library_mobile_app/feature/pdf_reader/data/repo/pdf_book_repo.dart';
 import 'package:library_mobile_app/feature/profile/presentation/profile.dart';
