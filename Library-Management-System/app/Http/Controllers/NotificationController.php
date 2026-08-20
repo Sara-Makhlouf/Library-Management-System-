@@ -62,7 +62,17 @@ class NotificationController extends Controller
             'message' => 'تم تعيين الإشعار كمقروء بنجاح'
         ]);
     }
-
+    public function markAllAsRead(Request $request): JsonResponse
+    {
+        $customer = $request->user()->customer;
+        $notification = Notification::where('customer_id', $customer->id)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+        return response()->json([
+            'success' => true,
+            'message' => 'تم تعيين جميع الأشعارات كمقروء بنجاح'
+        ]);
+    }
     /**
      * إرسال إشعار جماعي (للأدمن فقط)
      */
