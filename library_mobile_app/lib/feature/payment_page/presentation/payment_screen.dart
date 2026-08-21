@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:library_mobile_app/core/constantPage.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/Bill/presentation/BillDetailsScreen.dart';
 import 'package:library_mobile_app/feature/payment_page/data/payment_mode.dart';
 import 'package:library_mobile_app/feature/payment_page/data/repository.dart';
 import 'package:library_mobile_app/l10n/app_localizations.dart';
+
 import '../bloc/payment_bloc.dart';
 import '../bloc/payment_event.dart';
 import '../bloc/payment_state.dart';
@@ -30,7 +32,7 @@ class CheckoutViewContent extends StatefulWidget {
   const CheckoutViewContent({super.key, required this.cartItems});
 
   @override
-  _CheckoutViewContentState createState() => _CheckoutViewContentState();
+  State<CheckoutViewContent> createState() => _CheckoutViewContentState();
 }
 
 class _CheckoutViewContentState extends State<CheckoutViewContent> {
@@ -45,14 +47,29 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
   }
 
   void _showTopNotification(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+        content: Row(
+          children: [
+            const Icon(
+              Icons.warning_amber_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
         ),
         backgroundColor: Colors.redAccent,
         behavior: SnackBarBehavior.floating,
@@ -60,8 +77,9 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
           top: MediaQuery.of(context).padding.top + 10,
           left: 16,
           right: 16,
+          bottom: 20,
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         duration: const Duration(seconds: 3),
       ),
     );
@@ -70,34 +88,82 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final localizations = AppLocalizations.of(context)!;
-    final primaryText = isDark ? AppColors.textDark : AppColors.textLight;
-    final secondaryText = isDark ? Colors.white54 : AppColors.textGrey;
-    final cardColor = isDark ? AppColors.darkCard : Colors.white;
-    final bgColor = isDark
+
+    final backgroundColor = isDark
         ? AppColors.backgroundDark
         : AppColors.backgroundLight;
+
+    final cardColor = isDark ? AppColors.darkCard : Colors.white;
+
+    final primaryText = isDark ? AppColors.textDark : AppColors.textLight;
+
+    final secondaryText = isDark ? Colors.white60 : AppColors.textGrey;
+
     final accent = AppColors.primary;
+
     final borderColor = isDark
-        ? Colors.white.withOpacity(0.06)
-        : Colors.black.withOpacity(0.05);
+        ? Colors.white.withOpacity(0.055)
+        : Colors.black.withOpacity(0.045);
 
     return Scaffold(
-      backgroundColor: bgColor,
+      backgroundColor: backgroundColor,
+
+      // ============================================================
+      // APP BAR
+      // ============================================================
       appBar: AppBar(
-        title: Text(
-          localizations.checkoutAndPayment,
-          style: TextStyle(
-            color: primaryText,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: bgColor,
+        backgroundColor: backgroundColor,
         elevation: 0,
-        iconTheme: IconThemeData(color: primaryText),
+        scrolledUnderElevation: 0,
+
+        centerTitle: false,
+        titleSpacing: 20,
+
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              localizations.checkoutAndPayment,
+              style: TextStyle(
+                color: primaryText,
+                fontSize: 23,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.4,
+              ),
+            ),
+
+            const SizedBox(height: 3),
+
+            Text(
+              'Complete your order securely',
+              style: TextStyle(
+                color: secondaryText,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: accent.withOpacity(0.10),
+              borderRadius: BorderRadius.circular(13),
+            ),
+            child: Icon(Icons.shopping_bag_outlined, color: accent, size: 21),
+          ),
+        ],
       ),
+
+      // ============================================================
+      // BODY
+      // ============================================================
       body: BlocConsumer<PaymentBloc, PaymentState>(
         listener: (context, state) {
           if (state is PaymentSuccess) {
@@ -115,18 +181,41 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
             _showTopNotification(context, state.error);
           }
         },
+
         builder: (context, state) {
           final paymentBloc = context.read<PaymentBloc>();
-          final String currentPayment = paymentBloc.selectedPayment;
-          final bool currentDelivery = paymentBloc.wantsDelivery;
+
+          final currentPayment = paymentBloc.selectedPayment;
+
+          final currentDelivery = paymentBloc.wantsDelivery;
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(18, 14, 18, 40),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ==================================================
+                // ORDER SUMMARY
+                // ==================================================
+                _buildOrderSummary(
+                  primaryText: primaryText,
+                  secondaryText: secondaryText,
+                  cardColor: cardColor,
+                  borderColor: borderColor,
+                  accent: accent,
+                  itemCount: widget.cartItems.length,
+                ),
+
+                const SizedBox(height: 18),
+
+                // ==================================================
+                // PERSONAL INFORMATION
+                // ==================================================
                 _buildSection(
-                  localizations.personalInformation,
-                  [
+                  title: localizations.personalInformation,
+                  icon: Icons.person_outline_rounded,
+                  children: [
                     _buildTextField(
                       localizations.phoneNumber,
                       _phoneController,
@@ -135,7 +224,9 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
                       accent: accent,
                       secondaryText: secondaryText,
                     ),
-                    const SizedBox(height: 8),
+
+                    const SizedBox(height: 12),
+
                     _buildTextField(
                       localizations.detailedAddress,
                       _addressController,
@@ -149,43 +240,51 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
                   borderColor: borderColor,
                   accent: accent,
                   primaryText: primaryText,
+                  secondaryText: secondaryText,
                 ),
 
                 const SizedBox(height: 16),
 
+                // ==================================================
+                // DELIVERY
+                // ==================================================
                 _buildSection(
-                  localizations.deliveryService,
-                  [
-                    RadioListTile<bool>(
-                      title: Text(
-                        localizations.yesWantsDelivery,
-                        style: TextStyle(color: primaryText),
-                      ),
-                      secondary: Icon(Icons.delivery_dining, color: accent),
-                      activeColor: accent,
+                  title: localizations.deliveryService,
+                  icon: Icons.local_shipping_outlined,
+                  children: [
+                    _buildRadioOption<bool>(
+                      title: localizations.yesWantsDelivery,
+                      subtitle: 'Receive your order at home',
+                      icon: Icons.delivery_dining_rounded,
                       value: true,
                       groupValue: currentDelivery,
-                      onChanged: (v) {
-                        if (v != null) {
+                      accent: accent,
+                      primaryText: primaryText,
+                      secondaryText: secondaryText,
+                      onChanged: (value) {
+                        if (value != null) {
                           context.read<PaymentBloc>().add(
-                            UpdateDeliveryEvent(v),
+                            UpdateDeliveryEvent(value),
                           );
                         }
                       },
                     ),
-                    RadioListTile<bool>(
-                      title: Text(
-                        localizations.noStorePickup,
-                        style: TextStyle(color: primaryText),
-                      ),
-                      secondary: Icon(Icons.store, color: accent),
-                      activeColor: accent,
+
+                    const SizedBox(height: 8),
+
+                    _buildRadioOption<bool>(
+                      title: localizations.noStorePickup,
+                      subtitle: 'Pick up your order from the store',
+                      icon: Icons.storefront_outlined,
                       value: false,
                       groupValue: currentDelivery,
-                      onChanged: (v) {
-                        if (v != null) {
+                      accent: accent,
+                      primaryText: primaryText,
+                      secondaryText: secondaryText,
+                      onChanged: (value) {
+                        if (value != null) {
                           context.read<PaymentBloc>().add(
-                            UpdateDeliveryEvent(v),
+                            UpdateDeliveryEvent(value),
                           );
                         }
                       },
@@ -196,43 +295,51 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
                   borderColor: borderColor,
                   accent: accent,
                   primaryText: primaryText,
+                  secondaryText: secondaryText,
                 ),
 
                 const SizedBox(height: 16),
 
+                // ==================================================
+                // PAYMENT METHOD
+                // ==================================================
                 _buildSection(
-                  localizations.paymentMethod,
-                  [
-                    RadioListTile<String>(
-                      title: Text(
-                        'Points',
-                        style: TextStyle(color: primaryText),
-                      ),
-                      secondary: Icon(Icons.stars_rounded, color: accent),
-                      activeColor: accent,
+                  title: localizations.paymentMethod,
+                  icon: Icons.account_balance_wallet_outlined,
+                  children: [
+                    _buildRadioOption<String>(
+                      title: 'Points',
+                      subtitle: 'Pay using your available points',
+                      icon: Icons.stars_rounded,
                       value: 'points',
                       groupValue: currentPayment,
-                      onChanged: (v) {
-                        if (v != null) {
+                      accent: accent,
+                      primaryText: primaryText,
+                      secondaryText: secondaryText,
+                      onChanged: (value) {
+                        if (value != null) {
                           context.read<PaymentBloc>().add(
-                            UpdatePaymentMethodEvent(v),
+                            UpdatePaymentMethodEvent(value),
                           );
                         }
                       },
                     ),
-                    RadioListTile<String>(
-                      title: Text(
-                        localizations.cashOnDelivery,
-                        style: TextStyle(color: primaryText),
-                      ),
-                      secondary: Icon(Icons.money, color: accent),
-                      activeColor: accent,
+
+                    const SizedBox(height: 8),
+
+                    _buildRadioOption<String>(
+                      title: localizations.cashOnDelivery,
+                      subtitle: 'Pay when your order arrives',
+                      icon: Icons.payments_outlined,
                       value: 'cash',
                       groupValue: currentPayment,
-                      onChanged: (v) {
-                        if (v != null) {
+                      accent: accent,
+                      primaryText: primaryText,
+                      secondaryText: secondaryText,
+                      onChanged: (value) {
+                        if (value != null) {
                           context.read<PaymentBloc>().add(
-                            UpdatePaymentMethodEvent(v),
+                            UpdatePaymentMethodEvent(value),
                           );
                         }
                       },
@@ -243,15 +350,33 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
                   borderColor: borderColor,
                   accent: accent,
                   primaryText: primaryText,
+                  secondaryText: secondaryText,
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 24),
 
+                // ==================================================
+                // CONFIRM BUTTON
+                // ==================================================
                 state is PaymentLoading
-                    ? CircularProgressIndicator(color: accent)
+                    ? Center(
+                        child: Container(
+                          width: double.infinity,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: accent.withOpacity(0.10),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: accent,
+                              strokeWidth: 2.5,
+                            ),
+                          ),
+                        ),
+                      )
                     : _buildConfirmButton(
                         context,
-                        isDark,
                         localizations,
                         accent: accent,
                         onPressed: () {
@@ -273,7 +398,6 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
                           );
                         },
                       ),
-                const SizedBox(height: 40),
               ],
             ),
           );
@@ -282,9 +406,279 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
     );
   }
 
+  // ================================================================
+  // ORDER SUMMARY
+  // ================================================================
+
+  Widget _buildOrderSummary({
+    required Color primaryText,
+    required Color secondaryText,
+    required Color cardColor,
+    required Color borderColor,
+    required Color accent,
+    required int itemCount,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(17),
+      decoration: BoxDecoration(
+        color: accent.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: accent.withOpacity(0.16)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: accent.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(Icons.shopping_cart_outlined, color: accent, size: 23),
+          ),
+
+          const SizedBox(width: 13),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Your Order',
+                  style: TextStyle(
+                    color: primaryText,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '$itemCount ${itemCount == 1 ? 'item' : 'items'} ready for checkout',
+                  style: TextStyle(color: secondaryText, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+
+          Icon(Icons.arrow_forward_ios_rounded, size: 15, color: secondaryText),
+        ],
+      ),
+    );
+  }
+
+  // ================================================================
+  // SECTION
+  // ================================================================
+
+  Widget _buildSection({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+    required bool isDark,
+    required Color cardColor,
+    required Color borderColor,
+    required Color accent,
+    required Color primaryText,
+    required Color secondaryText,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(15, 15, 15, 14),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: borderColor),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.035),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: Icon(icon, color: accent, size: 19),
+              ),
+
+              const SizedBox(width: 11),
+
+              Text(
+                title,
+                style: TextStyle(
+                  color: primaryText,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          Divider(height: 1, color: borderColor),
+
+          const SizedBox(height: 12),
+
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  // ================================================================
+  // RADIO OPTION
+  // ================================================================
+
+  Widget _buildRadioOption<T>({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required T value,
+    required T groupValue,
+    required Color accent,
+    required Color primaryText,
+    required Color secondaryText,
+    required ValueChanged<T?> onChanged,
+  }) {
+    final selected = value == groupValue;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: selected ? accent.withOpacity(0.08) : Colors.transparent,
+        borderRadius: BorderRadius.circular(13),
+        border: Border.all(
+          color: selected ? accent.withOpacity(0.25) : Colors.transparent,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: selected
+                  ? accent.withOpacity(0.12)
+                  : secondaryText.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Icon(
+              icon,
+              size: 19,
+              color: selected ? accent : secondaryText,
+            ),
+          ),
+
+          const SizedBox(width: 11),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: primaryText,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: TextStyle(color: secondaryText, fontSize: 11.5),
+                ),
+              ],
+            ),
+          ),
+
+          Radio<T>(
+            value: value,
+            groupValue: groupValue,
+            activeColor: accent,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ================================================================
+  // TEXT FIELD
+  // ================================================================
+
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
+    bool isPhone = false,
+    required bool isDark,
+    required Color accent,
+    required Color secondaryText,
+  }) {
+    return TextField(
+      controller: controller,
+      style: TextStyle(
+        color: isDark ? AppColors.textDark : AppColors.textLight,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+      ),
+      keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
+      maxLines: isPhone ? 1 : 2,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: secondaryText, fontSize: 13),
+        prefixIcon: Icon(
+          isPhone ? Icons.phone_outlined : Icons.location_on_outlined,
+          color: accent,
+          size: 20,
+        ),
+        filled: true,
+        fillColor: isDark ? AppColors.inputDark : AppColors.inputLight,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 15,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(13),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(13),
+          borderSide: BorderSide(
+            color: isDark
+                ? Colors.white.withOpacity(0.055)
+                : Colors.black.withOpacity(0.045),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(13),
+          borderSide: BorderSide(color: accent, width: 1.4),
+        ),
+      ),
+    );
+  }
+
+  // ================================================================
+  // CONFIRM BUTTON
+  // ================================================================
+
   Widget _buildConfirmButton(
     BuildContext context,
-    bool isDark,
     AppLocalizations localizations, {
     required Color accent,
     required VoidCallback onPressed,
@@ -292,22 +686,26 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
     return SizedBox(
       width: double.infinity,
       height: 56,
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(50),
-        elevation: 6,
-        shadowColor: accent.withOpacity(0.4),
-        child: Ink(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [accent, accent.withOpacity(0.75)],
-            ),
-            borderRadius: BorderRadius.circular(50),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [accent, accent.withOpacity(0.75)],
           ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: accent.withOpacity(0.25),
+              blurRadius: 16,
+              offset: const Offset(0, 7),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(50),
+            borderRadius: BorderRadius.circular(16),
             onTap: onPressed,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -317,14 +715,16 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
                   color: Colors.white,
                   size: 19,
                 ),
-                const SizedBox(width: 10),
+
+                const SizedBox(width: 9),
+
                 Text(
                   localizations.confirmOrderAndPay,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.3,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2,
                   ),
                 ),
               ],
@@ -334,6 +734,10 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
       ),
     );
   }
+
+  // ================================================================
+  // SUCCESS DIALOG
+  // ================================================================
 
   void _showSuccessDialog(
     BuildContext context,
@@ -348,154 +752,178 @@ class _CheckoutViewContentState extends State<CheckoutViewContent> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        icon: const Icon(Icons.check_circle, color: Colors.green, size: 60),
-        title: Text(
-          localizations.orderReceived,
-          style: TextStyle(color: primaryText, fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "${localizations.orderId}: ${state.orderId}",
-              style: TextStyle(color: primaryText, fontSize: 16),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              "${localizations.date}: ${state.date}",
-              style: TextStyle(color: secondaryText),
-            ),
-          ],
-        ),
-        actions: [
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: accent,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: cardColor,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
 
-              Navigator.of(
-                context,
-              ).pushNamedAndRemoveUntil(Routes.homePage, (route) => false);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BillDetailsScreen(
-                    billId: int.tryParse(state.orderId.toString()) ?? 0,
+          contentPadding: const EdgeInsets.fromLTRB(24, 26, 24, 18),
+
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 76,
+                height: 76,
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.10),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_rounded,
+                  color: Colors.green,
+                  size: 42,
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
+              Text(
+                localizations.orderReceived,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: primaryText,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              Text(
+                'Your order has been placed successfully.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: secondaryText,
+                  fontSize: 13,
+                  height: 1.4,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withOpacity(0.04)
+                      : Colors.black.withOpacity(0.035),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Column(
+                  children: [
+                    _buildDialogInfoRow(
+                      localizations.orderId,
+                      state.orderId.toString(),
+                      primaryText,
+                      secondaryText,
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    _buildDialogInfoRow(
+                      localizations.date,
+                      state.date,
+                      primaryText,
+                      secondaryText,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
+
+          actions: [
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: accent,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(13),
                   ),
                 ),
-              );
-            },
-            icon: const Icon(Icons.receipt_long, size: 18),
-            label: const Text("View Bill"),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.of(
-                context,
-              ).pushNamedAndRemoveUntil(Routes.homePage, (route) => false);
-            },
-            child: Text(
-              localizations.backToHome,
-              style: TextStyle(color: accent, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+                onPressed: () {
+                  Navigator.pop(dialogContext);
 
-  Widget _buildSection(
-    String title,
-    List<Widget> children, {
-    required bool isDark,
-    required Color cardColor,
-    required Color borderColor,
-    required Color accent,
-    required Color primaryText,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor),
-        boxShadow: isDark
-            ? []
-            : [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil(Routes.homePage, (route) => false);
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BillDetailsScreen(
+                        billId: int.tryParse(state.orderId.toString()) ?? 0,
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.receipt_long_rounded, size: 18),
+                label: const Text(
+                  'View Bill',
+                  style: TextStyle(fontWeight: FontWeight.w700),
                 ),
-              ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 17,
-              color: accent,
+              ),
             ),
-          ),
-          Divider(color: borderColor),
-          ...children,
-        ],
-      ),
+
+            const SizedBox(height: 4),
+
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: TextButton(
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil(Routes.homePage, (route) => false);
+                },
+                child: Text(
+                  localizations.backToHome,
+                  style: TextStyle(color: accent, fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildTextField(
+  Widget _buildDialogInfoRow(
     String label,
-    TextEditingController controller, {
-    bool isPhone = false,
-    required bool isDark,
-    required Color accent,
-    required Color secondaryText,
-  }) {
-    return TextField(
-      controller: controller,
-      style: TextStyle(
-        color: isDark ? AppColors.textDark : AppColors.textLight,
-      ),
-      keyboardType: isPhone ? TextInputType.phone : TextInputType.text,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: secondaryText),
-        prefixIcon: Icon(isPhone ? Icons.phone : Icons.edit, color: accent),
-        filled: true,
-        fillColor: isDark ? AppColors.inputDark : AppColors.inputLight,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: isDark
-                ? Colors.white.withOpacity(0.06)
-                : Colors.black.withOpacity(0.05),
+    String value,
+    Color primaryText,
+    Color secondaryText,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(color: secondaryText, fontSize: 12)),
+        const SizedBox(width: 15),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: TextStyle(
+              color: primaryText,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: accent, width: 1.5),
-        ),
-      ),
+      ],
     );
   }
 }

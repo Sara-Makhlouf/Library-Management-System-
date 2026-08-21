@@ -107,7 +107,7 @@ class BookController extends Controller
             'authorship_date' => 'nullable|date',
             'is_digital'      => 'required|boolean',
             'cover'           => 'nullable|image',
-            'file_path'       => 'required_if:is_digital,1|nullable|file|mimes:pdf,epub|max:10240',
+            'file_path'       => 'required_if:is_digital,1|nullable|file|mimes:pdf,epub',
             'total_pages'     => 'nullable|integer',
         ]);
 
