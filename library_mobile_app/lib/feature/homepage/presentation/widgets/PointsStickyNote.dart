@@ -1,0 +1,203 @@
+import 'package:flutter/material.dart';
+import 'dart:math' as math;
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:library_mobile_app/core/theme.dart';
+import 'package:library_mobile_app/l10n/app_localizations.dart';
+import 'package:library_mobile_app/feature/profile/data/customer_repository.dart';
+
+class PointsStickyNote extends StatelessWidget {
+  final CustomerRepository _repository = CustomerRepository();
+
+  PointsStickyNote({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final localizations = AppLocalizations.of(context)!;
+
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _repository.getProfile(),
+      builder: (context, snapshot) {
+        int points = 0;
+
+        if (snapshot.hasData && snapshot.data != null) {
+          final responseData = snapshot.data!['data'];
+          points = responseData['points'] ?? 0;
+        }
+
+        return Stack(
+              alignment: Alignment.topCenter,
+              clipBehavior: Clip.none,
+              children: [
+                Transform.rotate(
+                  angle: 2.5 * math.pi / 180,
+                  child: CustomPaint(
+                    size: const Size(120, 125),
+                    painter: RealisticCurledPaperPainter(
+                      paperColor: isDark
+                          ? AppColors.darkCard
+                          : const Color(0xFFEFE3D3),
+                      borderColor: isDark
+                          ? AppColors.accentDark
+                          : const Color(0xFFC6B49C),
+                    ),
+                    child: Container(
+                      width: 120,
+                      height: 115,
+                      padding: const EdgeInsets.fromLTRB(8, 24, 8, 12),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          snapshot.connectionState == ConnectionState.waiting
+                              ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  localizations.myPoints(points),
+                                  style: const TextStyle(
+                                    fontFamily: 'Cairo',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                          const SizedBox(height: 8),
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Positioned(
+                                top: 0,
+                                child: Icon(
+                                  Icons.star_rounded,
+                                  size: 14,
+                                  color: isDark
+                                      ? AppColors.primary.withOpacity(0.8)
+                                      : const Color(
+                                          0xFF8C7355,
+                                        ).withOpacity(0.8),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 10),
+                                child: Icon(
+                                  Icons.star_rounded,
+                                  size: 32,
+                                  color: isDark
+                                      ? AppColors.primary
+                                      : const Color(0xFF8C7355),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: -12,
+                  left: 48,
+                  child: Transform.rotate(
+                    angle: -12 * math.pi / 180,
+                    child: Icon(
+                      Icons.attach_file,
+                      size: 26,
+                      color: isDark
+                          ? const Color(0xFFD1D1D1)
+                          : const Color(0xFF5A5A5A),
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.2),
+                          offset: const Offset(1, 2),
+                          blurRadius: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            )
+            .animate()
+            .fadeIn(duration: 500.ms, curve: Curves.easeOutCubic)
+            .slideX(
+              begin: 0.4,
+              end: 0,
+              duration: 500.ms,
+              curve: Curves.easeOutCubic,
+            );
+      },
+    );
+  }
+}
+
+class RealisticCurledPaperPainter extends CustomPainter {
+  final Color paperColor;
+  final Color borderColor;
+
+  RealisticCurledPaperPainter({
+    required this.paperColor,
+    required this.borderColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path();
+    path.moveTo(4, 4);
+    path.quadraticBezierTo(size.width * 0.5, 1, size.width - 4, 3);
+    path.lineTo(size.width, size.height - 20);
+    path.lineTo(size.width - 20, size.height);
+    path.quadraticBezierTo(
+      size.width * 0.5,
+      size.height - 2,
+      4,
+      size.height - 4,
+    );
+    path.quadraticBezierTo(1, size.height * 0.5, 4, 4);
+    path.close();
+
+    final shadowPaint = Paint()
+      ..color = Colors.black.withOpacity(0.12)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+
+    canvas.drawPath(path.shift(const Offset(2, 5)), shadowPaint);
+
+    final bodyPaint = Paint()
+      ..color = paperColor
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(path, bodyPaint);
+
+    final borderPaint = Paint()
+      ..color = borderColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    canvas.drawPath(path, borderPaint);
+
+    final curlPath = Path();
+    curlPath.moveTo(size.width, size.height - 20);
+    curlPath.lineTo(size.width - 20, size.height);
+    curlPath.quadraticBezierTo(
+      size.width - 16,
+      size.height - 16,
+      size.width,
+      size.height - 20,
+    );
+    curlPath.close();
+
+    final curlPaint = Paint()
+      ..color = Color.lerp(paperColor, Colors.black, 0.15)!
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(curlPath, curlPaint);
+
+    final curlBorderPaint = Paint()
+      ..color = borderColor.withOpacity(0.7)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+    canvas.drawPath(curlPath, curlBorderPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
