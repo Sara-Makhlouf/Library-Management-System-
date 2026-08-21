@@ -6,6 +6,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:library_mobile_app/core/constants.dart';
 import 'package:library_mobile_app/core/locale_cubit.dart';
+import 'package:library_mobile_app/feature/favourite/bloc/favbloc.dart';
+import 'package:library_mobile_app/feature/favourite/data/repository.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/app_bloc_observer.dart';
 import 'package:library_mobile_app/l10n/app_localizations.dart';
 
@@ -285,6 +287,9 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (_) => ThemeCubit()),
         BlocProvider(create: (_) => LocaleCubit()),
+        BlocProvider<FavoriteBloc>(
+          create: (context) => FavoriteBloc(FavoriteRepository()),
+        ),
       ],
       child: BlocBuilder<LocaleCubit, Locale>(
         builder: (context, localeState) {
