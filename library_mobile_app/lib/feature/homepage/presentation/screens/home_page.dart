@@ -14,6 +14,8 @@ import 'package:library_mobile_app/feature/cart/presentation/cart_screen.dart';
 import 'package:library_mobile_app/feature/favourite/presentation/favourit_screen.dart';
 
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
+import 'package:library_mobile_app/feature/homepage/presentation/screens/contactus.dart';
+import 'package:library_mobile_app/feature/homepage/presentation/screens/help&support.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/BottomNav.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/PointsStickyNote.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/category_seation.dart';
@@ -457,7 +459,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     accent: accent,
                     primaryText: primaryText,
                     onTap: () {
-                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ContactUsScreen(),
+                        ),
+                      );
                     },
                   ),
                 ],
@@ -481,15 +488,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     primaryText: primaryText,
                     showArrow: true,
                     onTap: () {
-                      Navigator.pop(context);
-
-                      // افتحي صفحة المساعدة هون
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //     builder: (_) => const HelpSupportScreen(),
-                      //   ),
-                      // );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AboutLibraryScreen(),
+                        ),
+                      );
                     },
                   ),
                 ],

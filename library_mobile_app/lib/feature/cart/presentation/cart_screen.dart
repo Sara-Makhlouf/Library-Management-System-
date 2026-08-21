@@ -33,7 +33,6 @@ class _CartScreenState extends State<CartScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     final localizations = AppLocalizations.of(context)!;
 
     final backgroundColor = isDark
@@ -51,12 +50,15 @@ class _CartScreenState extends State<CartScreen> {
       child: Scaffold(
         backgroundColor: backgroundColor,
 
+        // ==========================================================
+        // BODY
+        // ==========================================================
         body: SafeArea(
           child: Column(
             children: [
-              // ==================================================
+              // ======================================================
               // HEADER
-              // ==================================================
+              // ======================================================
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
                 child: Row(
@@ -109,9 +111,9 @@ class _CartScreenState extends State<CartScreen> {
 
               const SizedBox(height: 8),
 
-              // ==================================================
+              // ======================================================
               // TABS
-              // ==================================================
+              // ======================================================
               Container(
                 height: 52,
                 margin: const EdgeInsets.symmetric(horizontal: 18),
@@ -136,7 +138,6 @@ class _CartScreenState extends State<CartScreen> {
                   indicatorSize: TabBarIndicatorSize.tab,
 
                   labelColor: Colors.white,
-
                   unselectedLabelColor: secondaryText,
 
                   labelStyle: const TextStyle(
@@ -155,7 +156,9 @@ class _CartScreenState extends State<CartScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Icon(Icons.shopping_bag_outlined, size: 17),
+
                           const SizedBox(width: 7),
+
                           Text(localizations.buyingTab),
                         ],
                       ),
@@ -166,7 +169,9 @@ class _CartScreenState extends State<CartScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Icon(Icons.menu_book_outlined, size: 17),
+
                           const SizedBox(width: 7),
+
                           Text(localizations.borrowingTab),
                         ],
                       ),
@@ -177,70 +182,77 @@ class _CartScreenState extends State<CartScreen> {
 
               const SizedBox(height: 8),
 
-              // ==================================================
-              // CART
-              // ==================================================
+              // ======================================================
+              // CART CONTENT
+              // ======================================================
               Expanded(
                 child: BlocBuilder<CartBloc, CartState>(
                   builder: (context, state) {
+                    // ==================================================
+                    // LOADING
+                    // ==================================================
                     if (state is CartLoading) {
                       return Center(
                         child: CircularProgressIndicator(color: accent),
                       );
                     }
 
+                    // ==================================================
+                    // ERROR
+                    // ==================================================
                     if (state is CartError) {
                       return _buildError(context, state, accent, secondaryText);
                     }
 
+                    // ==================================================
+                    // NOT LOADED
+                    // ==================================================
                     if (state is! CartLoaded) {
                       return Center(
                         child: CircularProgressIndicator(color: accent),
                       );
                     }
 
+                    // ==================================================
+                    // BUYING
+                    // ==================================================
                     final buyingItems = _uniqueItems(
                       state.cart.details
                           .where((item) => item.type != 'borrow')
                           .toList(),
                     );
 
+                    // ==================================================
+                    // BORROWING
+                    // ==================================================
                     final borrowingItems = _uniqueItems(
                       state.cart.details
                           .where((item) => item.type == 'borrow')
                           .toList(),
                     );
 
-                    return Column(
+                    // ==================================================
+                    // TAB VIEW
+                    // ==================================================
+                    return TabBarView(
                       children: [
-                        Expanded(
-                          child: TabBarView(
-                            children: [
-                              _buildCartList(
-                                items: buyingItems,
-                                allCartItems: state.cart.details,
-                                isDark: isDark,
-                                accent: accent,
-                                secondaryText: secondaryText,
-                                localizations: localizations,
-                              ),
-
-                              _buildCartList(
-                                items: borrowingItems,
-                                allCartItems: state.cart.details,
-                                isDark: isDark,
-                                accent: accent,
-                                secondaryText: secondaryText,
-                                localizations: localizations,
-                              ),
-                            ],
-                          ),
+                        _buildCartList(
+                          items: buyingItems,
+                          allCartItems: state.cart.details,
+                          isDark: isDark,
+                          accent: accent,
+                          secondaryText: secondaryText,
+                          localizations: localizations,
                         ),
 
-                        // ==================================================
-                        // CHECKOUT
-                        // ==================================================
-                        _buildCheckout(context, state, accent, localizations),
+                        _buildCartList(
+                          items: borrowingItems,
+                          allCartItems: state.cart.details,
+                          isDark: isDark,
+                          accent: accent,
+                          secondaryText: secondaryText,
+                          localizations: localizations,
+                        ),
                       ],
                     );
                   },
@@ -248,6 +260,23 @@ class _CartScreenState extends State<CartScreen> {
               ),
             ],
           ),
+        ),
+
+        // ==========================================================
+        // CHECKOUT
+        //
+        // مهم:
+        // نقلناه من داخل Column إلى bottomNavigationBar
+        // حتى ما يصير RenderFlex overflow.
+        // ==========================================================
+        bottomNavigationBar: BlocBuilder<CartBloc, CartState>(
+          builder: (context, state) {
+            if (state is! CartLoaded) {
+              return const SizedBox.shrink();
+            }
+
+            return _buildCheckout(context, state, accent, localizations);
+          },
         ),
       ),
     );
@@ -265,9 +294,14 @@ class _CartScreenState extends State<CartScreen> {
     required Color secondaryText,
     required AppLocalizations localizations,
   }) {
+    // ============================================================
+    // EMPTY
+    // ============================================================
+
     if (items.isEmpty) {
       return Center(
-        child: Padding(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.all(30),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -315,6 +349,10 @@ class _CartScreenState extends State<CartScreen> {
       );
     }
 
+    // ============================================================
+    // LIST
+    // ============================================================
+
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
 
@@ -323,9 +361,11 @@ class _CartScreenState extends State<CartScreen> {
       itemCount: items.length,
 
       itemBuilder: (context, index) {
+        final item = items[index];
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: CartItemCard(item: items[index], allCartItems: allCartItems),
+          child: CartItemCard(item: item, allCartItems: allCartItems),
         );
       },
     );
@@ -343,10 +383,14 @@ class _CartScreenState extends State<CartScreen> {
   ) {
     final isEmpty = state.cart.details.isEmpty;
 
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(18, 10, 18, 14),
+      padding: EdgeInsets.fromLTRB(18, 10, 18, 14 + bottomPadding),
+
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
+
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.06),
@@ -355,9 +399,11 @@ class _CartScreenState extends State<CartScreen> {
           ),
         ],
       ),
+
       child: SizedBox(
         width: double.infinity,
         height: 54,
+
         child: ElevatedButton(
           onPressed: () {
             if (isEmpty) {
@@ -367,14 +413,19 @@ class _CartScreenState extends State<CartScreen> {
 
             _openCheckout(context, state);
           },
+
           style: ElevatedButton.styleFrom(
             backgroundColor: isEmpty ? accent.withOpacity(0.35) : accent,
+
             foregroundColor: Colors.white,
+
             elevation: isEmpty ? 0 : 4,
+
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
           ),
+
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -382,11 +433,16 @@ class _CartScreenState extends State<CartScreen> {
 
               const SizedBox(width: 9),
 
-              Text(
-                localizations.confirmOrderAndPay,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
+              Flexible(
+                child: Text(
+                  localizations.confirmOrderAndPay,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
 
@@ -407,11 +463,19 @@ class _CartScreenState extends State<CartScreen> {
   void _openCheckout(BuildContext context, CartLoaded state) {
     final Map<String, int> counts = {};
 
+    // ============================================================
+    // COUNT ITEMS
+    // ============================================================
+
     for (final item in state.cart.details) {
       final key = '${item.bookId}_${item.type}';
 
       counts[key] = (counts[key] ?? 0) + 1;
     }
+
+    // ============================================================
+    // UNIQUE CHECKOUT ITEMS
+    // ============================================================
 
     final Map<String, CheckoutItemModel> uniqueMap = {};
 
@@ -425,6 +489,10 @@ class _CartScreenState extends State<CartScreen> {
         );
       }
     }
+
+    // ============================================================
+    // NAVIGATE
+    // ============================================================
 
     Navigator.push(
       context,
@@ -445,7 +513,7 @@ class _CartScreenState extends State<CartScreen> {
     Color secondaryText,
   ) {
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -496,13 +564,19 @@ class _CartScreenState extends State<CartScreen> {
         content: const Row(
           children: [
             Icon(Icons.shopping_cart_outlined, color: Colors.white),
+
             SizedBox(width: 10),
-            Text('Your cart is empty.'),
+
+            Expanded(child: Text('Your cart is empty.')),
           ],
         ),
+
         backgroundColor: Colors.redAccent,
+
         behavior: SnackBarBehavior.floating,
+
         margin: const EdgeInsets.all(16),
+
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );

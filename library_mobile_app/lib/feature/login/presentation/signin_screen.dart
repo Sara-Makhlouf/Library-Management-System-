@@ -34,9 +34,9 @@ class _SigninScreenState extends State<SigninScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  bool _obscurePassword = true;
-
   final _shakeKey = GlobalKey<ShakeWidgetState>();
+
+  bool _obscurePassword = true;
 
   @override
   void initState() {
@@ -48,10 +48,8 @@ class _SigninScreenState extends State<SigninScreen> {
   @override
   void dispose() {
     _loginBloc.close();
-
     _phoneController.dispose();
     _passwordController.dispose();
-
     super.dispose();
   }
 
@@ -60,12 +58,27 @@ class _SigninScreenState extends State<SigninScreen> {
         _passwordController.text.isEmpty) {
       _shakeKey.currentState?.shake();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your phone number and password'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.error_outline_rounded, color: Colors.white),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text('Please enter your phone number and password'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red.shade600,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+        );
 
       return;
     }
@@ -77,6 +90,8 @@ class _SigninScreenState extends State<SigninScreen> {
     } catch (e) {
       debugPrint('Error fetching FCM token from Firebase: $e');
     }
+
+    if (!mounted) return;
 
     _loginBloc.add(
       LoginSubmitted(
@@ -93,17 +108,20 @@ class _SigninScreenState extends State<SigninScreen> {
     ).push(MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()));
   }
 
+  void _openRegister() {
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (_) => const Register()));
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final size = MediaQuery.of(context).size;
 
-    final topSafeArea = MediaQuery.of(context).padding.top;
-
     return BlocProvider.value(
       value: _loginBloc,
-
       child: BlocListener<LoginBloc, LoginState>(
         listener: (context, state) {
           if (state is LoginFailure) {
@@ -113,8 +131,22 @@ class _SigninScreenState extends State<SigninScreen> {
               ..hideCurrentSnackBar()
               ..showSnackBar(
                 SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
+                  content: Row(
+                    children: [
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(child: Text(state.message)),
+                    ],
+                  ),
+                  backgroundColor: Colors.red.shade600,
+                  behavior: SnackBarBehavior.floating,
+                  margin: const EdgeInsets.all(16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
               );
           }
@@ -123,174 +155,186 @@ class _SigninScreenState extends State<SigninScreen> {
             Navigator.of(context).pushReplacementNamed(Routes.homePage);
           }
         },
-
         child: Scaffold(
+          resizeToAvoidBottomInset: true,
           backgroundColor: isDark
               ? AppColors.backgroundDark
               : AppColors.accentLight,
-
           body: Stack(
             children: [
+              // ─────────────────────────────
+              // Decorative background
+              // ─────────────────────────────
               Positioned(
-                top: -60,
-                left: -60,
+                top: -70,
+                left: -70,
                 child: DecorCircle(
-                  size: 220,
+                  size: 240,
                   color: AppColors.primary,
                   opacity: isDark ? 0.08 : 0.13,
                 ),
               ),
 
               Positioned(
-                top: size.height * 0.15,
-                right: -80,
+                top: size.height * 0.18,
+                right: -90,
                 child: DecorCircle(
-                  size: 180,
+                  size: 190,
                   color: AppColors.primary,
-                  opacity: isDark ? 0.05 : 0.09,
+                  opacity: isDark ? 0.05 : 0.08,
                 ),
               ),
 
               Positioned(
-                top: size.height * 0.35,
-                left: size.width * 0.2,
+                top: size.height * 0.38,
+                left: size.width * 0.18,
                 child: DecorCircle(
-                  size: 120,
+                  size: 130,
                   color: AppColors.primary,
-                  opacity: isDark ? 0.04 : 0.07,
+                  opacity: isDark ? 0.035 : 0.06,
                 ),
               ),
 
+              // ─────────────────────────────
+              // Theme toggle
+              // ─────────────────────────────
               Positioned(
-                top: size.height * 0.09,
+                top: MediaQuery.of(context).padding.top + 12,
+                right: 18,
+                child: ThemeToggle(isDark: isDark)
+                    .animate()
+                    .fadeIn(duration: 400.ms)
+                    .slideX(begin: 0.2, end: 0, duration: 400.ms),
+              ),
+
+              // ─────────────────────────────
+              // Logo
+              // ─────────────────────────────
+              Positioned(
+                top: size.height * 0.075,
                 left: 0,
                 right: 0,
-
                 child: Column(
                   children: [
                     Image.asset(
                           'assets/images/logo.png',
-                          width: size.width * 0.40,
+                          width: size.width * 0.32,
                         )
                         .animate()
                         .fadeIn(duration: 600.ms)
                         .scale(
-                          begin: const Offset(0.8, 0.8),
+                          begin: const Offset(0.85, 0.85),
+                          end: const Offset(1, 1),
                           duration: 600.ms,
                           curve: Curves.easeOutBack,
                         ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
 
                     Text(
-                      'Hibr & Waraq',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 2,
-                        color: isDark
-                            ? AppColors.textDark
-                            : AppColors.textLight,
-                      ),
-                    ).animate(delay: 200.ms).fadeIn(duration: 500.ms),
+                          'Hibr & Waraq',
+                          style: TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.5,
+                            color: isDark
+                                ? AppColors.textDark
+                                : AppColors.textLight,
+                          ),
+                        )
+                        .animate(delay: 150.ms)
+                        .fadeIn(duration: 450.ms)
+                        .slideY(begin: 0.15, end: 0),
 
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 5),
 
                     Text(
                       'Your digital library',
                       style: TextStyle(
-                        fontSize: 12,
-                        letterSpacing: 1,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 1.2,
                         color: isDark
-                            ? AppColors.textDark.withOpacity(0.5)
-                            : AppColors.textLight.withOpacity(0.55),
+                            ? AppColors.textDark.withOpacity(0.45)
+                            : AppColors.textLight.withOpacity(0.5),
                       ),
-                    ).animate(delay: 350.ms).fadeIn(duration: 500.ms),
+                    ).animate(delay: 250.ms).fadeIn(duration: 450.ms),
                   ],
                 ),
               ),
 
-              Positioned(
-                top: MediaQuery.of(context).padding.top + 12,
-                right: 16,
-
-                child: ThemeToggle(isDark: isDark)
-                    .animate(delay: 400.ms)
-                    .fadeIn(duration: 400.ms)
-                    .slideX(begin: 0.3, end: 0),
-              ),
-
+              // ─────────────────────────────
+              // Login Sheet
+              // ─────────────────────────────
               Align(
                 alignment: Alignment.bottomCenter,
-
                 child:
                     ShakeWidget(
                           key: _shakeKey,
-
-                          child: ConstrainedBox(
+                          child: Container(
+                            width: double.infinity,
                             constraints: BoxConstraints(
-                              maxHeight: size.height - topSafeArea - 90,
+                              maxHeight: size.height * 0.76,
                             ),
-
-                            child: Container(
-                              width: double.infinity,
-
-                              decoration: BoxDecoration(
-                                color: isDark
-                                    ? AppColors.accentDark
-                                    : Colors.white,
-
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(32),
-                                ),
-
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(
-                                      isDark ? 0.3 : 0.08,
-                                    ),
-                                    blurRadius: 30,
-                                    offset: const Offset(0, -8),
-                                  ),
-                                ],
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppColors.accentDark
+                                  : Colors.white,
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(34),
                               ),
-
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(
+                                    isDark ? 0.32 : 0.08,
+                                  ),
+                                  blurRadius: 35,
+                                  spreadRadius: 1,
+                                  offset: const Offset(0, -10),
+                                ),
+                              ],
+                            ),
+                            child: SafeArea(
+                              top: false,
                               child: SingleChildScrollView(
+                                keyboardDismissBehavior:
+                                    ScrollViewKeyboardDismissBehavior.onDrag,
                                 padding: EdgeInsets.fromLTRB(
-                                  28,
-                                  32,
-                                  28,
+                                  26,
+                                  18,
+                                  26,
                                   MediaQuery.of(context).viewInsets.bottom +
                                       MediaQuery.of(context).padding.bottom +
-                                      40,
+                                      28,
                                 ),
-
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-
                                   children: [
+                                    // Handle
                                     Center(
                                       child: Container(
-                                        width: 40,
+                                        width: 42,
                                         height: 4,
                                         decoration: BoxDecoration(
                                           color: isDark
                                               ? Colors.white12
                                               : Colors.black12,
                                           borderRadius: BorderRadius.circular(
-                                            10,
+                                            20,
                                           ),
                                         ),
                                       ),
                                     ),
 
-                                    const SizedBox(height: 24),
+                                    const SizedBox(height: 26),
 
+                                    // Header
                                     Text(
                                           'Welcome back',
                                           style: TextStyle(
                                             fontSize: 26,
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: -0.5,
                                             color: isDark
                                                 ? AppColors.textDark
                                                 : AppColors.textLight,
@@ -298,26 +342,27 @@ class _SigninScreenState extends State<SigninScreen> {
                                         )
                                         .animate(delay: 100.ms)
                                         .fadeIn()
-                                        .slideY(begin: 0.2, end: 0),
+                                        .slideY(begin: 0.15, end: 0),
 
-                                    const SizedBox(height: 4),
+                                    const SizedBox(height: 6),
 
                                     Text(
-                                      'Sign in to continue',
+                                      'Sign in to continue to your library',
                                       style: TextStyle(
-                                        fontSize: 14,
+                                        fontSize: 13,
                                         color: isDark
                                             ? AppColors.textDark.withOpacity(
-                                                0.55,
+                                                0.5,
                                               )
                                             : AppColors.textLight.withOpacity(
-                                                0.55,
+                                                0.5,
                                               ),
                                       ),
-                                    ).animate(delay: 180.ms).fadeIn(),
+                                    ).animate(delay: 150.ms).fadeIn(),
 
-                                    const SizedBox(height: 32),
+                                    const SizedBox(height: 28),
 
+                                    // Phone
                                     CustomInputField(
                                           controller: _phoneController,
                                           hint: 'Phone number',
@@ -325,33 +370,33 @@ class _SigninScreenState extends State<SigninScreen> {
                                           isDark: isDark,
                                           keyboardType: TextInputType.phone,
                                         )
-                                        .animate(delay: 250.ms)
+                                        .animate(delay: 200.ms)
                                         .fadeIn()
-                                        .slideY(begin: 0.15, end: 0),
+                                        .slideY(begin: 0.12, end: 0),
 
                                     const SizedBox(height: 14),
 
+                                    // Password
                                     CustomInputField(
                                           controller: _passwordController,
                                           hint: 'Password',
                                           icon: Icons.lock_outline_rounded,
                                           isDark: isDark,
                                           obscure: _obscurePassword,
-
                                           suffixIcon: IconButton(
+                                            splashRadius: 20,
                                             icon: Icon(
                                               _obscurePassword
                                                   ? Icons
                                                         .visibility_off_outlined
                                                   : Icons.visibility_outlined,
-                                              size: 18,
+                                              size: 19,
                                               color: isDark
                                                   ? AppColors.textDark
                                                         .withOpacity(0.4)
                                                   : AppColors.textLight
                                                         .withOpacity(0.4),
                                             ),
-
                                             onPressed: () {
                                               setState(() {
                                                 _obscurePassword =
@@ -360,55 +405,60 @@ class _SigninScreenState extends State<SigninScreen> {
                                             },
                                           ),
                                         )
-                                        .animate(delay: 330.ms)
+                                        .animate(delay: 270.ms)
                                         .fadeIn()
-                                        .slideY(begin: 0.15, end: 0),
+                                        .slideY(begin: 0.12, end: 0),
 
-                                    const SizedBox(height: 10),
+                                    const SizedBox(height: 8),
 
+                                    // Forgot password
                                     Align(
                                       alignment: Alignment.centerRight,
-
                                       child: TextButton(
                                         onPressed: _openForgotPassword,
-
                                         style: TextButton.styleFrom(
-                                          padding: EdgeInsets.zero,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                            vertical: 6,
+                                          ),
                                           minimumSize: Size.zero,
                                           tapTargetSize:
                                               MaterialTapTargetSize.shrinkWrap,
                                         ),
-
                                         child: const Text(
                                           'Forgot password?',
                                           style: TextStyle(
                                             fontSize: 12,
+                                            fontWeight: FontWeight.w600,
                                             color: AppColors.primary,
-                                            fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                       ),
-                                    ).animate(delay: 380.ms).fadeIn(),
+                                    ).animate(delay: 320.ms).fadeIn(),
 
-                                    const SizedBox(height: 24),
+                                    const SizedBox(height: 18),
 
+                                    // Login button
                                     BlocBuilder<LoginBloc, LoginState>(
                                           builder: (context, state) {
-                                            return CustomButton(
-                                              isLoading: state is LoginLoading,
-
-                                              onTap: _onLogin,
-
-                                              text: 'Login',
+                                            return SizedBox(
+                                              width: double.infinity,
+                                              child: CustomButton(
+                                                isLoading:
+                                                    state is LoginLoading,
+                                                onTap: _onLogin,
+                                                text: 'Login',
+                                              ),
                                             );
                                           },
                                         )
-                                        .animate(delay: 420.ms)
+                                        .animate(delay: 360.ms)
                                         .fadeIn()
                                         .slideY(begin: 0.1, end: 0),
 
                                     const SizedBox(height: 24),
 
+                                    // Divider
                                     Row(
                                       children: [
                                         Expanded(
@@ -418,12 +468,10 @@ class _SigninScreenState extends State<SigninScreen> {
                                                 : Colors.black12,
                                           ),
                                         ),
-
                                         Padding(
                                           padding: const EdgeInsets.symmetric(
                                             horizontal: 12,
                                           ),
-
                                           child: Text(
                                             'or continue with',
                                             style: TextStyle(
@@ -436,7 +484,6 @@ class _SigninScreenState extends State<SigninScreen> {
                                             ),
                                           ),
                                         ),
-
                                         Expanded(
                                           child: Divider(
                                             color: isDark
@@ -445,10 +492,11 @@ class _SigninScreenState extends State<SigninScreen> {
                                           ),
                                         ),
                                       ],
-                                    ).animate(delay: 460.ms).fadeIn(),
+                                    ).animate(delay: 400.ms).fadeIn(),
 
                                     const SizedBox(height: 16),
 
+                                    // Social
                                     Row(
                                       children: [
                                         Expanded(
@@ -459,9 +507,7 @@ class _SigninScreenState extends State<SigninScreen> {
                                             isDark: isDark,
                                           ),
                                         ),
-
-                                        const SizedBox(width: 10),
-
+                                        const SizedBox(width: 9),
                                         Expanded(
                                           child: SocialButton(
                                             label: 'Facebook',
@@ -470,9 +516,7 @@ class _SigninScreenState extends State<SigninScreen> {
                                             isDark: isDark,
                                           ),
                                         ),
-
-                                        const SizedBox(width: 10),
-
+                                        const SizedBox(width: 9),
                                         Expanded(
                                           child: SocialButton(
                                             label: 'Twitter',
@@ -484,14 +528,14 @@ class _SigninScreenState extends State<SigninScreen> {
                                           ),
                                         ),
                                       ],
-                                    ).animate(delay: 500.ms).fadeIn(),
+                                    ).animate(delay: 440.ms).fadeIn(),
 
-                                    const SizedBox(height: 20),
+                                    const SizedBox(height: 22),
 
+                                    // Register
                                     Center(
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-
+                                      child: Wrap(
+                                        alignment: WrapAlignment.center,
                                         children: [
                                           Text(
                                             "Don't have an account? ",
@@ -504,31 +548,20 @@ class _SigninScreenState extends State<SigninScreen> {
                                                         .withOpacity(0.5),
                                             ),
                                           ),
-
                                           GestureDetector(
-                                            onTap: () {
-                                              Navigator.of(
-                                                context,
-                                              ).pushReplacement(
-                                                MaterialPageRoute(
-                                                  builder: (_) =>
-                                                      const Register(),
-                                                ),
-                                              );
-                                            },
-
+                                            onTap: _openRegister,
                                             child: const Text(
                                               'Sign up',
                                               style: TextStyle(
                                                 fontSize: 13,
-                                                fontWeight: FontWeight.w600,
+                                                fontWeight: FontWeight.w700,
                                                 color: AppColors.primary,
                                               ),
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ).animate(delay: 540.ms).fadeIn(),
+                                    ).animate(delay: 480.ms).fadeIn(),
                                   ],
                                 ),
                               ),
@@ -537,7 +570,7 @@ class _SigninScreenState extends State<SigninScreen> {
                         )
                         .animate(delay: 50.ms)
                         .slideY(
-                          begin: 0.18,
+                          begin: 0.15,
                           end: 0,
                           duration: 600.ms,
                           curve: Curves.easeOutCubic,

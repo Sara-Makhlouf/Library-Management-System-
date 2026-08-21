@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import { useDispatch, useSelector } from "react-redux";
 
 import {
@@ -26,6 +27,7 @@ import {
   XCircle,
   CalendarDays,
   Hash,
+  RefreshCw,
 } from "lucide-react";
 
 import {
@@ -33,9 +35,7 @@ import {
   updateBookRequestStatus,
 } from "../../Core/Redux/Thunks/BookRequestThunk";
 
-import {
-  clearBookRequestState,
-} from "../../Core/Redux/Slice/BookRequestSlice";
+import { clearBookRequestState } from "../../Core/Redux/Slice/BookRequestSlice";
 
 import {
   GOLD,
@@ -49,8 +49,6 @@ import {
 
 const BORDER = goldA(0.15);
 const MUTED = inkA(0.5);
-
-
 
 const STATUS_META = {
   approved: {
@@ -101,7 +99,6 @@ function StatusChip({ status }) {
   );
 }
 
-
 // eslint-disable-next-line no-unused-vars
 function InfoCard({
   icon,
@@ -116,7 +113,11 @@ function InfoCard({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       sx={{
-        p: { xs: 2, md: 2.5 },
+        p: {
+          xs: 2,
+          md: 2.5,
+        },
+
         borderRadius: "18px",
         bgcolor: SURFACE,
         border: `1px solid ${BORDER}`,
@@ -169,7 +170,6 @@ function InfoCard({
   );
 }
 
-
 // eslint-disable-next-line no-unused-vars
 function Row({ label, value, icon }) {
   return (
@@ -218,7 +218,6 @@ function Row({ label, value, icon }) {
   );
 }
 
-
 const formatDate = (date) => {
   if (!date) return "—";
 
@@ -235,7 +234,6 @@ const formatDate = (date) => {
   });
 };
 
-
 export default function BookRequestDetailsPage() {
   const dispatch = useDispatch();
 
@@ -246,7 +244,6 @@ export default function BookRequestDetailsPage() {
     error,
     fetchError,
     successMessage,
-    
   } = useSelector((state) => state.BookRequest || {});
 
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -254,12 +251,9 @@ export default function BookRequestDetailsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(null);
 
- 
-
   useEffect(() => {
     dispatch(fetchBookRequests());
   }, [dispatch]);
-
 
   useEffect(() => {
     return () => {
@@ -267,7 +261,11 @@ export default function BookRequestDetailsPage() {
     };
   }, [dispatch]);
 
-
+  const handleRefresh = () => {
+    if (!fetchLoading) {
+      dispatch(fetchBookRequests());
+    }
+  };
 
   const openStatusDialog = (request, status) => {
     setSelectedRequest(request);
@@ -294,7 +292,6 @@ export default function BookRequestDetailsPage() {
 
       dispatch(fetchBookRequests());
     } catch (err) {
-      
     }
   };
 
@@ -347,12 +344,24 @@ export default function BookRequestDetailsPage() {
           >
             {fetchError?.message || "Failed to load requests."}
           </Typography>
+
+          <Button
+            onClick={handleRefresh}
+            startIcon={<RefreshCw size={16} />}
+            sx={{
+              mt: 2,
+              color: GOLD2,
+              borderRadius: "10px",
+              textTransform: "none",
+              border: `1px solid ${goldA(0.25)}`,
+            }}
+          >
+            Try Again
+          </Button>
         </Box>
       </Box>
     );
   }
-
-
 
   return (
     <Box
@@ -366,6 +375,7 @@ export default function BookRequestDetailsPage() {
         fontFamily: "Inter, sans-serif",
       }}
     >
+      {/* HEADER */}
 
       <Box
         sx={{
@@ -386,12 +396,14 @@ export default function BookRequestDetailsPage() {
             display: "flex",
             alignItems: "center",
             gap: 1.5,
+            minWidth: 0,
           }}
         >
           <Box
             sx={{
               width: 42,
               height: 42,
+              minWidth: 42,
               borderRadius: "12px",
               background: `linear-gradient(135deg,${GOLD},${GOLD2})`,
               display: "flex",
@@ -403,7 +415,7 @@ export default function BookRequestDetailsPage() {
             <BookOpen size={20} />
           </Box>
 
-          <Box>
+          <Box sx={{ minWidth: 0 }}>
             <Typography
               sx={{
                 fontSize: 17,
@@ -426,15 +438,73 @@ export default function BookRequestDetailsPage() {
           </Box>
         </Box>
 
-        <Chip
-          label={`${requests.length} Requests`}
+
+        <Box
           sx={{
-            bgcolor: goldA(0.1),
-            color: GOLD2,
-            border: `1px solid ${goldA(0.2)}`,
-            fontWeight: 700,
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            flexShrink: 0,
           }}
-        />
+        >
+          <Chip
+            label={`${requests.length} Requests`}
+            sx={{
+              bgcolor: goldA(0.1),
+              color: GOLD2,
+              border: `1px solid ${goldA(0.2)}`,
+              fontWeight: 700,
+            }}
+          />
+
+          <Button
+            onClick={handleRefresh}
+            disabled={fetchLoading}
+            aria-label="Refresh book requests"
+            sx={{
+              minWidth: 40,
+              width: 40,
+              height: 40,
+              p: 0,
+              borderRadius: "12px",
+              color: GOLD2,
+              bgcolor: goldA(0.08),
+              border: `1px solid ${goldA(0.2)}`,
+
+              "&:hover": {
+                bgcolor: goldA(0.15),
+              },
+
+              "&.Mui-disabled": {
+                color: GOLD2,
+                opacity: 0.7,
+              },
+            }}
+          >
+            <motion.div
+              animate={
+                fetchLoading
+                  ? {
+                      rotate: 360,
+                    }
+                  : {
+                      rotate: 0,
+                    }
+              }
+              transition={
+                fetchLoading
+                  ? {
+                      duration: 0.8,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }
+                  : {}
+              }
+            >
+              <RefreshCw size={18} />
+            </motion.div>
+          </Button>
+        </Box>
       </Box>
 
 
@@ -454,6 +524,7 @@ export default function BookRequestDetailsPage() {
           }}
         >
           <CheckCircle2 size={16} />
+
           {successMessage}
         </Box>
       )}
@@ -475,6 +546,7 @@ export default function BookRequestDetailsPage() {
           }}
         >
           <XCircle size={16} />
+
           {error?.message || "Something went wrong."}
         </Box>
       )}
@@ -501,6 +573,21 @@ export default function BookRequestDetailsPage() {
           >
             No book requests found.
           </Typography>
+
+          <Button
+            onClick={handleRefresh}
+            startIcon={<RefreshCw size={15} />}
+            sx={{
+              mt: 2,
+              color: GOLD2,
+              borderRadius: "10px",
+              textTransform: "none",
+              fontWeight: 700,
+              border: `1px solid ${goldA(0.25)}`,
+            }}
+          >
+            Refresh
+          </Button>
         </Box>
       ) : (
 
@@ -541,18 +628,17 @@ export default function BookRequestDetailsPage() {
                     xs: 2,
                     md: 2.5,
                   },
+
                   borderRadius: "20px",
                   bgcolor: SURFACE,
                   border: `1px solid ${BORDER}`,
-                  boxShadow:
-                    "0 4px 18px rgba(201,168,76,.05)",
+                  boxShadow: "0 4px 18px rgba(201,168,76,.05)",
                   transition: "all .25s",
 
                   "&:hover": {
                     transform: "translateY(-2px)",
                     borderColor: goldA(0.3),
-                    boxShadow:
-                      "0 10px 30px rgba(201,168,76,.09)",
+                    boxShadow: "0 10px 30px rgba(201,168,76,.09)",
                   },
                 }}
               >
@@ -579,8 +665,7 @@ export default function BookRequestDetailsPage() {
                         height: 46,
                         minWidth: 46,
                         borderRadius: "13px",
-                        background:
-                          `linear-gradient(135deg,${GOLD},${GOLD2})`,
+                        background: `linear-gradient(135deg,${GOLD},${GOLD2})`,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -698,6 +783,7 @@ export default function BookRequestDetailsPage() {
                           }}
                         >
                           <Phone size={10} />
+
                           {customer?.phone || "—"}
                         </Typography>
                       </Box>
@@ -735,6 +821,7 @@ export default function BookRequestDetailsPage() {
                       }}
                     >
                       <Hash size={12} color={GOLD2} />
+
                       Request #{request.id}
                     </Typography>
 
@@ -749,6 +836,7 @@ export default function BookRequestDetailsPage() {
                       }}
                     >
                       <CalendarDays size={12} />
+
                       {formatDate(request.created_at)}
                     </Typography>
                   </Box>
@@ -793,8 +881,7 @@ export default function BookRequestDetailsPage() {
                       p: 1.5,
                       borderRadius: "13px",
                       bgcolor: "rgba(151,196,89,.06)",
-                      border:
-                        "1px solid rgba(151,196,89,.18)",
+                      border: "1px solid rgba(151,196,89,.18)",
                     }}
                   >
                     <Typography
@@ -819,7 +906,6 @@ export default function BookRequestDetailsPage() {
                   </Box>
                 )}
 
-                {/* ACTIONS */}
 
                 <Box
                   sx={{
@@ -863,8 +949,7 @@ export default function BookRequestDetailsPage() {
                       fontWeight: 700,
                       color: "#e0655f",
                       bgcolor: "rgba(224,101,95,.07)",
-                      border:
-                        "1px solid rgba(224,101,95,.25)",
+                      border: "1px solid rgba(224,101,95,.25)",
 
                       "&:hover": {
                         bgcolor: "rgba(224,101,95,.13)",
@@ -902,7 +987,6 @@ export default function BookRequestDetailsPage() {
         </Box>
       )}
 
-   
 
       <Dialog
         open={dialogOpen}
@@ -934,8 +1018,7 @@ export default function BookRequestDetailsPage() {
               mb: 2,
             }}
           >
-            Change the request status and optionally add an
-            admin note.
+            Change the request status and optionally add an admin note.
           </Typography>
 
           {selectedRequest && (
@@ -1013,7 +1096,12 @@ export default function BookRequestDetailsPage() {
             }}
           >
             {loading ? (
-              <CircularProgress size={20} sx={{ color: "#fff" }} />
+              <CircularProgress
+                size={20}
+                sx={{
+                  color: "#fff",
+                }}
+              />
             ) : (
               "Confirm Update"
             )}

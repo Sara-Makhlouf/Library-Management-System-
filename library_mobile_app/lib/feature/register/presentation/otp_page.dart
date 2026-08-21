@@ -55,11 +55,6 @@ class _OtpPageState extends State<OtpPage> {
     super.initState();
 
     _startTimer();
-
-    // إرسال OTP مرة واحدة فقط
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _sendOtp();
-    });
   }
 
   @override

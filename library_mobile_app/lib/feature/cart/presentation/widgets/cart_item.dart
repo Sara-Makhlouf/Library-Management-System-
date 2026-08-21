@@ -20,7 +20,6 @@ class CartItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     final localizations = AppLocalizations.of(context)!;
 
     final primaryText = isDark ? AppColors.textDark : AppColors.textLight;
@@ -70,9 +69,9 @@ class CartItemCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // --------------------------------------------------
-            // Book Cover
-            // --------------------------------------------------
+            // =====================================================
+            // BOOK COVER
+            // =====================================================
             Hero(
               tag: 'cart-book-${item.id}',
               child: ClipRRect(
@@ -90,7 +89,9 @@ class CartItemCard extends StatelessWidget {
 
                           return _coverPlaceholder(accent);
                         },
-                        errorBuilder: (_, __, ___) => _coverPlaceholder(accent),
+                        errorBuilder: (_, __, ___) {
+                          return _coverPlaceholder(accent);
+                        },
                       )
                     : _coverPlaceholder(accent),
               ),
@@ -98,15 +99,18 @@ class CartItemCard extends StatelessWidget {
 
             const SizedBox(width: 13),
 
-            // --------------------------------------------------
-            // Book Information
-            // --------------------------------------------------
+            // =====================================================
+            // BOOK INFORMATION
+            // =====================================================
             Expanded(
               child: SizedBox(
                 height: 98,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // =================================================
+                    // TITLE + DELETE
+                    // =================================================
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -118,7 +122,7 @@ class CartItemCard extends StatelessWidget {
                             style: TextStyle(
                               color: primaryText,
                               fontSize: 15,
-                              height: 1.2,
+                              height: 1.15,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -130,78 +134,86 @@ class CartItemCard extends StatelessWidget {
                       ],
                     ),
 
-                    const Spacer(),
+                    // بدل Spacer حتى ما يصير overflow
+                    const SizedBox(height: 5),
 
-                    // Type
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isBorrowItem
-                                ? Colors.blue.withOpacity(0.10)
-                                : accent.withOpacity(0.10),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                isBorrowItem
-                                    ? Icons.menu_book_outlined
-                                    : Icons.shopping_bag_outlined,
-                                size: 12,
-                                color: isBorrowItem ? Colors.blue : accent,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                isBorrowItem ? 'Borrow' : 'Purchase',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: isBorrowItem ? Colors.blue : accent,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
+                    // =================================================
+                    // TYPE
+                    // =================================================
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isBorrowItem
+                            ? Colors.blue.withOpacity(0.10)
+                            : accent.withOpacity(0.10),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
                             isBorrowItem
-                                ? localizations.borrowPrice(
-                                    item.price.toString(),
-                                  )
-                                : localizations.purchasePrice(
-                                    item.price.toString(),
-                                  ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                                ? Icons.menu_book_outlined
+                                : Icons.shopping_bag_outlined,
+                            size: 12,
+                            color: isBorrowItem ? Colors.blue : accent,
+                          ),
+
+                          const SizedBox(width: 4),
+
+                          Text(
+                            isBorrowItem ? 'Borrow' : 'Purchase',
                             style: TextStyle(
-                              color: Colors.green,
-                              fontSize: 12,
+                              fontSize: 10,
                               fontWeight: FontWeight.w700,
+                              color: isBorrowItem ? Colors.blue : accent,
                             ),
                           ),
-                        ),
+                        ],
+                      ),
+                    ),
 
-                        if (!isBorrowItem)
-                          _quantitySelector(
-                            context: context,
-                            quantity: quantity,
-                            accent: accent,
-                            secondaryText: secondaryText,
+                    const Spacer(),
+
+                    // =================================================
+                    // PRICE + QUANTITY
+                    // =================================================
+                    SizedBox(
+                      height: 34,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              isBorrowItem
+                                  ? localizations.borrowPrice(
+                                      item.price.toString(),
+                                    )
+                                  : localizations.purchasePrice(
+                                      item.price.toString(),
+                                    ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.green,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
-                      ],
+
+                          if (!isBorrowItem)
+                            _quantitySelector(
+                              context: context,
+                              quantity: quantity,
+                              accent: accent,
+                              secondaryText: secondaryText,
+                            ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -213,9 +225,9 @@ class CartItemCard extends StatelessWidget {
     );
   }
 
-  // ------------------------------------------------------------
-  // Delete button
-  // ------------------------------------------------------------
+  // =============================================================
+  // DELETE BUTTON
+  // =============================================================
 
   Widget _deleteButton(BuildContext context, Color accent) {
     return Material(
@@ -239,9 +251,9 @@ class CartItemCard extends StatelessWidget {
     );
   }
 
-  // ------------------------------------------------------------
-  // Quantity selector
-  // ------------------------------------------------------------
+  // =============================================================
+  // QUANTITY SELECTOR
+  // =============================================================
 
   Widget _quantitySelector({
     required BuildContext context,
@@ -306,6 +318,10 @@ class CartItemCard extends StatelessWidget {
     );
   }
 
+  // =============================================================
+  // QUANTITY BUTTON
+  // =============================================================
+
   Widget _quantityButton({
     required IconData icon,
     required bool enabled,
@@ -327,9 +343,9 @@ class CartItemCard extends StatelessWidget {
     );
   }
 
-  // ------------------------------------------------------------
-  // Delete confirmation
-  // ------------------------------------------------------------
+  // =============================================================
+  // DELETE CONFIRMATION
+  // =============================================================
 
   void _showDeleteConfirmation(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -452,9 +468,9 @@ class CartItemCard extends StatelessWidget {
     );
   }
 
-  // ------------------------------------------------------------
-  // Cover placeholder
-  // ------------------------------------------------------------
+  // =============================================================
+  // COVER PLACEHOLDER
+  // =============================================================
 
   Widget _coverPlaceholder(Color accent) {
     return Container(
