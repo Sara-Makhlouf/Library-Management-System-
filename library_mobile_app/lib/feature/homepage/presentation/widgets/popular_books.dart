@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:library_mobile_app/core/constants.dart';
 
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/books/bloc/bloc.dart';
@@ -9,11 +11,14 @@ import 'package:library_mobile_app/feature/books/presentation/book_details_scree
 import 'package:library_mobile_app/feature/books/waiting_list/Bloc/WaitingListBloc.dart';
 import 'package:library_mobile_app/feature/books/waiting_list/Repository/WaitingListRepository.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
+import 'package:library_mobile_app/feature/pdf_reader/bloc/read_book_cubit.dart';
+import 'package:library_mobile_app/feature/pdf_reader/data/repo/pdf_book_repo.dart';
 import 'package:library_mobile_app/l10n/app_localizations.dart';
 
 import 'package:library_mobile_app/feature/favourite/bloc/favbloc.dart';
 import 'package:library_mobile_app/feature/favourite/bloc/favevent.dart';
 import 'package:library_mobile_app/feature/favourite/bloc/favstate.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PopularBooksSlider extends StatefulWidget {
   const PopularBooksSlider({Key? key}) : super(key: key);
@@ -149,6 +154,34 @@ class _PopularBooksSliderState extends State<PopularBooksSlider> {
                                     BlocProvider(
                                       create: (context) => WaitingListBloc(
                                         WaitingListRepository(),
+                                      ),
+                                    ),
+
+                                    BlocProvider(
+                                      create: (context) => ReadBookCubit(
+                                        PdfBookRepository(
+                                          dio: Dio(
+                                            BaseOptions(
+                                              baseUrl: baseUrl,
+                                              connectTimeout: const Duration(
+                                                seconds: 20,
+                                              ),
+                                              receiveTimeout: const Duration(
+                                                seconds: 20,
+                                              ),
+                                              headers: {
+                                                'Accept': 'application/json',
+                                                'Content-Type':
+                                                    'application/json',
+                                              },
+                                            ),
+                                          ),
+                                          tokenProvider: () async {
+                                            final prefs =
+                                                await SharedPreferences.getInstance();
+                                            return prefs.getString(tokenKey);
+                                          },
+                                        ),
                                       ),
                                     ),
                                   ],

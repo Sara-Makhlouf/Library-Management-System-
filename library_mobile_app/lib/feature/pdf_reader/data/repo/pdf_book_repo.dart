@@ -9,8 +9,8 @@ class PdfBookRepository {
   PdfBookRepository({
     required Dio dio,
     Future<String?> Function()? tokenProvider,
-  })  : _dio = dio,
-        _tokenProvider = tokenProvider;
+  }) : _dio = dio,
+       _tokenProvider = tokenProvider;
 
   final Dio _dio;
   final Future<String?> Function()? _tokenProvider;
@@ -55,10 +55,14 @@ class PdfBookRepository {
         print('✅ [PdfBookRepository] تم حفظ ملف PDF بنجاح: ${file.path}');
         return file;
       } on DioException catch (e) {
+        print(
+          '❌ DioException: status=${e.response?.statusCode}, data=${e.response?.data}, message=${e.message}',
+        );
         final statusCode = e.response?.statusCode;
 
         // Retry only on transient/network-like failures.
-        final shouldRetry = attempt < maxAttempts &&
+        final shouldRetry =
+            attempt < maxAttempts &&
             (statusCode == null || statusCode >= 500 || statusCode == 408);
 
         if (shouldRetry) {
@@ -77,27 +81,35 @@ class PdfBookRepository {
         }
 
         if (statusCode == 401) {
-          throw const PdfBookException('انتهت الجلسة، الرجاء تسجيل الدخول مرة أخرى.');
+          throw const PdfBookException(
+            'انتهت الجلسة، الرجاء تسجيل الدخول مرة أخرى.',
+          );
         }
 
         final message = e.response?.data is Map<String, dynamic>
             ? e.response?.data['message']?.toString() ??
-                'فشل تحميل الكتاب، يرجى المحاولة لاحقاً.'
+                  'فشل تحميل الكتاب، يرجى المحاولة لاحقاً.'
             : 'فشل تحميل الكتاب، يرجى المحاولة لاحقاً.';
 
         throw PdfBookException(message);
       } catch (e) {
         if (attempt < maxAttempts) {
-          print('⚠️ [PdfBookRepository] فشل تحميل الكتاب في محاولة $attempt، جاري إعادة المحاولة... ($e)');
+          print(
+            '⚠️ [PdfBookRepository] فشل تحميل الكتاب في محاولة $attempt، جاري إعادة المحاولة... ($e)',
+          );
           continue;
         }
 
         print('❌ [PdfBookRepository] فشل تحميل PDF نهائياً: $e');
-        throw PdfBookException('حدث خطأ أثناء تحميل الكتاب، يرجى المحاولة مرة أخرى.');
+        throw PdfBookException(
+          'حدث خطأ أثناء تحميل الكتاب، يرجى المحاولة مرة أخرى.',
+        );
       }
     }
 
-    throw const PdfBookException('حدث خطأ أثناء تحميل الكتاب، يرجى المحاولة مرة أخرى.');
+    throw const PdfBookException(
+      'حدث خطأ أثناء تحميل الكتاب، يرجى المحاولة مرة أخرى.',
+    );
   }
 }
 

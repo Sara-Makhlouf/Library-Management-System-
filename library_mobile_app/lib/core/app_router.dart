@@ -108,6 +108,9 @@ class AppRouter {
                   ),
                 ),
               ),
+              BlocProvider(
+                create: (_) => WaitingListBloc(WaitingListRepository()),
+              ),
             ],
             child: BookDetailsScreen(bookId: bookId),
           ),

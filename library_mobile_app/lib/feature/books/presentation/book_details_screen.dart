@@ -9,7 +9,9 @@ import 'package:library_mobile_app/feature/books/waiting_list/Bloc/WaitingListBl
 import 'package:library_mobile_app/feature/books/waiting_list/event/WaitingListEvent.dart';
 import 'package:library_mobile_app/feature/books/waiting_list/state/WaitingListState.dart';
 import 'package:library_mobile_app/feature/cart/data/repository.dart';
+import 'package:library_mobile_app/feature/pdf_reader/bloc/read_book_cubit.dart';
 import 'package:palette_generator/palette_generator.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class BookDetailsScreen extends StatefulWidget {
   final String bookId;
@@ -211,36 +213,77 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
         ? Colors.white.withOpacity(0.06)
         : Colors.black.withOpacity(0.05);
 
-    return BlocListener<WaitingListBloc, WaitingListState>(
-      listener: (context, state) {
-        if (state is WaitingListActionSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: const Color(0xFF22C55E),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          );
-          context.read<BookDetailsBloc>().add(
-            FetchBookDetailsEvent(bookId: widget.bookId),
-          );
-        } else if (state is WaitingListError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          );
-        }
-      },
-
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<WaitingListBloc, WaitingListState>(
+          listener: (context, state) {
+            if (state is WaitingListActionSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: const Color(0xFF22C55E),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              );
+              context.read<BookDetailsBloc>().add(
+                FetchBookDetailsEvent(bookId: widget.bookId),
+              );
+            } else if (state is WaitingListError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              );
+            }
+          },
+        ),
+        // ✅ جديد: يستهلك حالة ReadBookCubit ويتصرف (Loading / Error / Success)
+        BlocListener<ReadBookCubit, ReadBookState>(
+          listener: (context, state) {
+            if (state is ReadBookLoading) {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (_) =>
+                    const Center(child: CircularProgressIndicator()),
+              );
+            } else if (state is ReadBookError) {
+              // يسكر Dialog التحميل إذا كان مفتوح
+              Navigator.of(context, rootNavigator: true).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.message),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              );
+            } else if (state is ReadBookSuccess) {
+              // يسكر Dialog التحميل
+              Navigator.of(context, rootNavigator: true).pop();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => Scaffold(
+                    appBar: AppBar(title: const Text('Book Reader')),
+                    body: SfPdfViewer.file(state.file),
+                  ),
+                ),
+              );
+            }
+          },
+        ),
+      ],
       child: Scaffold(
         backgroundColor: scaffoldBg,
         body: BlocConsumer<BookDetailsBloc, BookDetailsState>(
@@ -460,45 +503,56 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
                                             const SizedBox(height: 10),
                                             Row(
                                               children: [
-                                                Text(
-                                                  '\$${book.price ?? "0"}',
-                                                  style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: _textColor,
+                                                Flexible(
+                                                  child: Text(
+                                                    '\$${book.price ?? "0"}',
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: _textColor,
+                                                    ),
                                                   ),
                                                 ),
-                                                const SizedBox(width: 40),
-                                                Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 3,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color: book.isAvailable
-                                                        ? Colors.green
-                                                              .withOpacity(0.15)
-                                                        : Colors.grey
-                                                              .withOpacity(
-                                                                0.15,
-                                                              ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          8,
+                                                const SizedBox(width: 8),
+                                                Flexible(
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 8,
+                                                          vertical: 3,
                                                         ),
-                                                  ),
-                                                  child: Text(
-                                                    book.isAvailable
-                                                        ? 'Available'
-                                                        : 'Unavailable',
-                                                    style: TextStyle(
-                                                      fontSize: 11,
-                                                      fontWeight:
-                                                          FontWeight.w600,
+                                                    decoration: BoxDecoration(
                                                       color: book.isAvailable
                                                           ? Colors.green
-                                                          : Colors.grey,
+                                                                .withOpacity(
+                                                                  0.15,
+                                                                )
+                                                          : Colors.grey
+                                                                .withOpacity(
+                                                                  0.15,
+                                                                ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                    child: Text(
+                                                      book.isAvailable
+                                                          ? 'Available'
+                                                          : 'Unavailable',
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: book.isAvailable
+                                                            ? Colors.green
+                                                            : Colors.grey,
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
@@ -694,8 +748,160 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () async {
-                          await _addBook(widget.bookId, 'buy');
+                        onPressed: () {
+                          context.read<ReadBookCubit>().fetchAndOpenBook(
+                            int.parse(widget.bookId),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isDark
+                              ? Colors.grey[800]
+                              : Colors.grey[200],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          elevation: 0,
+                        ),
+                        icon: Icon(
+                          Icons.menu_book_rounded,
+                          color: isDark ? Colors.white : AppColors.primary,
+                          size: 20,
+                        ),
+                        label: Text(
+                          'Read Book',
+                          style: TextStyle(
+                            color: isDark ? Colors.white : AppColors.primary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(20),
+                              ),
+                            ),
+                            backgroundColor: isDark
+                                ? AppColors.darkCard
+                                : Colors.white,
+                            builder: (sheetContext) {
+                              return Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  20,
+                                  20,
+                                  20,
+                                  32,
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Container(
+                                      width: 36,
+                                      height: 4,
+                                      margin: const EdgeInsets.only(bottom: 16),
+                                      alignment: Alignment.center,
+                                      child: Container(
+                                        width: 36,
+                                        height: 4,
+                                        decoration: BoxDecoration(
+                                          color: isDark
+                                              ? Colors.white24
+                                              : Colors.black12,
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      'Choose Action',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: primaryText,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    // ===== زر الاستعارة/الانتظار: نفس المنطق تمامًا =====
+                                    ElevatedButton.icon(
+                                      onPressed: () {
+                                        Navigator.pop(sheetContext);
+                                        borrowAction();
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: borrowColor,
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 14,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      icon: Icon(
+                                        borrowIcon,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                      label: Text(
+                                        borrowText,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    // ===== زر الشراء: نفس المنطق تمامًا =====
+                                    ElevatedButton.icon(
+                                      onPressed: () async {
+                                        Navigator.pop(sheetContext);
+                                        await _addBook(widget.bookId, 'buy');
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: accent,
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 14,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        elevation: 0,
+                                      ),
+                                      icon: const Icon(
+                                        Icons.shopping_cart_outlined,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                      label: const Text(
+                                        'Buy',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: accent,
@@ -714,28 +920,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: borrowAction,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: borrowColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          elevation: 0,
-                        ),
-                        icon: Icon(borrowIcon, color: Colors.white, size: 20),
-                        label: Text(
-                          borrowText,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
