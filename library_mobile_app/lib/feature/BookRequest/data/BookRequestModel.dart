@@ -35,4 +35,26 @@ class BookRequestModel {
   Map<String, dynamic> toJson() {
     return {'book_title': bookTitle, 'author_name': authorName, 'notes': notes};
   }
+
+  BookRequestModel copyWith({
+    int? id,
+    String? bookTitle,
+    String? authorName,
+    String? status,
+    String? notes,
+    String? adminNote,
+    int? customerId,
+    String? createdAt,
+  }) {
+    return BookRequestModel(
+      id: id ?? this.id,
+      bookTitle: bookTitle ?? this.bookTitle,
+      authorName: authorName ?? this.authorName,
+      status: status ?? this.status,
+      notes: notes ?? this.notes,
+      adminNote: adminNote ?? this.adminNote,
+      customerId: customerId ?? this.customerId,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }

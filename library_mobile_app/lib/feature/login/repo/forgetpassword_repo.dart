@@ -7,10 +7,11 @@ class ForgotPasswordRepository {
 
   ForgotPasswordRepository({required this.baseUrl});
 
+  /// إرسال OTP إلى البريد الإلكتروني
   Future<String> sendOtp({required String email}) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/forgot-password'),
+        Uri.parse('$baseUrl/send-otp'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -30,38 +31,16 @@ class ForgotPasswordRepository {
     }
   }
 
-  Future<String> verifyOtp({required String email, required String otp}) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/verify-reset-otp'),
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({'email': email, 'otp': otp}),
-      );
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        final resetToken = data['reset_token'];
-
-        if (resetToken == null) {
-          throw Exception('Reset token was not returned by server');
-        }
-
-        return resetToken.toString();
-      }
-
-      throw Exception(data['message'] ?? 'Invalid verification code');
-    } catch (e) {
-      throw Exception(e.toString().replaceFirst('Exception: ', ''));
-    }
-  }
-
+  /// إعادة تعيين كلمة المرور
+  ///
+  /// Laravel سيتحقق من:
+  /// email
+  /// otp_code
+  /// password
+  /// password_confirmation
   Future<String> resetPassword({
     required String email,
-    required String resetToken,
+    required String otp,
     required String password,
     required String passwordConfirmation,
   }) async {
@@ -74,7 +53,7 @@ class ForgotPasswordRepository {
         },
         body: jsonEncode({
           'email': email,
-          'reset_token': resetToken,
+          'otp_code': otp,
           'password': password,
           'password_confirmation': passwordConfirmation,
         }),
@@ -84,6 +63,17 @@ class ForgotPasswordRepository {
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return data['message'] ?? 'Password reset successfully';
+      }
+
+      // Laravel validation errors
+      if (data['errors'] != null) {
+        final errors = data['errors'] as Map;
+
+        final firstError = errors.values.first;
+
+        if (firstError is List && firstError.isNotEmpty) {
+          throw Exception(firstError.first.toString());
+        }
       }
 
       throw Exception(data['message'] ?? 'Failed to reset password');

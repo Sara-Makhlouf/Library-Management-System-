@@ -21,11 +21,8 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
-
   final _otpController = TextEditingController();
-
   final _passwordController = TextEditingController();
-
   final _confirmPasswordController = TextEditingController();
 
   final ForgotPasswordRepository _repository = ForgotPasswordRepository(
@@ -34,15 +31,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   bool _isLoading = false;
 
+  /// false = email step
+  /// true = OTP + password step
   bool _otpSent = false;
 
-  bool _otpVerified = false;
-
   bool _obscurePassword = true;
-
   bool _obscureConfirmPassword = true;
-
-  String? _resetToken;
 
   static const int _resendWaitSeconds = 60;
 
@@ -52,7 +46,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   bool get _canResend => !_isLoading && _resendSeconds == 0;
 
-  int get _currentStep => _otpVerified ? 2 : (_otpSent ? 1 : 0);
+  int get _currentStep => _otpSent ? 1 : 0;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _otpController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _resendTimer?.cancel();
+
+    super.dispose();
+  }
+
+  // ============================================================
+  // RESEND TIMER
+  // ============================================================
 
   void _startResendCountdown() {
     _resendTimer?.cancel();
@@ -75,28 +84,26 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         });
       } else {
         setState(() {
-          _resendSeconds -= 1;
+          _resendSeconds--;
         });
       }
     });
   }
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _otpController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    _resendTimer?.cancel();
-
-    super.dispose();
-  }
+  // ============================================================
+  // SEND OTP
+  // ============================================================
 
   Future<void> _sendOtp() async {
     final email = _emailController.text.trim();
 
     if (email.isEmpty) {
       _showMessage('Please enter your email address', isError: true);
+      return;
+    }
+
+    if (!_isValidEmail(email)) {
+      _showMessage('Please enter a valid email address', isError: true);
       return;
     }
 
@@ -128,10 +135,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
   }
 
-  Future<void> _verifyOtp() async {
-    final email = _emailController.text.trim();
+  // ============================================================
+  // RESET PASSWORD
+  // ============================================================
 
+  Future<void> _resetPassword() async {
+    final email = _emailController.text.trim();
     final otp = _otpController.text.trim();
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    if (email.isEmpty) {
+      _showMessage('Please enter your email address', isError: true);
+      return;
+    }
 
     if (otp.isEmpty) {
       _showMessage('Please enter the verification code', isError: true);
@@ -143,61 +160,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final token = await _repository.verifyOtp(email: email, otp: otp);
-
-      if (!mounted) return;
-
-      setState(() {
-        _resetToken = token;
-        _otpVerified = true;
-        _isLoading = false;
-      });
-
-      _showMessage('Code verified successfully');
-    } catch (e) {
-      if (!mounted) return;
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      _showMessage(e.toString().replaceFirst('Exception: ', ''), isError: true);
-    }
-  }
-
-  Future<void> _resetPassword() async {
-    final email = _emailController.text.trim();
-
-    final password = _passwordController.text;
-
-    final confirmPassword = _confirmPasswordController.text;
-
-    if (password.isEmpty || confirmPassword.isEmpty) {
+    if (password.isEmpty) {
       _showMessage('Please enter your new password', isError: true);
-
       return;
     }
 
     if (password.length < 8) {
       _showMessage('Password must be at least 8 characters', isError: true);
+      return;
+    }
 
+    if (confirmPassword.isEmpty) {
+      _showMessage('Please confirm your new password', isError: true);
       return;
     }
 
     if (password != confirmPassword) {
       _showMessage('Passwords do not match', isError: true);
-
-      return;
-    }
-
-    if (_resetToken == null) {
-      _showMessage('Please verify the code first', isError: true);
-
       return;
     }
 
@@ -208,7 +187,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     try {
       final message = await _repository.resetPassword(
         email: email,
-        resetToken: _resetToken!,
+        otp: otp,
         password: password,
         passwordConfirmation: confirmPassword,
       );
@@ -237,16 +216,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
   }
 
+  // ============================================================
+  // RESEND OTP
+  // ============================================================
+
   Future<void> _resendOtp() async {
     _otpController.clear();
 
-    setState(() {
-      _otpVerified = false;
-      _resetToken = null;
-    });
-
     await _sendOtp();
   }
+
+  // ============================================================
+  // VALIDATE EMAIL
+  // ============================================================
+
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$').hasMatch(email);
+  }
+
+  // ============================================================
+  // SNACKBAR
+  // ============================================================
 
   void _showMessage(String message, {bool isError = false}) {
     if (!mounted) return;
@@ -261,6 +251,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       );
   }
 
+  // ============================================================
+  // BUILD
+  // ============================================================
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -274,6 +268,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
       body: Stack(
         children: [
+          // ======================================================
+          // DECORATIVE CIRCLES
+          // ======================================================
           Positioned(
             top: -60,
             left: -60,
@@ -304,6 +301,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
           ),
 
+          // ======================================================
+          // THEME TOGGLE
+          // ======================================================
           Positioned(
             top: MediaQuery.of(context).padding.top + 12,
             right: 16,
@@ -312,6 +312,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ).animate().fadeIn(duration: 400.ms).slideX(begin: 0.3, end: 0),
           ),
 
+          // ======================================================
+          // LOGO
+          // ======================================================
           Positioned(
             top: size.height * 0.07,
             left: 0,
@@ -355,13 +358,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
           ),
 
+          // ======================================================
+          // MAIN CARD
+          // ======================================================
           Align(
             alignment: Alignment.bottomCenter,
-
             child: Container(
               width: double.infinity,
 
-              constraints: BoxConstraints(maxHeight: size.height * 0.70),
+              constraints: BoxConstraints(maxHeight: size.height * 0.76),
 
               decoration: BoxDecoration(
                 color: isDark ? AppColors.accentDark : Colors.white,
@@ -391,6 +396,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
 
                   children: [
+                    // ==================================================
+                    // BACK BUTTON
+                    // ==================================================
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
 
@@ -409,6 +417,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                     const SizedBox(height: 14),
 
+                    // ==================================================
+                    // STEP ICON
+                    // ==================================================
                     Container(
                           key: ValueKey('step_icon_$_currentStep'),
                           width: 56,
@@ -420,10 +431,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             ),
                           ),
                           child: Icon(
-                            _otpVerified
-                                ? Icons.lock_reset_rounded
-                                : _otpSent
-                                ? Icons.mark_email_read
+                            _otpSent
+                                ? Icons.mark_email_read_rounded
                                 : Icons.email_outlined,
                             color: AppColors.primary,
                             size: 26,
@@ -439,12 +448,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                     const SizedBox(height: 16),
 
+                    // ==================================================
+                    // TITLE
+                    // ==================================================
                     Text(
-                          _otpVerified
-                              ? 'Create new password'
-                              : _otpSent
-                              ? 'Verify your email'
-                              : 'Forgot password?',
+                          _otpSent ? 'Reset your password' : 'Forgot password?',
                           style: TextStyle(
                             fontSize: 27,
                             fontWeight: FontWeight.bold,
@@ -459,11 +467,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                     const SizedBox(height: 6),
 
+                    // ==================================================
+                    // DESCRIPTION
+                    // ==================================================
                     Text(
-                      _otpVerified
-                          ? 'Enter your new password below.'
-                          : _otpSent
-                          ? 'Enter the code sent to your email.'
+                      _otpSent
+                          ? 'Enter the verification code and your new password.'
                           : 'Enter your email and we will send you a verification code.',
                       style: TextStyle(
                         fontSize: 14,
@@ -475,8 +484,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                     const SizedBox(height: 16),
 
+                    // ==================================================
+                    // PROGRESS
+                    // ==================================================
                     Row(
-                      children: List.generate(3, (index) {
+                      children: List.generate(2, (index) {
                         final active = index <= _currentStep;
 
                         return Padding(
@@ -484,7 +496,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 250),
                             height: 5,
-                            width: index == _currentStep ? 26 : 14,
+                            width: index == _currentStep ? 30 : 14,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(3),
                               color: active
@@ -498,16 +510,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                     const SizedBox(height: 24),
 
-                    if (!_otpVerified)
-                      CustomInputField(
-                        controller: _emailController,
-                        hint: 'Email address',
-                        icon: Icons.email_outlined,
-                        isDark: isDark,
-                        keyboardType: TextInputType.emailAddress,
-                      ),
+                    // ==================================================
+                    // EMAIL
+                    // ==================================================
+                    CustomInputField(
+                      controller: _emailController,
+                      hint: 'Email address',
+                      icon: Icons.email_outlined,
+                      isDark: isDark,
+                      keyboardType: TextInputType.emailAddress,
+                    ),
 
-                    if (_otpSent && !_otpVerified) ...[
+                    // ==================================================
+                    // OTP + PASSWORD
+                    // ==================================================
+                    if (_otpSent) ...[
                       const SizedBox(height: 14),
 
                       CustomInputField(
@@ -548,16 +565,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 ),
                               ),
                       ),
-                    ],
 
-                    if (_otpVerified) ...[
+                      const SizedBox(height: 4),
+
                       CustomInputField(
                         controller: _passwordController,
                         hint: 'New password',
                         icon: Icons.lock_outline_rounded,
                         isDark: isDark,
                         obscure: _obscurePassword,
-
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
@@ -568,7 +584,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 ? AppColors.textDark.withOpacity(0.4)
                                 : AppColors.textLight.withOpacity(0.4),
                           ),
-
                           onPressed: () {
                             setState(() {
                               _obscurePassword = !_obscurePassword;
@@ -585,7 +600,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         icon: Icons.lock_reset_rounded,
                         isDark: isDark,
                         obscure: _obscureConfirmPassword,
-
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscureConfirmPassword
@@ -596,7 +610,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 ? AppColors.textDark.withOpacity(0.4)
                                 : AppColors.textLight.withOpacity(0.4),
                           ),
-
                           onPressed: () {
                             setState(() {
                               _obscureConfirmPassword =
@@ -609,28 +622,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                     const SizedBox(height: 24),
 
+                    // ==================================================
+                    // MAIN BUTTON
+                    // ==================================================
                     CustomButton(
                       isLoading: _isLoading,
 
-                      onTap: _otpVerified
-                          ? _resetPassword
-                          : _otpSent
-                          ? _verifyOtp
-                          : _sendOtp,
+                      onTap: _otpSent ? _resetPassword : _sendOtp,
 
-                      text: _otpVerified
-                          ? 'Reset password'
-                          : _otpSent
-                          ? 'Verify code'
-                          : 'Send OTP',
+                      text: _otpSent ? 'Reset password' : 'Send OTP',
                     ),
 
                     const SizedBox(height: 20),
 
+                    // ==================================================
+                    // BACK TO LOGIN
+                    // ==================================================
                     Center(
                       child: TextButton(
                         onPressed: () => Navigator.of(context).pop(),
-
                         child: const Text(
                           'Back to login',
                           style: TextStyle(

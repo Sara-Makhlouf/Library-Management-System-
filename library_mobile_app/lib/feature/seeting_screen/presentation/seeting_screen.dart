@@ -1,16 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import 'package:library_mobile_app/feature/seeting_screen/deletaccount/bloc/delete_bloc.dart';
-import 'package:library_mobile_app/feature/seeting_screen/deletaccount/bloc/delete_event.dart';
-import 'package:library_mobile_app/feature/seeting_screen/deletaccount/bloc/delete_state.dart';
-import 'package:library_mobile_app/feature/seeting_screen/deletaccount/repo/delete_repo.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:library_mobile_app/core/theme_cubit.dart';
 import 'package:library_mobile_app/core/locale_cubit.dart';
 import 'package:library_mobile_app/core/theme.dart';
+import 'package:library_mobile_app/core/theme_cubit.dart';
 
 import 'package:library_mobile_app/feature/login/presentation/signin_screen.dart';
 
@@ -18,6 +12,11 @@ import 'package:library_mobile_app/feature/logout/bloc/logout_bloc.dart';
 import 'package:library_mobile_app/feature/logout/bloc/logout_event.dart';
 import 'package:library_mobile_app/feature/logout/bloc/logout_state.dart';
 import 'package:library_mobile_app/feature/logout/repo/logout_repo.dart';
+
+import 'package:library_mobile_app/feature/seeting_screen/deletaccount/bloc/delete_bloc.dart';
+import 'package:library_mobile_app/feature/seeting_screen/deletaccount/bloc/delete_event.dart';
+import 'package:library_mobile_app/feature/seeting_screen/deletaccount/bloc/delete_state.dart';
+import 'package:library_mobile_app/feature/seeting_screen/deletaccount/repo/delete_repo.dart';
 
 import 'package:library_mobile_app/l10n/app_localizations.dart';
 
@@ -58,7 +57,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       backgroundColor: isDark
           ? AppColors.backgroundDark
           : AppColors.backgroundLight,
-
       appBar: AppBar(
         title: Text(
           localizations.settings,
@@ -69,7 +67,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         elevation: 0,
         centerTitle: true,
       ),
-
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -149,26 +146,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
               trailing: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: currentLocale.languageCode,
-
                   icon: const Icon(
                     Icons.arrow_drop_down_rounded,
                     color: AppColors.primary,
                     size: 26,
                   ),
-
                   dropdownColor: isDark ? AppColors.darkCard : Colors.white,
-
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
                     color: isDark ? AppColors.textDark : AppColors.textLight,
                   ),
-
                   items: const [
                     DropdownMenuItem(value: 'ar', child: Text('العربية')),
                     DropdownMenuItem(value: 'en', child: Text('English')),
                   ],
-
                   onChanged: (String? value) {
                     if (value != null) {
                       context.read<LocaleCubit>().changeLanguage(value);
@@ -188,7 +180,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 8),
 
           _buildCard(isDark, [
-            // Borrowing Guide
             _buildSettingsTile(
               icon: Icons.menu_book_rounded,
               label: 'Borrowing Guide',
@@ -199,7 +190,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             _divider(isDark),
 
-            // Send Feedback
             _buildSettingsTile(
               icon: Icons.feedback_outlined,
               label: 'Send Feedback',
@@ -210,7 +200,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             _divider(isDark),
 
-            // Rate App
             _buildSettingsTile(
               icon: Icons.star_outline_rounded,
               label: 'Rate the App',
@@ -229,7 +218,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 8),
 
           _buildCard(isDark, [
-            // App Version
             _buildSettingsTile(
               icon: Icons.info_outline_rounded,
               label: 'App Version',
@@ -248,7 +236,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             _divider(isDark),
 
-            // Terms
             _buildSettingsTile(
               icon: Icons.description_outlined,
               label: 'Terms & Conditions',
@@ -266,7 +253,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             _divider(isDark),
 
-            // Privacy
             _buildSettingsTile(
               icon: Icons.policy_outlined,
               label: 'Privacy Policy',
@@ -310,6 +296,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // ============================================================
 
   void _showDeleteAccountDialog(bool isDark) {
+    final phoneController = TextEditingController();
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -317,17 +305,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return BlocProvider.value(
           value: _deleteAccountBloc,
           child: BlocConsumer<DeleteAccountBloc, DeleteAccountState>(
-            listener: (context, state) async {
+            listener: (blocContext, state) async {
               if (state is DeleteAccountSuccess) {
                 final prefs = await SharedPreferences.getInstance();
 
+                // Remove all authentication/user data.
+                await prefs.remove('auth_token');
                 await prefs.remove('token');
                 await prefs.remove('user');
+                await prefs.remove('user_data');
+                await prefs.remove('fcm_token');
+
+                phoneController.dispose();
 
                 if (!mounted) return;
 
+                // Close dialog.
                 Navigator.of(dialogContext).pop();
 
+                // Go to login and remove all previous routes.
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const SigninScreen()),
                   (route) => false,
@@ -352,7 +348,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 );
               }
             },
-            builder: (context, state) {
+
+            builder: (blocContext, state) {
               final isLoading = state is DeleteAccountLoading;
 
               return AlertDialog(
@@ -393,12 +390,190 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
 
-                content: Text(
-                  'Are you sure you want to permanently delete your account?\n\n'
-                  'Your account and its associated data will be permanently deleted. '
-                  'This action cannot be undone.',
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Are you sure you want to permanently '
+                      'delete your account?\n\n'
+                      'Your account and its associated data '
+                      'will be permanently deleted. '
+                      'This action cannot be undone.',
+                      style: TextStyle(
+                        height: 1.5,
+                        color: isDark
+                            ? AppColors.textDark.withOpacity(0.7)
+                            : AppColors.textLight.withOpacity(0.7),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    Text(
+                      'Enter your phone number to confirm:',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? AppColors.textDark
+                            : AppColors.textLight,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    TextField(
+                      controller: phoneController,
+                      keyboardType: TextInputType.phone,
+                      enabled: !isLoading,
+                      style: TextStyle(
+                        color: isDark
+                            ? AppColors.textDark
+                            : AppColors.textLight,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Phone number',
+                        prefixIcon: const Icon(
+                          Icons.phone_outlined,
+                          color: AppColors.primary,
+                        ),
+                        filled: true,
+                        fillColor: isDark
+                            ? Colors.white.withOpacity(0.05)
+                            : AppColors.backgroundLight,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                actions: [
+                  TextButton(
+                    onPressed: isLoading
+                        ? null
+                        : () {
+                            phoneController.dispose();
+                            Navigator.of(dialogContext).pop();
+                          },
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: isDark
+                            ? AppColors.textDark
+                            : AppColors.textLight,
+                      ),
+                    ),
+                  ),
+
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFB33A3A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+
+                    onPressed: isLoading
+                        ? null
+                        : () {
+                            final phone = phoneController.text.trim();
+
+                            if (phone.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Please enter your phone number',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
+
+                            blocContext.read<DeleteAccountBloc>().add(
+                              DeleteAccountRequested(phone: phone),
+                            );
+                          },
+
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text('Delete Permanently'),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  // ============================================================
+  // LOGOUT
+  // ============================================================
+
+  void _showLogoutDialog(bool isDark) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return BlocProvider.value(
+          value: _logoutBloc,
+          child: BlocConsumer<LogoutBloc, LogoutState>(
+            listener: (blocContext, state) {
+              if (state is LogoutSuccess) {
+                Navigator.of(dialogContext).pop();
+
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const SigninScreen()),
+                  (route) => false,
+                );
+              }
+
+              if (state is LogoutFailure) {
+                Navigator.of(dialogContext).pop();
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+
+            builder: (blocContext, state) {
+              final isLoading = state is LogoutLoading;
+
+              return AlertDialog(
+                backgroundColor: isDark ? AppColors.darkCard : Colors.white,
+
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+
+                title: Text(
+                  'Log Out',
                   style: TextStyle(
-                    height: 1.5,
+                    color: isDark ? AppColors.textDark : AppColors.textLight,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                content: Text(
+                  'Are you sure you want to log out of your account?',
+                  style: TextStyle(
                     color: isDark
                         ? AppColors.textDark.withOpacity(0.7)
                         : AppColors.textLight.withOpacity(0.7),
@@ -430,13 +605,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
+
                     onPressed: isLoading
                         ? null
                         : () {
-                            context.read<DeleteAccountBloc>().add(
-                              DeleteAccountRequested(),
+                            blocContext.read<LogoutBloc>().add(
+                              LogoutRequested(),
                             );
                           },
+
                     child: isLoading
                         ? const SizedBox(
                             width: 18,
@@ -446,7 +623,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text('Delete Permanently'),
+                        : const Text('Log Out'),
                   ),
                 ],
               );
@@ -454,109 +631,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         );
       },
-    );
-  }
-
-  // ============================================================
-  // LOGOUT
-  // ============================================================
-
-  void _showLogoutDialog(bool isDark) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => BlocProvider.value(
-        value: _logoutBloc,
-        child: BlocConsumer<LogoutBloc, LogoutState>(
-          listener: (context, state) {
-            if (state is LogoutSuccess) {
-              Navigator.pop(dialogContext);
-
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const SigninScreen()),
-                (route) => false,
-              );
-            }
-
-            if (state is LogoutFailure) {
-              Navigator.pop(dialogContext);
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          },
-
-          builder: (context, state) {
-            final isLoading = state is LogoutLoading;
-
-            return AlertDialog(
-              backgroundColor: isDark ? AppColors.darkCard : Colors.white,
-
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-
-              title: Text(
-                'Log Out',
-                style: TextStyle(
-                  color: isDark ? AppColors.textDark : AppColors.textLight,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              content: Text(
-                'Are you sure you want to log out of your account?',
-                style: TextStyle(
-                  color: isDark
-                      ? AppColors.textDark.withOpacity(0.7)
-                      : AppColors.textLight.withOpacity(0.7),
-                ),
-              ),
-
-              actions: [
-                TextButton(
-                  onPressed: isLoading
-                      ? null
-                      : () => Navigator.pop(dialogContext),
-                  child: Text(
-                    'Cancel',
-                    style: TextStyle(
-                      color: isDark ? AppColors.textDark : AppColors.textLight,
-                    ),
-                  ),
-                ),
-
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFB33A3A),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: isLoading
-                      ? null
-                      : () {
-                          context.read<LogoutBloc>().add(LogoutRequested());
-                        },
-                  child: isLoading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text('Log Out'),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
     );
   }
 
@@ -635,7 +709,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                  },
                   child: Text(
                     'Cancel',
                     style: TextStyle(
@@ -649,14 +725,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
+
                   onPressed: selectedStars == 0
                       ? null
                       : () {
-                          Navigator.pop(dialogContext);
+                          Navigator.of(dialogContext).pop();
 
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -667,6 +745,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           );
                         },
+
                   child: const Text('Submit'),
                 ),
               ],
@@ -749,7 +828,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             TextButton(
               onPressed: () {
                 controller.dispose();
-                Navigator.pop(dialogContext);
+                Navigator.of(dialogContext).pop();
               },
               child: Text(
                 'Cancel',
@@ -767,6 +846,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
+
               onPressed: () {
                 if (controller.text.trim().isEmpty) {
                   return;
@@ -776,7 +856,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 controller.dispose();
 
-                Navigator.pop(dialogContext);
+                Navigator.of(dialogContext).pop();
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -787,10 +867,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 );
 
-                // TODO:
-                // Send feedback to your backend here.
-                // feedback contains the user's message.
+                debugPrint('User feedback: $feedback');
               },
+
               child: const Text('Send'),
             ),
           ],
@@ -817,61 +896,64 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
 
-      builder: (_) => DraggableScrollableSheet(
-        initialChildSize: 0.5,
-        minChildSize: 0.3,
-        maxChildSize: 0.85,
-        expand: false,
+      builder: (_) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5,
+          minChildSize: 0.3,
+          maxChildSize: 0.85,
+          expand: false,
 
-        builder: (context, scrollController) => Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          builder: (context, scrollController) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
 
-          child: ListView(
-            controller: scrollController,
+              child: ListView(
+                controller: scrollController,
+                children: [
+                  const SizedBox(height: 12),
 
-            children: [
-              const SizedBox(height: 12),
-
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white24 : Colors.black12,
-                    borderRadius: BorderRadius.circular(10),
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white24 : Colors.black12,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
-                ),
+
+                  const SizedBox(height: 16),
+
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: isDark ? AppColors.textDark : AppColors.textLight,
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  Text(
+                    body,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      height: 1.6,
+                      color: isDark
+                          ? AppColors.textDark.withOpacity(0.7)
+                          : AppColors.textLight.withOpacity(0.7),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+                ],
               ),
-
-              const SizedBox(height: 16),
-
-              Text(
-                title,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: isDark ? AppColors.textDark : AppColors.textLight,
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              Text(
-                body,
-                style: TextStyle(
-                  fontSize: 13.5,
-                  height: 1.6,
-                  color: isDark
-                      ? AppColors.textDark.withOpacity(0.7)
-                      : AppColors.textLight.withOpacity(0.7),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-            ],
-          ),
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 

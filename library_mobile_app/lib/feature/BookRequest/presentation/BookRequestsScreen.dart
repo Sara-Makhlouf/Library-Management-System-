@@ -1,12 +1,16 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:library_mobile_app/core/theme.dart';
+
 import 'package:library_mobile_app/feature/BookRequest/bloc/BookRequestBloc.dart';
 import 'package:library_mobile_app/feature/BookRequest/bloc/BookRequestEvent.dart';
 import 'package:library_mobile_app/feature/BookRequest/bloc/BookRequestState.dart';
+
 import 'package:library_mobile_app/feature/BookRequest/presentation/BookRequestDetailScreen.dart';
 import 'package:library_mobile_app/feature/BookRequest/presentation/widget/AddBookRequestBottomSheet.dart';
 
@@ -17,86 +21,183 @@ class BookRequestsScreen extends StatefulWidget {
   State<BookRequestsScreen> createState() => _BookRequestsScreenState();
 }
 
-class _BookRequestsScreenState extends State<BookRequestsScreen>
-    with WidgetsBindingObserver {
-  Timer? _refreshTimer;
+class _BookRequestsScreenState extends State<BookRequestsScreen> {
+  StreamSubscription<RemoteMessage>? _messageSubscription;
 
   @override
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addObserver(this);
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      final bloc = context.read<BookRequestBloc>();
-
-      // Initial fetch
-      bloc.add(FetchBookRequestsEvent());
-
-      // Auto refresh every 5 seconds
-      _startAutoRefresh();
+      context.read<BookRequestBloc>().add(FetchBookRequestsEvent());
     });
+
+    _listenForBookRequestUpdates();
   }
 
-  // =============================================================
-  // AUTO REFRESH
-  // =============================================================
+  // ============================================================
+  // REAL-TIME FCM LISTENER
+  // ============================================================
 
-  void _startAutoRefresh() {
-    _refreshTimer?.cancel();
-
-    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+  void _listenForBookRequestUpdates() {
+    _messageSubscription = FirebaseMessaging.onMessage.listen((
+      RemoteMessage message,
+    ) {
       if (!mounted) return;
 
-      context.read<BookRequestBloc>().add(FetchBookRequestsEvent());
+      final data = message.data;
+
+      if (data.isEmpty) return;
+
+      final type = data['type']?.toString();
+
+      if (type != 'book_request_status_updated') {
+        return;
+      }
+
+      final requestId = int.tryParse(data['request_id']?.toString() ?? '');
+
+      final status = data['status']?.toString();
+
+      final adminNote = data['admin_note']?.toString();
+
+      if (requestId == null || status == null) {
+        return;
+      }
+
+      _updateRequestLocally(
+        requestId: requestId,
+        status: status,
+        adminNote: adminNote,
+      );
+
+      _showStatusUpdateSnackBar(status, adminNote);
     });
   }
 
-  void _stopAutoRefresh() {
-    _refreshTimer?.cancel();
-    _refreshTimer = null;
+  // ============================================================
+  // UPDATE REQUEST WITHOUT API REFRESH
+  // ============================================================
+
+  void _updateRequestLocally({
+    required int requestId,
+    required String status,
+    String? adminNote,
+  }) {
+    final bloc = context.read<BookRequestBloc>();
+
+    final currentState = bloc.state;
+
+    if (currentState is! BookRequestsLoadedState) {
+      return;
+    }
+
+    final updatedRequests = currentState.requests.map((request) {
+      if (request.id != requestId) {
+        return request;
+      }
+
+      /*
+       * إذا الـ request model عندك immutable
+       * استخدم copyWith هنا.
+       *
+       * مثال:
+       *
+       * return request.copyWith(
+       *   status: status,
+       *   adminNote: adminNote,
+       * );
+       *
+       * إذا ما عندك copyWith، لازم نضيفها للـ Model.
+       */
+
+      return request.copyWith(status: status, adminNote: adminNote);
+    }).toList();
+
+    bloc.emit(BookRequestsLoadedState(requests: updatedRequests));
   }
 
-  // =============================================================
-  // APP LIFECYCLE
-  // =============================================================
+  // ============================================================
+  // STATUS UPDATE SNACKBAR
+  // ============================================================
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-
+  void _showStatusUpdateSnackBar(String status, String? adminNote) {
     if (!mounted) return;
 
-    if (state == AppLifecycleState.resumed) {
-      // When user comes back to the app,
-      // immediately fetch the latest requests.
-      context.read<BookRequestBloc>().add(FetchBookRequestsEvent());
+    final normalizedStatus = status.toLowerCase();
 
-      _startAutoRefresh();
-    } else if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.detached) {
-      _stopAutoRefresh();
+    Color color;
+    IconData icon;
+    String message;
+
+    switch (normalizedStatus) {
+      case 'approved':
+      case 'accepted':
+        color = Colors.green;
+        icon = Icons.check_circle_outline_rounded;
+        message = 'Your book request has been approved.';
+        break;
+
+      case 'rejected':
+      case 'declined':
+        color = Colors.redAccent;
+        icon = Icons.cancel_outlined;
+        message = 'Your book request has been rejected.';
+        break;
+
+      case 'pending':
+        color = Colors.orange;
+        icon = Icons.access_time_rounded;
+        message = 'Your book request is pending.';
+        break;
+
+      default:
+        color = AppColors.primary;
+        icon = Icons.info_outline_rounded;
+        message = 'Your book request status has been updated.';
     }
-  }
 
-  // =============================================================
-  // DISPOSE
-  // =============================================================
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          duration: const Duration(seconds: 3),
+          backgroundColor: color,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          content: Row(
+            children: [
+              Icon(icon, color: Colors.white, size: 21),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+  }
 
   @override
   void dispose() {
-    _stopAutoRefresh();
-    WidgetsBinding.instance.removeObserver(this);
-
+    _messageSubscription?.cancel();
     super.dispose();
   }
 
-  // =============================================================
+  // ============================================================
   // BUILD
-  // =============================================================
+  // ============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -117,15 +218,14 @@ class _BookRequestsScreenState extends State<BookRequestsScreen>
     return Scaffold(
       backgroundColor: backgroundColor,
 
-      // =========================================================
+      // ========================================================
       // APP BAR
-      // =========================================================
+      // ========================================================
       appBar: AppBar(
         backgroundColor: backgroundColor,
         elevation: 0,
         centerTitle: true,
         iconTheme: IconThemeData(color: primaryText),
-
         title: Text(
           'Book Requests',
           style: TextStyle(
@@ -135,25 +235,11 @@ class _BookRequestsScreenState extends State<BookRequestsScreen>
             letterSpacing: -0.3,
           ),
         ),
-
-        actions: [
-          IconButton(
-            tooltip: 'Refresh',
-            onPressed: () {
-              if (!mounted) return;
-
-              context.read<BookRequestBloc>().add(FetchBookRequestsEvent());
-            },
-            icon: Icon(Icons.refresh_rounded, color: primaryText, size: 25),
-          ),
-
-          const SizedBox(width: 6),
-        ],
       ),
 
-      // =========================================================
+      // ========================================================
       // BODY
-      // =========================================================
+      // ========================================================
       body: BlocConsumer<BookRequestBloc, BookRequestState>(
         listenWhen: (previous, current) =>
             current is BookRequestActionSuccessState ||
@@ -177,17 +263,17 @@ class _BookRequestsScreenState extends State<BookRequestsScreen>
             current is BookRequestErrorState,
 
         builder: (context, state) {
-          // =====================================================
+          // ====================================================
           // LOADING
-          // =====================================================
+          // ====================================================
 
           if (state is BookRequestLoading) {
             return Center(child: CircularProgressIndicator(color: accent));
           }
 
-          // =====================================================
+          // ====================================================
           // ERROR
-          // =====================================================
+          // ====================================================
 
           if (state is BookRequestErrorState) {
             return _buildErrorState(
@@ -199,78 +285,43 @@ class _BookRequestsScreenState extends State<BookRequestsScreen>
             );
           }
 
-          // =====================================================
+          // ====================================================
           // LOADED
-          // =====================================================
+          // ====================================================
 
           if (state is BookRequestsLoadedState) {
             if (state.requests.isEmpty) {
-              return RefreshIndicator(
-                color: accent,
-                onRefresh: () async {
-                  if (!mounted) return;
-
-                  context.read<BookRequestBloc>().add(FetchBookRequestsEvent());
-                },
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(
-                    parent: BouncingScrollPhysics(),
-                  ),
-                  children: [
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.7,
-                      child: _buildEmptyState(
-                        context,
-                        accent,
-                        primaryText,
-                        secondaryText,
-                      ),
-                    ),
-                  ],
-                ),
+              return _buildEmptyState(
+                context,
+                accent,
+                primaryText,
+                secondaryText,
               );
             }
 
-            return RefreshIndicator(
-              color: accent,
+            return ListView.builder(
+              physics: const BouncingScrollPhysics(),
 
-              onRefresh: () async {
-                if (!mounted) return;
+              padding: const EdgeInsets.fromLTRB(18, 14, 18, 120),
 
-                context.read<BookRequestBloc>().add(FetchBookRequestsEvent());
+              itemCount: state.requests.length,
 
-                // Small delay so RefreshIndicator
-                // has enough time to display correctly.
-                await Future.delayed(const Duration(milliseconds: 500));
+              itemBuilder: (context, index) {
+                final request = state.requests[index];
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _buildRequestCard(
+                    context: context,
+                    request: request,
+                    isDark: isDark,
+                    cardColor: cardColor,
+                    primaryText: primaryText,
+                    secondaryText: secondaryText,
+                    accent: accent,
+                  ),
+                );
               },
-
-              child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(
-                  parent: BouncingScrollPhysics(),
-                ),
-
-                padding: const EdgeInsets.fromLTRB(18, 14, 18, 100),
-
-                itemCount: state.requests.length,
-
-                itemBuilder: (context, index) {
-                  final request = state.requests[index];
-
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-
-                    child: _buildRequestCard(
-                      context: context,
-                      request: request,
-                      isDark: isDark,
-                      cardColor: cardColor,
-                      primaryText: primaryText,
-                      secondaryText: secondaryText,
-                      accent: accent,
-                    ),
-                  );
-                },
-              ),
             );
           }
 
@@ -278,9 +329,9 @@ class _BookRequestsScreenState extends State<BookRequestsScreen>
         },
       ),
 
-      // =========================================================
+      // ========================================================
       // ADD REQUEST BUTTON
-      // =========================================================
+      // ========================================================
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           _openAddRequestSheet(context);
@@ -363,27 +414,23 @@ class _BookRequestsScreenState extends State<BookRequestsScreen>
 
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-
           onTap: () async {
-            if (!mounted) return;
+            final bookRequestBloc = context.read<BookRequestBloc>();
 
             await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (_) => BlocProvider.value(
-                  value: context.read<BookRequestBloc>(),
+                  value: bookRequestBloc,
                   child: BookRequestDetailScreen(requestId: request.id),
                 ),
               ),
             );
 
-            // When returning from details,
-            // immediately fetch the latest status.
             if (!mounted) return;
 
-            context.read<BookRequestBloc>().add(FetchBookRequestsEvent());
+            bookRequestBloc.add(FetchBookRequestsEvent());
           },
-
           child: Padding(
             padding: const EdgeInsets.all(13),
 
@@ -416,9 +463,7 @@ class _BookRequestsScreenState extends State<BookRequestsScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
 
                     children: [
-                      // ===========================================
                       // BOOK TITLE
-                      // ===========================================
                       Text(
                         request.bookTitle,
                         maxLines: 1,
@@ -433,9 +478,7 @@ class _BookRequestsScreenState extends State<BookRequestsScreen>
 
                       const SizedBox(height: 5),
 
-                      // ===========================================
                       // AUTHOR
-                      // ===========================================
                       Text(
                         'Author: ${request.authorName}',
                         maxLines: 1,
@@ -450,10 +493,10 @@ class _BookRequestsScreenState extends State<BookRequestsScreen>
 
                       const SizedBox(height: 9),
 
-                      // ===========================================
                       // STATUS
-                      // ===========================================
-                      Container(
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+
                         padding: const EdgeInsets.symmetric(
                           horizontal: 9,
                           vertical: 5,
@@ -701,7 +744,6 @@ class _BookRequestsScreenState extends State<BookRequestsScreen>
       builder: (_) {
         return BlocProvider.value(
           value: context.read<BookRequestBloc>(),
-
           child: const AddBookRequestBottomSheet(),
         );
       },
@@ -747,7 +789,6 @@ class _BookRequestsScreenState extends State<BookRequestsScreen>
                 color == Colors.green
                     ? Icons.check_circle_outline_rounded
                     : Icons.error_outline_rounded,
-
                 color: Colors.white,
                 size: 20,
               ),

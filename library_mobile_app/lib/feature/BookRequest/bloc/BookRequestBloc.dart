@@ -13,65 +13,94 @@ class BookRequestBloc extends Bloc<BookRequestEvent, BookRequestState> {
     on<CancelBookRequestEvent>(_onCancelBookRequest);
   }
 
+  // ============================================================
+  // FETCH REQUESTS
+  // ============================================================
+
   Future<void> _onFetchBookRequests(
     FetchBookRequestsEvent event,
     Emitter<BookRequestState> emit,
   ) async {
     emit(BookRequestLoading());
+
     try {
       final requests = await repository.getMyBookRequests();
+
       emit(BookRequestsLoadedState(requests: requests));
     } catch (e) {
       emit(BookRequestErrorState(error: e.toString()));
     }
   }
 
+  // ============================================================
+  // SUBMIT REQUEST
+  // ============================================================
+
   Future<void> _onSubmitBookRequest(
     SubmitBookRequestEvent event,
     Emitter<BookRequestState> emit,
   ) async {
     emit(BookRequestLoading());
+
     try {
       await repository.submitBookRequest(
         bookTitle: event.bookTitle,
         authorName: event.authorName,
         notes: event.notes,
       );
+
       emit(
         BookRequestActionSuccessState(
           message: 'تم استلام طلبك بنجاح، سنحاول توفير الكتاب قريباً',
         ),
       );
 
-      add(FetchBookRequestsEvent());
+      // لا تعملي Fetch هون
+      // الصفحة التي تعرض الطلبات هي المسؤولة عن إعادة التحميل.
     } catch (e) {
       emit(BookRequestErrorState(error: e.toString()));
     }
   }
+
+  // ============================================================
+  // SHOW REQUEST DETAIL
+  // ============================================================
 
   Future<void> _onShowBookRequestDetail(
     ShowBookRequestDetailEvent event,
     Emitter<BookRequestState> emit,
   ) async {
     emit(BookRequestLoading());
+
     try {
       final request = await repository.showBookRequest(event.id);
+
       emit(BookRequestDetailLoadedState(request: request));
     } catch (e) {
       emit(BookRequestErrorState(error: e.toString()));
     }
   }
 
+  // ============================================================
+  // CANCEL REQUEST
+  // ============================================================
+
   Future<void> _onCancelBookRequest(
     CancelBookRequestEvent event,
     Emitter<BookRequestState> emit,
   ) async {
     emit(BookRequestLoading());
+
     try {
       await repository.cancelBookRequest(event.id);
+
       emit(BookRequestActionSuccessState(message: 'تم إلغاء طلب الكتاب بنجاح'));
 
-      add(FetchBookRequestsEvent());
+      // مهم:
+      // لا نعمل FetchBookRequestsEvent هون.
+      //
+      // لأن صفحة التفاصيل ستعمل pop،
+      // وصفحة القائمة ستعمل Fetch عند الرجوع إليها.
     } catch (e) {
       emit(BookRequestErrorState(error: e.toString()));
     }

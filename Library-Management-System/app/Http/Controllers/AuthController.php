@@ -245,47 +245,56 @@ class AuthController extends Controller
             'data'    => ['token' => $token, 'token_type' => 'Bearer']
         ]);
     }
-
-    /**
-     * إعادة تعيين كلمة المرور عبر الإيميل
-     */
     public function resetPassword(Request $request)
     {
         $request->validate([
-            'email'     => ['required', 'email', 'exists:users,email'],
-            'otp_code'  => ['required', 'string'],
-            'password'  => ['required', 'confirmed', 'min:8'],
+            'email' => ['required', 'email'],
+            'otp_code' => ['required', 'string', 'size:6'],
+            'password' => ['required', 'confirmed', 'min:8'],
         ], [
-            'email.required'     => 'يرجى إدخال البريد الإلكتروني.',
-            'email.email'        => 'يرجى إدخال بريد إلكتروني صحيح.',
-            'email.exists'       => 'البريد الإلكتروني غير مسجل لدينا.',
-            'otp_code.required'  => 'رمز التحقق (OTP) مطلوب.',
-            'password.required'  => 'يرجى إدخال كلمة المرور الجديدة.',
+            'email.required' => 'يرجى إدخال البريد الإلكتروني.',
+            'email.email' => 'يرجى إدخال بريد إلكتروني صحيح.',
+            'otp_code.required' => 'رمز التحقق (OTP) مطلوب.',
+            'otp_code.size' => 'رمز التحقق يجب أن يتكون من 6 أرقام.',
+            'password.required' => 'يرجى إدخال كلمة المرور الجديدة.',
             'password.confirmed' => 'تأكيد كلمة المرور غير مطابق.',
-            'password.min'        => 'يجب أن لا تقل كلمة المرور عن 8 خانات.',
+            'password.min' => 'يجب أن لا تقل كلمة المرور عن 8 خانات.',
         ]);
 
-        if (!OTPController::verifyOtp($request->email, $request->otp_code)) {
+        // تنظيف الإيميل
+        $email = strtolower(trim($request->email));
+
+        // البحث عن المستخدم
+        $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
+
+        if (!$user) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
+                'message' => 'البريد الإلكتروني غير مسجل لدينا.'
+            ], 422);
+        }
+
+        // التحقق من OTP
+        if (!OTPController::verifyOtp($email, $request->otp_code)) {
+            return response()->json([
+                'status' => 'error',
                 'message' => 'رمز التحقق (OTP) غير صحيح أو منتهي الصلاحية.'
             ], 422);
         }
 
-        $user = User::where('email', $request->email)->first();
-
+        // تغيير كلمة المرور
         $user->update([
-            'password' => Hash::make($request->password)
+            'password' => Hash::make($request->password),
         ]);
 
+        // حذف التوكنات القديمة
         $user->tokens()->delete();
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'تم إعادة تعيين كلمة المرور بنجاح، يمكنك الآن تسجيل الدخول.'
         ], 200);
     }
-
     /**
      * حذف الحساب وتجهيل البيانات
      */
@@ -300,7 +309,16 @@ class AuthController extends Controller
                 'message' => 'المستخدم غير موجود أو غير مسجل الدخول.'
             ], 401);
         }
-
+        $request->validate([
+            'phone' => ['required', 'digits:10']
+        ]);
+        $customer = $user->customer;
+        if (!$customer || $customer->phone !== $request->phone) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'رقم الهاتف المدخل غير مطابِق لرقم الحساب المرتبط'
+            ], 422);
+        }
         try {
             DB::transaction(function () use ($user) {
                 $user->tokens()->delete();
