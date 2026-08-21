@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -98,12 +99,14 @@ class _PopularBooksSliderState extends State<PopularBooksSlider> {
           return const SizedBox.shrink();
         }
 
+        final activeDot = _currentPage.round().clamp(0, books.length - 1);
+
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 10),
             SizedBox(
-              height: 250,
+              height: 260,
               child: NotificationListener<ScrollNotification>(
                 onNotification: (notification) {
                   if (notification is ScrollStartNotification) {
@@ -123,6 +126,7 @@ class _PopularBooksSliderState extends State<PopularBooksSlider> {
 
                     double value = _currentPage - index;
                     Matrix4 matrix = Matrix4.identity();
+                    final proximity = (1 - value.abs()).clamp(0.0, 1.0);
 
                     if (value == 0) {
                       matrix = Matrix4.identity()..scale(1.0);
@@ -194,17 +198,19 @@ class _PopularBooksSliderState extends State<PopularBooksSlider> {
                           },
                           child: Container(
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(18),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.25),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 5),
+                                  color: Colors.black.withOpacity(
+                                    0.18 + (proximity * 0.14),
+                                  ),
+                                  blurRadius: 16 + (proximity * 8),
+                                  offset: const Offset(0, 8),
                                 ),
                               ],
                             ),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(18),
                               child: Stack(
                                 fit: StackFit.expand,
                                 children: [
@@ -221,8 +227,8 @@ class _PopularBooksSliderState extends State<PopularBooksSlider> {
                                                   : const Color(0xFFEFE3D3),
                                               child: Center(
                                                 child: Icon(
-                                                  Icons.book,
-                                                  size: 50,
+                                                  Icons.menu_book_rounded,
+                                                  size: 46,
                                                   color: isDark
                                                       ? AppColors.textGrey
                                                       : Colors.grey,
@@ -230,131 +236,203 @@ class _PopularBooksSliderState extends State<PopularBooksSlider> {
                                               ),
                                             ),
                                   ),
+
+                                  // تدرّج ذكي: أعلى الكارد صافي عشان يبين الغلاف،
+                                  // وتغميق تدريجي بس بالثلث السفلي لقراءة أوضح للنص.
                                   Container(
-                                    decoration: BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       gradient: LinearGradient(
                                         begin: Alignment.bottomCenter,
                                         end: Alignment.topCenter,
+                                        stops: [0.0, 0.45, 1.0],
                                         colors: [
-                                          Colors.black.withOpacity(0.7),
+                                          Color(0xE6000000),
+                                          Color(0x33000000),
                                           Colors.transparent,
-                                          Colors.black.withOpacity(0.3),
                                         ],
                                       ),
                                     ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(12.0),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            // ======= زر المفضلة: عم يقرا من الـ FavoriteBloc العام =======
-                                            BlocBuilder<
-                                              FavoriteBloc,
-                                              FavoriteState
-                                            >(
-                                              builder: (context, favState) {
-                                                final isFav = favState
-                                                    .isFavorite(book.id);
-                                                return GestureDetector(
-                                                  onTap: () {
-                                                    context
-                                                        .read<FavoriteBloc>()
-                                                        .add(
-                                                          ToggleFavoriteEvent(
-                                                            book.id,
-                                                          ),
-                                                        );
-                                                  },
-                                                  child: Container(
-                                                    padding:
-                                                        const EdgeInsets.all(4),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.black
-                                                          .withOpacity(0.3),
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    child: Icon(
-                                                      isFav
-                                                          ? Icons.favorite
-                                                          : Icons
-                                                                .favorite_border,
-                                                      color: isFav
-                                                          ? Colors.red
-                                                          : Colors.white,
-                                                      size: 18,
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                            // ============================================================
-                                          ],
+
+                                  // ===== شارة التقييم: زجاجية بأعلى يمين الكارد =====
+                                  Positioned(
+                                    top: 10,
+                                    right: isRtl ? null : 10,
+                                    left: isRtl ? 10 : null,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: BackdropFilter(
+                                        filter: ImageFilter.blur(
+                                          sigmaX: 8,
+                                          sigmaY: 8,
                                         ),
-                                        Container(
-                                          padding: const EdgeInsets.all(8.0),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
                                           decoration: BoxDecoration(
                                             color: Colors.black.withOpacity(
-                                              0.4,
+                                              0.32,
                                             ),
                                             borderRadius: BorderRadius.circular(
-                                              8.0,
+                                              20,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.white.withOpacity(
+                                                0.18,
+                                              ),
+                                              width: 0.6,
                                             ),
                                           ),
-                                          child: Column(
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
                                             children: [
+                                              const Icon(
+                                                Icons.star_rounded,
+                                                color: Colors.amber,
+                                                size: 14,
+                                              ),
+                                              const SizedBox(width: 3),
                                               Text(
-                                                book.title ?? '',
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                textAlign: TextAlign.center,
+                                                book.avgRating ?? '0.0',
                                                 style: const TextStyle(
                                                   color: Colors.white,
-                                                  fontSize: 15,
+                                                  fontSize: 11.5,
                                                   fontWeight: FontWeight.bold,
-                                                  fontFamily: 'Cairo',
                                                 ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                book.authorName ?? '',
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  color: Colors.white
-                                                      .withOpacity(0.9),
-                                                  fontSize: 11,
-                                                  fontFamily: 'Cairo',
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  const Icon(
-                                                    Icons.star,
-                                                    color: Colors.amber,
-                                                    size: 14,
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  Text(
-                                                    book.avgRating ?? '0.0',
-                                                    style: const TextStyle(
-                                                      color: Colors.amber,
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ],
                                               ),
                                             ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // ===== زر المفضلة: زجاجي بأعلى يسار الكارد =====
+                                  Positioned(
+                                    top: 10,
+                                    left: isRtl ? null : 10,
+                                    right: isRtl ? 10 : null,
+                                    child:
+                                        BlocBuilder<
+                                          FavoriteBloc,
+                                          FavoriteState
+                                        >(
+                                          builder: (context, favState) {
+                                            final isFav = favState.isFavorite(
+                                              book.id,
+                                            );
+                                            return GestureDetector(
+                                              onTap: () {
+                                                context
+                                                    .read<FavoriteBloc>()
+                                                    .add(
+                                                      ToggleFavoriteEvent(
+                                                        book.id,
+                                                      ),
+                                                    );
+                                              },
+                                              child: ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                child: BackdropFilter(
+                                                  filter: ImageFilter.blur(
+                                                    sigmaX: 8,
+                                                    sigmaY: 8,
+                                                  ),
+                                                  child: AnimatedContainer(
+                                                    duration: const Duration(
+                                                      milliseconds: 200,
+                                                    ),
+                                                    padding:
+                                                        const EdgeInsets.all(6),
+                                                    decoration: BoxDecoration(
+                                                      color: isFav
+                                                          ? Colors.red
+                                                                .withOpacity(
+                                                                  0.28,
+                                                                )
+                                                          : Colors.black
+                                                                .withOpacity(
+                                                                  0.32,
+                                                                ),
+                                                      shape: BoxShape.circle,
+                                                      border: Border.all(
+                                                        color: Colors.white
+                                                            .withOpacity(0.18),
+                                                        width: 0.6,
+                                                      ),
+                                                    ),
+                                                    child: AnimatedSwitcher(
+                                                      duration: const Duration(
+                                                        milliseconds: 200,
+                                                      ),
+                                                      transitionBuilder:
+                                                          (child, anim) =>
+                                                              ScaleTransition(
+                                                                scale: anim,
+                                                                child: child,
+                                                              ),
+                                                      child: Icon(
+                                                        isFav
+                                                            ? Icons.favorite
+                                                            : Icons
+                                                                  .favorite_border,
+                                                        key: ValueKey(isFav),
+                                                        color: isFav
+                                                            ? Colors.redAccent
+                                                            : Colors.white,
+                                                        size: 17,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                  ),
+
+                                  // ===== عنوان الكتاب والمؤلف بأسفل الكارد =====
+                                  Positioned(
+                                    left: 12,
+                                    right: 12,
+                                    bottom: 12,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          book.title ?? '',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'Cairo',
+                                            shadows: [
+                                              Shadow(
+                                                color: Colors.black54,
+                                                blurRadius: 6,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          book.authorName ?? '',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Colors.white.withOpacity(
+                                              0.85,
+                                            ),
+                                            fontSize: 11.5,
+                                            fontFamily: 'Cairo',
                                           ),
                                         ),
                                       ],
@@ -371,6 +449,29 @@ class _PopularBooksSliderState extends State<PopularBooksSlider> {
                 ),
               ),
             ),
+
+            const SizedBox(height: 12),
+
+            // ===== مؤشر موقع السلايدر (dots) =====
+            if (books.length > 1)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(books.length, (index) {
+                  final isActive = index == activeDot;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: isActive ? 18 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: isActive
+                          ? AppColors.primary
+                          : (isDark ? Colors.white24 : Colors.black12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  );
+                }),
+              ),
           ],
         );
       },

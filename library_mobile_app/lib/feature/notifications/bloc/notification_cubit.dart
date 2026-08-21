@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../repo/notification_repository.dart';
@@ -9,9 +10,9 @@ class NotificationCubit extends Cubit<NotificationState> {
 
   final NotificationRepository _repository;
 
-  // =========================================================
-  // GET NOTIFICATIONS + UNREAD COUNT
-  // =========================================================
+  // ============================================================
+  // GET NOTIFICATIONS
+  // ============================================================
 
   Future<void> getNotifications() async {
     emit(NotificationLoading());
@@ -28,16 +29,40 @@ class NotificationCubit extends Cubit<NotificationState> {
         ),
       );
 
-      print('🔔 NOTIFICATIONS: ${notifications.length}');
-      print('🔴 UNREAD COUNT: $unreadCount');
+      debugPrint('🔔 Notifications: ${notifications.length}');
+
+      debugPrint('🔴 Unread: $unreadCount');
     } catch (e) {
       emit(NotificationError(e.toString().replaceFirst('Exception: ', '')));
     }
   }
 
-  // =========================================================
+  // ============================================================
+  // REFRESH UNREAD COUNT ONLY
+  // ============================================================
+
+  Future<void> refreshUnreadCount() async {
+    try {
+      final unreadCount = await _repository.getUnreadCount();
+
+      final currentState = state;
+
+      if (currentState is NotificationLoaded) {
+        emit(
+          NotificationLoaded(
+            notifications: currentState.notifications,
+            unreadCount: unreadCount,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Failed to refresh unread count: $e');
+    }
+  }
+
+  // ============================================================
   // MARK ONE AS READ
-  // =========================================================
+  // ============================================================
 
   Future<void> markAsRead(int id) async {
     final currentState = state;
@@ -47,10 +72,8 @@ class NotificationCubit extends Cubit<NotificationState> {
     }
 
     try {
-      // أولاً نرسل للباك
       await _repository.markAsRead(id);
 
-      // نحدث القائمة محلياً
       final updatedNotifications = currentState.notifications.map((
         notification,
       ) {
@@ -70,16 +93,17 @@ class NotificationCubit extends Cubit<NotificationState> {
         ),
       );
 
-      print('✅ Notification $id marked as read');
-      print('🔴 Remaining unread: $unreadCount');
+      debugPrint('✅ Notification $id marked as read');
+
+      debugPrint('🔴 Remaining unread: $unreadCount');
     } catch (e) {
-      print('❌ MARK AS READ ERROR: $e');
+      debugPrint('❌ MARK AS READ ERROR: $e');
     }
   }
 
-  // =========================================================
+  // ============================================================
   // MARK ALL AS READ
-  // =========================================================
+  // ============================================================
 
   Future<void> markAllAsRead() async {
     final currentState = state;
@@ -101,16 +125,15 @@ class NotificationCubit extends Cubit<NotificationState> {
         NotificationLoaded(notifications: updatedNotifications, unreadCount: 0),
       );
 
-      print('✅ ALL NOTIFICATIONS MARKED AS READ');
-      print('🔴 UNREAD COUNT: 0');
+      debugPrint('✅ ALL NOTIFICATIONS MARKED AS READ');
     } catch (e) {
-      print('❌ MARK ALL AS READ ERROR: $e');
+      debugPrint('❌ MARK ALL AS READ ERROR: $e');
     }
   }
 
-  // =========================================================
-  // REFRESH
-  // =========================================================
+  // ============================================================
+  // REFRESH ALL
+  // ============================================================
 
   Future<void> refreshNotifications() async {
     await getNotifications();
