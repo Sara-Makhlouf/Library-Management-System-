@@ -248,10 +248,17 @@ class CartController extends Controller
                 $book = Book::lockForUpdate()->find($firstItem->book_id);
                 $quantity = $items->count();
 
-                if (!$book || $book->stock < $quantity) {
-                    throw new \Exception("عذراً، الكمية المطلوبة ({$quantity}) من كتاب ({$book?->title}) غير متوفرة في المخزون حالياً.");
+                if (!$book) {
+                    throw new \Exception(
+                        "عذراً، الكتاب رقم ({$firstItem->book_id}) لم يعد موجوداً في المكتبة."
+                    );
                 }
 
+                if ($book->stock < $quantity) {
+                    throw new \Exception(
+                        "عذراً، الكمية المطلوبة ({$quantity}) من كتاب ({$book->title}) غير متوفرة في المخزون حالياً. المتوفر حالياً: ({$book->stock})."
+                    );
+                }
                 $unitPrice = $firstItem->price ?? $book->price;
                 $itemsTotal += ($unitPrice * $quantity);
 

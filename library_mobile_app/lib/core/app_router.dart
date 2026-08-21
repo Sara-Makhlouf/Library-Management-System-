@@ -10,6 +10,9 @@ import 'package:library_mobile_app/feature/Bill/presentation/BillDetailsScreen.d
 import 'package:library_mobile_app/feature/BookRequest/bloc/BookRequestBloc.dart';
 import 'package:library_mobile_app/feature/BookRequest/data/BookRequestRepository.dart';
 import 'package:library_mobile_app/feature/BookRequest/presentation/BookRequestsScreen.dart';
+import 'package:library_mobile_app/feature/History/bloc/history_bloc.dart';
+import 'package:library_mobile_app/feature/History/data/HistoryRepository.dart';
+import 'package:library_mobile_app/feature/History/presentation/OrderHistoryScreen.dart';
 import 'package:library_mobile_app/feature/books/bloc/bloc.dart';
 import 'package:library_mobile_app/feature/books/data/repository.dart';
 import 'package:library_mobile_app/feature/books/presentation/book.dart';
@@ -32,7 +35,6 @@ import 'package:library_mobile_app/feature/profile/presentation/profile.dart';
 import 'package:library_mobile_app/feature/presentation/splash_screen.dart';
 import 'package:library_mobile_app/feature/seeting_screen/presentation/seeting_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../feature/payment_page/presentation/payment_screen.dart';
 
 class AppRouter {
   static Route? generateRoute(RouteSettings settings) {
@@ -131,6 +133,13 @@ class AppRouter {
         final billId = settings.arguments as int;
         return MaterialPageRoute(
           builder: (_) => BillDetailsScreen(billId: billId),
+        );
+      case Routes.orderHistory:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (_) => HistoryBloc(HistoryRepository()),
+            child: const OrderHistoryScreen(),
+          ),
         );
 
       case Routes.allBills:

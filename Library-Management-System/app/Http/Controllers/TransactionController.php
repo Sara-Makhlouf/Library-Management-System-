@@ -193,13 +193,26 @@ class TransactionController extends Controller
         $customer = $user?->customer;
 
         if (!$customer) {
-            return response()->json(['status' => 'error', 'message' => 'الزبون غير موجود'], 404);
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'الزبون غير موجود'
+            ], 404);
         }
 
         $transactions = Transaction::where('user_id', $user->id)
-            ->with(['book:id,title,cover,author'])
+            ->with([
+                'book:id,title,cover',
+                'book.authors:id,name'
+            ])
             ->latest()
             ->paginate(15);
+
+        $transactions->getCollection()->transform(function ($transaction) {
+            if ($transaction->book && $transaction->book->cover) {
+                $transaction->book->cover = asset('storage/' . $transaction->book->cover);
+            }
+            return $transaction;
+        });
 
         return response()->json([
             'status'        => 'success',

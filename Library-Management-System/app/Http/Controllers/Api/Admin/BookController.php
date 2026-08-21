@@ -39,9 +39,7 @@ class BookController extends Controller
                 }]);
             });
 
-        if (!$user || $user->type !== 'admin') {
-            $query->where('stock', '>', 0);
-        }
+
 
         $query->when($request->search, function ($q, $search) {
             $q->where(function ($inner) use ($search) {
