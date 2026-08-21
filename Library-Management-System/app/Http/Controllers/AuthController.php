@@ -248,19 +248,18 @@ class AuthController extends Controller
     public function resetPassword(Request $request)
     {
         $request->validate([
-            'email' => ['required', 'email'],
-            'otp_code' => ['required', 'string', 'size:6'],
-            'password' => ['required', 'confirmed', 'min:8'],
+            'email'     => ['required', 'email', 'exists:users,email'],
+            'otp_code'  => ['required', 'string'],
+            'password'  => ['required', 'confirmed', 'min:8'],
         ], [
-            'email.required' => 'يرجى إدخال البريد الإلكتروني.',
-            'email.email' => 'يرجى إدخال بريد إلكتروني صحيح.',
-            'otp_code.required' => 'رمز التحقق (OTP) مطلوب.',
-            'otp_code.size' => 'رمز التحقق يجب أن يتكون من 6 أرقام.',
-            'password.required' => 'يرجى إدخال كلمة المرور الجديدة.',
+            'email.required'     => 'يرجى إدخال البريد الإلكتروني.',
+            'email.email'        => 'صيغة البريد الإلكتروني غير صحيحة.',
+            'email.exists'       => 'البريد الإلكتروني هذا غير مسجل لدينا.',
+            'otp_code.required'  => 'رمز التحقق (OTP) مطلوب.',
+            'password.required'  => 'يرجى إدخال كلمة المرور الجديدة.',
             'password.confirmed' => 'تأكيد كلمة المرور غير مطابق.',
-            'password.min' => 'يجب أن لا تقل كلمة المرور عن 8 خانات.',
+            'password.min'       => 'يجب أن لا تقل كلمة المرور عن 8 خانات.',
         ]);
-
         // تنظيف الإيميل
         $email = strtolower(trim($request->email));
 
