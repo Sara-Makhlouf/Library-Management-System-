@@ -189,7 +189,23 @@ class _OtpPageState extends State<OtpPage> {
     widget.registerBloc.add(RegisterSubmitted(registerData: data));
   }
 
-  // phone normalization removed for email-based OTP flow
+  String _normalizePhone(String phone) {
+    phone = phone.trim().replaceAll(' ', '').replaceAll('-', '');
+
+    if (phone.startsWith('+963')) {
+      return '0${phone.substring(4)}';
+    }
+
+    if (phone.startsWith('00963')) {
+      return '0${phone.substring(5)}';
+    }
+
+    if (phone.startsWith('963')) {
+      return '0${phone.substring(3)}';
+    }
+
+    return phone;
+  }
 
   void _showMessage(String message, {required bool success}) {
     if (!mounted) return;

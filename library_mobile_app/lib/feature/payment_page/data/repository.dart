@@ -12,7 +12,7 @@ class PaymentRepository {
       );
 
       final response = await dio.post(
-        'cart/checkout',
+        '/cart/checkout',
         data: paymentModel.toJson(),
       );
 
@@ -29,10 +29,13 @@ class PaymentRepository {
     } on DioException catch (e) {
       print('❌ [PaymentRepository] DioException error: ${e.error}');
       print('❌ [PaymentRepository] DioException response: ${e.response?.data}');
-      throw Exception(e.error ?? 'حدث خطأ في الاتصال بالخادم');
-    } catch (e) {
-      print('❌ [PaymentRepository] Unexpected error: $e');
-      throw Exception('حدث خطأ غير متوقع: $e');
+
+      // نحاول ناخد رسالة الباك إند الحقيقية من الـ response
+      final serverMessage = e.response?.data is Map
+          ? e.response?.data['message']
+          : null;
+
+      throw Exception(serverMessage ?? 'حدث خطأ في الاتصال بالخادم');
     }
   }
 }

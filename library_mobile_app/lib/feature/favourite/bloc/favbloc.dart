@@ -6,7 +6,7 @@ import 'package:library_mobile_app/feature/favourite/data/repository.dart';
 class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
   final FavoriteRepository repository;
 
-  FavoriteBloc(this.repository) : super(FavoriteInitial()) {
+  FavoriteBloc(this.repository) : super(const FavoriteState()) {
     on<GetFavoritesEvent>(_onGetFavorites);
     on<ToggleFavoriteEvent>(_onToggleFavorite);
   }
@@ -15,12 +15,18 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
     GetFavoritesEvent event,
     Emitter<FavoriteState> emit,
   ) async {
-    emit(FavoriteLoading());
+    emit(state.copyWith(isLoading: true));
     try {
       final books = await repository.getFavorites();
-      emit(FavoriteLoaded(books));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          favoriteBooks: books,
+          favoriteIds: books.map((b) => b.id).toSet(),
+        ),
+      );
     } catch (e) {
-      emit(FavoriteError(e.toString()));
+      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
     }
   }
 
@@ -28,15 +34,32 @@ class FavoriteBloc extends Bloc<FavoriteEvent, FavoriteState> {
     ToggleFavoriteEvent event,
     Emitter<FavoriteState> emit,
   ) async {
+    final wasFavorite = state.favoriteIds.contains(event.bookId);
+    final optimisticIds = Set<int>.from(state.favoriteIds);
+    wasFavorite
+        ? optimisticIds.remove(event.bookId)
+        : optimisticIds.add(event.bookId);
+
+    emit(state.copyWith(favoriteIds: optimisticIds));
+
     try {
-      // إرسال طلب التبديل للباك إند
       await repository.toggleFavorite(event.bookId);
 
-      // إعادة جلب القائمة المحدثة مباشرة لتحديث الواجهة وحفظ الحالة
       final books = await repository.getFavorites();
-      emit(FavoriteLoaded(books));
+      emit(
+        state.copyWith(
+          favoriteBooks: books,
+          favoriteIds: books.map((b) => b.id).toSet(),
+        ),
+      );
     } catch (e) {
-      emit(FavoriteError(e.toString()));
+      final rollbackIds = Set<int>.from(state.favoriteIds);
+      wasFavorite
+          ? rollbackIds.add(event.bookId)
+          : rollbackIds.remove(event.bookId);
+      emit(
+        state.copyWith(favoriteIds: rollbackIds, errorMessage: e.toString()),
+      );
     }
   }
 }

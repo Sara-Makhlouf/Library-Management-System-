@@ -1,5 +1,3 @@
-// library_mobile_app/feature/homepage/data/model.dart
-
 import 'package:library_mobile_app/core/constants.dart';
 
 class CategoryModel {
@@ -36,7 +34,7 @@ class BookModel {
   final String authorName;
   final String? avgRating;
   final String categoryName;
-  bool isFavorite;
+  final bool isFavorite;
 
   BookModel({
     required this.id,
@@ -54,6 +52,40 @@ class BookModel {
     required this.categoryName,
     this.isFavorite = false,
   });
+
+  BookModel copyWith({
+    int? id,
+    String? title,
+    String? isbn,
+    String? price,
+    String? salePrice,
+    String? cover,
+    int? totalPages,
+    int? categoryId,
+    String? filePath,
+    int? stock,
+    String? authorName,
+    String? avgRating,
+    String? categoryName,
+    bool? isFavorite,
+  }) {
+    return BookModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      isbn: isbn ?? this.isbn,
+      price: price ?? this.price,
+      salePrice: salePrice ?? this.salePrice,
+      cover: cover ?? this.cover,
+      totalPages: totalPages ?? this.totalPages,
+      categoryId: categoryId ?? this.categoryId,
+      filePath: filePath ?? this.filePath,
+      stock: stock ?? this.stock,
+      authorName: authorName ?? this.authorName,
+      avgRating: avgRating ?? this.avgRating,
+      categoryName: categoryName ?? this.categoryName,
+      isFavorite: isFavorite ?? this.isFavorite,
+    );
+  }
 
   factory BookModel.fromJson(Map<String, dynamic> json) {
     print('📦 تفاصيل الـ JSON للكتاب: $json');
@@ -82,6 +114,7 @@ class BookModel {
       // إذا كان السيرفر يرسل الاسم مباشرة كحقل نصي
       firstAuthor = json['author_name'].toString();
     }
+
     final categoryData = json['category'] as Map<String, dynamic>?;
     String category = 'عام';
 
@@ -103,8 +136,7 @@ class BookModel {
       isbn: json['ISBN'] as String?,
       price: json['price']?.toString(),
       salePrice: json['sale_price']?.toString(),
-      cover:
-          coverPath, // <--- سيصبح الرابط كاملاً هنا (مثال: http://192.168.1.18:8000/storage/covers/default.png)
+      cover: coverPath,
       totalPages: json['total_pages'] as int?,
       categoryId: json['category_id'] as int?,
       filePath: json['file_path'] as String?,

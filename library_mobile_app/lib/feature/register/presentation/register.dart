@@ -59,8 +59,8 @@ class _RegisterState extends State<Register> {
     _customerRepository = CustomerRepository();
 
     _registerBloc = RegisterBloc(
-      repository: _registerRepository,
-      customerRepository: _customerRepository,
+      repository: RegisterRepository(),
+      customerRepository: CustomerRepository(), // أضيفي هذا البارامتر هنا
     );
   }
 
@@ -114,6 +114,44 @@ class _RegisterState extends State<Register> {
             '${picked.day.toString().padLeft(2, '0')}';
       });
     }
+  }
+
+  String _normalizePhone(String phone) {
+    phone = phone
+        .trim()
+        .replaceAll(' ', '')
+        .replaceAll('-', '')
+        .replaceAll('(', '')
+        .replaceAll(')', '');
+
+    // +963934426849
+    if (phone.startsWith('+963')) {
+      phone = '0${phone.substring(4)}';
+    }
+    // 00963934426849
+    else if (phone.startsWith('00963')) {
+      phone = '0${phone.substring(5)}';
+    }
+    // 963934426849
+    else if (phone.startsWith('963')) {
+      phone = '0${phone.substring(3)}';
+    }
+
+    return phone;
+  }
+
+  bool _isValidSyrianPhone(String phone) {
+    final normalized = _normalizePhone(phone);
+
+    if (normalized.length != 10) {
+      return false;
+    }
+
+    if (!normalized.startsWith('09')) {
+      return false;
+    }
+
+    return RegExp(r'^09[0-9]{8}$').hasMatch(normalized);
   }
 
   void _goNext() {
@@ -278,6 +316,16 @@ class _RegisterState extends State<Register> {
       _showError(passwordError);
       return;
     }
+
+    if (!_isValidSyrianPhone(phone)) {
+      _showError(
+        'Please enter a valid Syrian phone number\n'
+        'Example: 0934426849',
+      );
+      return;
+    }
+
+    _phoneController.text = phone;
 
     final registerData = <String, dynamic>{
       'name': _fullNameController.text.trim(),

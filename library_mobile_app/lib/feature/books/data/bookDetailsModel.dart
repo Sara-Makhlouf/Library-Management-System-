@@ -18,6 +18,7 @@ class BookDetailsModel {
   final String? avgRating;
   final int totalReviews;
   final bool isAvailable;
+  final bool isWaitingLocally;
   final List<Map<String, dynamic>> translations;
   final List<Map<String, dynamic>> authors;
   final Map<String, dynamic>? category;
@@ -40,10 +41,60 @@ class BookDetailsModel {
     this.avgRating,
     required this.totalReviews,
     required this.isAvailable,
+    this.isWaitingLocally = false,
     required this.translations,
     required this.authors,
     this.category,
   });
+
+  // 🔹 أضيفي هذه الدالة (copyWith) هنا 👇
+  BookDetailsModel copyWith({
+    int? id,
+    String? title,
+    String? isbn,
+    String? price,
+    String? salePrice,
+    String? cover,
+    int? totalPages,
+    int? borrowDuration,
+    int? totalCopies,
+    int? stock,
+    String? authorshipDate,
+    int? categoryId,
+    String? filePath,
+    bool? isDigital,
+    String? avgRating,
+    int? totalReviews,
+    bool? isAvailable,
+    bool? isWaitingLocally,
+    List<Map<String, dynamic>>? translations,
+    List<Map<String, dynamic>>? authors,
+    Map<String, dynamic>? category,
+  }) {
+    return BookDetailsModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      isbn: isbn ?? this.isbn,
+      price: price ?? this.price,
+      salePrice: salePrice ?? this.salePrice,
+      cover: cover ?? this.cover,
+      totalPages: totalPages ?? this.totalPages,
+      borrowDuration: borrowDuration ?? this.borrowDuration,
+      totalCopies: totalCopies ?? this.totalCopies,
+      stock: stock ?? this.stock,
+      authorshipDate: authorshipDate ?? this.authorshipDate,
+      categoryId: categoryId ?? this.categoryId,
+      filePath: filePath ?? this.filePath,
+      isDigital: isDigital ?? this.isDigital,
+      avgRating: avgRating ?? this.avgRating,
+      totalReviews: totalReviews ?? this.totalReviews,
+      isAvailable: isAvailable ?? this.isAvailable,
+      isWaitingLocally: isWaitingLocally ?? this.isWaitingLocally,
+      translations: translations ?? this.translations,
+      authors: authors ?? this.authors,
+      category: category ?? this.category,
+    );
+  }
 
   factory BookDetailsModel.fromJson(Map<String, dynamic> json) {
     String? coverPath = json['cover'] as String?;

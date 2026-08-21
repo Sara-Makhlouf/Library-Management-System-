@@ -1,18 +1,15 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:library_mobile_app/core/constants.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/books/bloc/bloc.dart';
 import 'package:library_mobile_app/feature/books/bloc/event.dart';
 import 'package:library_mobile_app/feature/books/bloc/state.dart';
+import 'package:library_mobile_app/feature/books/waiting_list/Bloc/WaitingListBloc.dart';
+import 'package:library_mobile_app/feature/books/waiting_list/event/WaitingListEvent.dart';
+import 'package:library_mobile_app/feature/books/waiting_list/state/WaitingListState.dart';
 import 'package:library_mobile_app/feature/cart/data/repository.dart';
-import 'package:library_mobile_app/feature/pdf_reader/bloc/read_book_cubit.dart';
-import 'package:library_mobile_app/feature/pdf_reader/data/repo/pdf_book_repo.dart';
 import 'package:palette_generator/palette_generator.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class BookDetailsScreen extends StatefulWidget {
   final String bookId;
@@ -35,8 +32,12 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Book added to cart successfully as $type 🛒'),
-          backgroundColor: Colors.green,
+          content: Text('Book added to cart successfully as $type'),
+          backgroundColor: const Color(0xFF22C55E),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -46,6 +47,10 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
         SnackBar(
           content: Text(e.toString().replaceAll('Exception: ', '')),
           backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
     }
@@ -62,14 +67,19 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
   }
 
   Future<void> _extractColors(String imageUrl) async {
+    if (imageUrl.isEmpty) return;
     try {
-      final generator = await PaletteGenerator.fromImageProvider(
-        imageUrl.startsWith('http')
-            ? NetworkImage(imageUrl)
-            : AssetImage(imageUrl) as ImageProvider,
-        size: const Size(200, 200),
-        maximumColorCount: 3,
-      );
+      final generator =
+          await PaletteGenerator.fromImageProvider(
+            imageUrl.startsWith('http')
+                ? NetworkImage(imageUrl)
+                : AssetImage(imageUrl) as ImageProvider,
+            size: const Size(200, 200),
+            maximumColorCount: 3,
+          ).timeout(
+            const Duration(seconds: 5),
+            onTimeout: () => throw Exception('Palette generation timed out'),
+          );
       if (!mounted) return;
       setState(() {
         _bgColor =
@@ -81,7 +91,9 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
             ? Colors.white
             : Colors.black87;
       });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('_extractColors failed or timed out: $e');
+    }
   }
 
   void _showReviewSheet() {
@@ -191,154 +203,152 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
     final scaffoldBg = isDark
         ? AppColors.backgroundDark
         : AppColors.backgroundLight;
+    final primaryText = isDark ? AppColors.textDark : AppColors.textLight;
+    final secondaryText = isDark ? Colors.white54 : AppColors.textGrey;
+    final accent = AppColors.primary;
+    final cardColor = isDark ? AppColors.darkCard : Colors.white;
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.06)
+        : Colors.black.withOpacity(0.05);
 
-       return Scaffold(
-      backgroundColor: scaffoldBg,
-          body: BlocListener<ReadBookCubit, ReadBookState>(
-            listener: (context, readState) {
-              if (readState is ReadBookLoading) {
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (_) => const AlertDialog(
-                    backgroundColor: Colors.white,
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(color: AppColors.primary),
-                        SizedBox(height: 16),
-                        Text(
-                          'Downloading...',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
+    return BlocListener<WaitingListBloc, WaitingListState>(
+      listener: (context, state) {
+        if (state is WaitingListActionSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: const Color(0xFF22C55E),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          );
+          context.read<BookDetailsBloc>().add(
+            FetchBookDetailsEvent(bookId: widget.bookId),
+          );
+        } else if (state is WaitingListError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          );
+        }
+      },
+
+      child: Scaffold(
+        backgroundColor: scaffoldBg,
+        body: BlocConsumer<BookDetailsBloc, BookDetailsState>(
+          listener: (context, state) {
+            if (state is BookDetailsSuccess) {
+              _extractColors(state.book.cover ?? '');
+            }
+          },
+          builder: (context, state) {
+            if (state is BookDetailsLoading) {
+              return Center(child: CircularProgressIndicator(color: accent));
+            } else if (state is BookDetailsError) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 60,
+                      color: Colors.red.withOpacity(0.5),
                     ),
-                  ),
-                );
-              } else if (readState is ReadBookError) {
-                if (Navigator.of(context, rootNavigator: true).canPop()) {
-                  Navigator.of(context, rootNavigator: true).pop();
-                }
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(readState.message),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              } else if (readState is ReadBookSuccess) {
-                if (Navigator.of(context, rootNavigator: true).canPop()) {
-                  Navigator.of(context, rootNavigator: true).pop();
-                }
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => Scaffold(
-                      appBar: AppBar(
-                        title: const Text('Reading Book'),
-                        backgroundColor: AppColors.primary,
-                      ),
-                      body: SfPdfViewer.file(readState.file),
-                    ),
-                  ),
-                );
-              }
-            },
-            child: BlocConsumer<BookDetailsBloc, BookDetailsState>(
-              listener: (context, state) {
-                if (state is BookDetailsSuccess) {
-                  _extractColors(state.book.cover ?? '');
-                }
-              },
-              builder: (context, state) {
-                if (state is BookDetailsLoading) {
-                  return Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  );
-                } else if (state is BookDetailsError) {
-                  return Center(
-                    child: Padding(
+                    const SizedBox(height: 12),
+                    Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Text(
                         state.message,
-                        style: const TextStyle(color: Colors.red),
+                        style: TextStyle(color: secondaryText),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                  );
-                } else if (state is BookDetailsSuccess) {
-                  final book = state.book;
-                  final imagePath = book.cover ?? '';
-                  final authorsNames = book.authors.isNotEmpty
-                      ? book.authors
-                            .map((author) => author['name'] ?? '')
-                            .where((name) => name.isNotEmpty)
-                            .join(', ')
-                      : 'مؤلف مجهول';
+                  ],
+                ),
+              );
+            } else if (state is BookDetailsSuccess) {
+              final book = state.book;
+              final imagePath = book.cover ?? '';
+              final authorsNames = book.authors.isNotEmpty
+                  ? book.authors
+                        .map((author) => author['name'] ?? '')
+                        .where((name) => name.isNotEmpty)
+                        .join(', ')
+                  : 'Unknown Author';
 
-                  return CustomScrollView(
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 600),
-                          curve: Curves.easeOut,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                _bgColor,
-                                Color.lerp(_bgColor, Colors.black, 0.55)!,
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                          ),
-                          padding: EdgeInsets.fromLTRB(
-                            16,
-                            MediaQuery.of(context).padding.top + 8,
-                            16,
-                            20,
-                          ),
-                          child: Column(
+              return CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.easeOut,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            _bgColor,
+                            Color.lerp(_bgColor, Colors.black, 0.55)!,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      padding: EdgeInsets.fromLTRB(
+                        16,
+                        MediaQuery.of(context).padding.top + 8,
+                        16,
+                        20,
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  _CircleBtn(
-                                    onTap: () => Navigator.of(context).pop(),
-                                    child: Icon(
-                                      Icons.arrow_back_ios_rounded,
-                                      size: 16,
-                                      color: _textColor,
-                                    ),
-                                  ),
-                                  _CircleBtn(
-                                    onTap: () => setState(
-                                      () => _isBookmarked = !_isBookmarked,
-                                    ),
-                                    child: Icon(
-                                      _isBookmarked
-                                          ? Icons.bookmark_rounded
-                                          : Icons.bookmark_border_rounded,
-                                      size: 18,
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                ],
-                              ).animate().fadeIn(duration: 300.ms),
-                              const SizedBox(height: 20),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Hero(
+                              _CircleBtn(
+                                onTap: () => Navigator.of(context).pop(),
+                                child: Icon(
+                                  Icons.arrow_back_ios_rounded,
+                                  size: 16,
+                                  color: _textColor,
+                                ),
+                              ),
+                              _CircleBtn(
+                                onTap: () => setState(
+                                  () => _isBookmarked = !_isBookmarked,
+                                ),
+                                child: Icon(
+                                  _isBookmarked
+                                      ? Icons.bookmark_rounded
+                                      : Icons.bookmark_border_rounded,
+                                  size: 18,
+                                  color: accent,
+                                ),
+                              ),
+                            ],
+                          ).animate().fadeIn(duration: 300.ms),
+
+                          const SizedBox(height: 20),
+
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Hero(
                                     tag: widget.bookId,
                                     child: Container(
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(12),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black.withOpacity(0.4),
+                                            color: Colors.black.withOpacity(
+                                              0.4,
+                                            ),
                                             blurRadius: 20,
                                             offset: const Offset(0, 8),
                                           ),
@@ -353,7 +363,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
                                                 height: 155,
                                                 fit: BoxFit.cover,
                                                 errorBuilder: (_, __, ___) =>
-                                                    _errorImage(),
+                                                    _errorImage(accent),
                                               )
                                             : Image.asset(
                                                 imagePath,
@@ -361,388 +371,395 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
                                                 height: 155,
                                                 fit: BoxFit.cover,
                                                 errorBuilder: (_, __, ___) =>
-                                                    _errorImage(),
+                                                    _errorImage(accent),
                                               ),
                                       ),
                                     ),
                                   )
-                                      .animate()
-                                      .fadeIn(duration: 400.ms)
-                                      .scale(begin: const Offset(0.9, 0.9)),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          book.title ?? '',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: _textColor,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Row(
+                                  .animate()
+                                  .fadeIn(duration: 400.ms)
+                                  .scale(begin: const Offset(0.9, 0.9)),
+
+                              const SizedBox(width: 16),
+
+                              Expanded(
+                                child:
+                                    Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            ...List.generate(
-                                              5,
-                                              (i) => Icon(
-                                                i <
-                                                        double.parse(
-                                                          (book.avgRating ?? 0)
-                                                              .toString(),
-                                                        ).floor()
-                                                    ? Icons.star_rounded
-                                                    : Icons.star_outline_rounded,
-                                                color: AppColors.primary,
-                                                size: 14,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 4),
                                             Text(
-                                              '${book.avgRating ?? 0}',
+                                              book.title ?? '',
                                               style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
                                                 color: _textColor,
                                               ),
                                             ),
-                                            Text(
-                                              ' (${book.totalReviews ?? 0})',
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                color:
-                                                    _textColor.withOpacity(0.5),
+                                            const SizedBox(height: 8),
+                                            Row(
+                                              children: [
+                                                ...List.generate(5, (i) {
+                                                  final int filledStars =
+                                                      (double.tryParse(
+                                                                (book.avgRating ??
+                                                                        0)
+                                                                    .toString(),
+                                                              ) ??
+                                                              0)
+                                                          .floor();
+                                                  return Icon(
+                                                    i < filledStars
+                                                        ? Icons.star_rounded
+                                                        : Icons
+                                                              .star_outline_rounded,
+                                                    color: accent,
+                                                    size: 14,
+                                                  );
+                                                }),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  '${book.avgRating ?? 0}',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: _textColor,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  ' (${book.totalReviews ?? 0})',
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    color: _textColor
+                                                        .withOpacity(0.5),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 6,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: accent.withOpacity(0.15),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              child: Text(
+                                                authorsNames,
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: accent,
+                                                ),
                                               ),
                                             ),
+                                            const SizedBox(height: 10),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  '\$${book.price ?? "0"}',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: _textColor,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 40),
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 3,
+                                                      ),
+                                                  decoration: BoxDecoration(
+                                                    color: book.isAvailable
+                                                        ? Colors.green
+                                                              .withOpacity(0.15)
+                                                        : Colors.grey
+                                                              .withOpacity(
+                                                                0.15,
+                                                              ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
+                                                  ),
+                                                  child: Text(
+                                                    book.isAvailable
+                                                        ? 'Available'
+                                                        : 'Unavailable',
+                                                    style: TextStyle(
+                                                      fontSize: 11,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      color: book.isAvailable
+                                                          ? Colors.green
+                                                          : Colors.grey,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ],
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 6,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.black.withOpacity(0.25),
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                            border: Border.all(
-                                              color:
-                                                  Colors.white.withOpacity(0.1),
-                                              width: 0.5,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            authorsNames,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
-                                              color: AppColors.primary,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Text(
-                                          '\$${book.price ?? "0"}',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: _textColor,
-                                          ),
-                                        ),
-                                      ],
-                                    ).animate(delay: 150.ms).fadeIn().slideX(
-                                          begin: 0.1,
-                                          end: 0,
-                                        ),
-                                  ),
-                                ],
+                                        )
+                                        .animate(delay: 150.ms)
+                                        .fadeIn()
+                                        .slideX(begin: 0.1, end: 0),
                               ),
                             ],
                           ),
-                        ),
-                      ),
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                          child: Row(
-                            children: [
-                              _StatCard(
-                                value: '${book.totalPages ?? 0}',
-                                label: 'Pages',
-                                icon: Icons.menu_book_rounded,
-                                isDark: isDark,
-                              ),
-                              const SizedBox(width: 10),
-                              _StatCard(
-                                value: 'EN',
-                                label: 'Language',
-                                icon: Icons.language_rounded,
-                                isDark: isDark,
-                              ),
-                              const SizedBox(width: 10),
-                              _StatCard(
-                                value: '${book.stock ?? 0}',
-                                label: 'Quantity',
-                                icon: Icons.calendar_today_rounded,
-                                isDark: isDark,
-                              ),
-                            ],
-                          ).animate(delay: 200.ms).fadeIn().slideY(
-                                begin: 0.15,
-                                end: 0,
-                              ),
-                        ),
-                      ),
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Overview',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: isDark
-                                      ? AppColors.textDark
-                                      : AppColors.textLight,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                book.title ?? 'No overview available.',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  height: 1.65,
-                                  color: isDark
-                                      ? AppColors.textDark.withOpacity(0.7)
-                                      : AppColors.textLight.withOpacity(0.7),
-                                ),
-                              ),
-                            ],
-                          ).animate(delay: 280.ms).fadeIn(),
-                        ),
-                      ),
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Reviews',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: isDark
-                                      ? AppColors.textDark
-                                      : AppColors.textLight,
-                                ),
-                              ),
-                              TextButton.icon(
-                                onPressed: _showReviewSheet,
-                                icon: const Icon(
-                                  Icons.edit_outlined,
-                                  size: 16,
-                                  color: AppColors.primary,
-                                ),
-                                label: const Text(
-                                  'Write a review',
-                                  style: TextStyle(
-                                    color: AppColors.primary,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ).animate(delay: 340.ms).fadeIn(),
-                        ),
-                      ),
-                      const SliverToBoxAdapter(child: SizedBox(height: 100)),
-                    ],
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-          ),
-          bottomNavigationBar: Container(
-            padding: EdgeInsets.fromLTRB(
-              16,
-              12,
-              16,
-              MediaQuery.of(context).padding.bottom + 12,
-            ),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.accentDark : Colors.white,
-              border: Border(
-                top: BorderSide(
-                  color: isDark ? Colors.white12 : Colors.black12,
-                  width: 0.5,
-                ),
-              ),
-            ),
-            child: SizedBox(
-              height: 52,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        context.read<ReadBookCubit>().fetchAndOpenBook(
-                          int.parse(widget.bookId),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            isDark ? Colors.grey[800] : Colors.grey[200],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        elevation: 0,
-                      ),
-                      icon: Icon(
-                        Icons.menu_book_rounded,
-                        color: isDark ? Colors.white : AppColors.primary,
-                        size: 20,
-                      ),
-                      label: Text(
-                        'Read Book',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : AppColors.primary,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(20),
+
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      child:
+                          Row(
+                                children: [
+                                  _StatCard(
+                                    value: '${book.totalPages ?? 0}',
+                                    label: 'Pages',
+                                    icon: Icons.menu_book_rounded,
+                                    cardColor: cardColor,
+                                    borderColor: borderColor,
+                                    primaryText: primaryText,
+                                    secondaryText: secondaryText,
+                                    accent: accent,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  _StatCard(
+                                    value: 'EN',
+                                    label: 'Language',
+                                    icon: Icons.language_rounded,
+                                    cardColor: cardColor,
+                                    borderColor: borderColor,
+                                    primaryText: primaryText,
+                                    secondaryText: secondaryText,
+                                    accent: accent,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  _StatCard(
+                                    value: '${book.stock ?? 0}',
+                                    label: 'Quantity',
+                                    icon: Icons.calendar_today_rounded,
+                                    cardColor: cardColor,
+                                    borderColor: borderColor,
+                                    primaryText: primaryText,
+                                    secondaryText: secondaryText,
+                                    accent: accent,
+                                  ),
+                                ],
+                              )
+                              .animate(delay: 200.ms)
+                              .fadeIn()
+                              .slideY(begin: 0.15, end: 0),
+                    ),
+                  ),
+
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Overview',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: primaryText,
                             ),
                           ),
-                          builder: (BuildContext context) {
-                            return Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  const Text(
-                                    'Choose Action',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 20),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.orange,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    onPressed: () async {
-                                      Navigator.pop(context);
-                                      await _addBook(widget.bookId, 'borrow');
-                                    },
-                                    child: const Text(
-                                      'Borrow Book (استعارة)',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primary,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 12,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    onPressed: () async {
-                                      Navigator.pop(context);
-                                      await _addBook(widget.bookId, 'buy');
-                                    },
-                                    child: const Text(
-                                      'Buy Book (شراء)',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          const SizedBox(height: 10),
+                          Text(
+                            book.title ?? 'No overview available.',
+                            style: TextStyle(
+                              fontSize: 13,
+                              height: 1.65,
+                              color: secondaryText,
+                            ),
+                          ),
+                        ],
+                      ).animate(delay: 280.ms).fadeIn(),
+                    ),
+                  ),
+
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Reviews',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: primaryText,
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: _showReviewSheet,
+                            icon: Icon(
+                              Icons.edit_outlined,
+                              size: 16,
+                              color: accent,
+                            ),
+                            label: Text(
+                              'Write a review',
+                              style: TextStyle(color: accent, fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ).animate(delay: 340.ms).fadeIn(),
+                    ),
+                  ),
+
+                  const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                ],
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+
+        bottomNavigationBar: BlocBuilder<BookDetailsBloc, BookDetailsState>(
+          builder: (context, state) {
+            final book = state is BookDetailsSuccess ? state.book : null;
+            final bool isAvailable = book?.isAvailable ?? true;
+            final bool isWaiting = state is BookDetailsSuccess
+                ? state.book.isWaitingLocally
+                : false;
+
+            String borrowText;
+            Color borrowColor;
+            IconData borrowIcon;
+            VoidCallback borrowAction;
+
+            if (isAvailable) {
+              borrowText = 'Borrow';
+              borrowColor = Colors.orange;
+              borrowIcon = Icons.menu_book_outlined;
+              borrowAction = () async {
+                await _addBook(widget.bookId, 'borrow');
+              };
+            } else if (!isWaiting) {
+              borrowText = 'Join Waiting List';
+              borrowColor = Colors.orange;
+              borrowIcon = Icons.hourglass_empty;
+              borrowAction = () {
+                context.read<WaitingListBloc>().add(
+                  JoinWaitingListEvent(int.parse(widget.bookId)),
+                );
+              };
+            } else {
+              borrowText = 'Leave Waiting List';
+              borrowColor = Colors.redAccent;
+              borrowIcon = Icons.cancel_outlined;
+              borrowAction = () {
+                context.read<WaitingListBloc>().add(
+                  LeaveWaitingListEvent(int.parse(widget.bookId)),
+                );
+              };
+            }
+
+            return Container(
+              padding: EdgeInsets.fromLTRB(
+                16,
+                12,
+                16,
+                MediaQuery.of(context).padding.bottom + 12,
+              ),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkCard : AppColors.backgroundLight,
+                border: Border(
+                  top: BorderSide(
+                    color: isDark
+                        ? Colors.white.withOpacity(0.06)
+                        : Colors.black.withOpacity(0.05),
+                    width: 0.5,
+                  ),
+                ),
+              ),
+              child: SizedBox(
+                height: 52,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          await _addBook(widget.bookId, 'buy');
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: accent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          elevation: 0,
                         ),
-                        elevation: 0,
-                      ),
-                      icon: const Icon(
-                        Icons.shopping_cart_outlined,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                      label: const Text(
-                        'Add to Cart',
-                        style: TextStyle(
+                        icon: const Icon(
+                          Icons.shopping_cart_outlined,
                           color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          size: 20,
+                        ),
+                        label: const Text(
+                          'Add to Cart',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: borrowAction,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: borrowColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          elevation: 0,
+                        ),
+                        icon: Icon(borrowIcon, color: Colors.white, size: 20),
+                        label: Text(
+                          borrowText,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
-        
-      
+            );
+          },
+        ),
+      ),
     );
   }
 
-  Widget _errorImage() {
+  Widget _errorImage(Color accent) {
     return Container(
       width: 110,
       height: 155,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: accent.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Icon(
-        Icons.book_outlined,
-        color: AppColors.primary,
-        size: 36,
-      ),
+      child: Icon(Icons.book_outlined, color: accent, size: 36),
     );
   }
 }
@@ -751,7 +768,6 @@ class _CircleBtn extends StatelessWidget {
   final VoidCallback onTap;
   final Widget child;
   const _CircleBtn({required this.onTap, required this.child});
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -762,10 +778,7 @@ class _CircleBtn extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.15),
           shape: BoxShape.circle,
-          border: Border.all(
-            color: Colors.white.withOpacity(0.2),
-            width: 0.5,
-          ),
+          border: Border.all(color: Colors.white.withOpacity(0.2), width: 0.5),
         ),
         child: Center(child: child),
       ),
@@ -777,13 +790,21 @@ class _StatCard extends StatelessWidget {
   final String value;
   final String label;
   final IconData icon;
-  final bool isDark;
+  final Color cardColor;
+  final Color borderColor;
+  final Color primaryText;
+  final Color secondaryText;
+  final Color accent;
 
   const _StatCard({
     required this.value,
     required this.label,
     required this.icon,
-    required this.isDark,
+    required this.cardColor,
+    required this.borderColor,
+    required this.primaryText,
+    required this.secondaryText,
+    required this.accent,
   });
 
   @override
@@ -792,35 +813,24 @@ class _StatCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isDark ? AppColors.accentDark : Colors.white,
+          color: cardColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark ? Colors.white12 : Colors.black12,
-            width: 0.5,
-          ),
+          border: Border.all(color: borderColor),
         ),
         child: Column(
           children: [
-            Icon(icon, color: AppColors.primary, size: 20),
+            Icon(icon, color: accent, size: 20),
             const SizedBox(height: 5),
             Text(
               value,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
-                color: isDark ? AppColors.textDark : AppColors.textLight,
+                color: primaryText,
               ),
             ),
             const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                color: isDark
-                    ? AppColors.textDark.withOpacity(0.5)
-                    : AppColors.textLight.withOpacity(0.5),
-              ),
-            ),
+            Text(label, style: TextStyle(fontSize: 10, color: secondaryText)),
           ],
         ),
       ),

@@ -7,7 +7,7 @@ class CartInitial extends CartState {}
 class CartLoading extends CartState {}
 
 class CartLoaded extends CartState {
-  final CartModel cart; // تحمل السلة كاملة بكل تفاصيلها
+  final CartModel cart;
   CartLoaded(this.cart);
 }
 

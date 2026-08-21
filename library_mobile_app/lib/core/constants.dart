@@ -1,9 +1,9 @@
+const String ip = '192.168.1.6';
 const String baseUrl = 'http://$ip:8000/api';
 const String imageBaseUrl = 'http://$ip:8000/';
 const String tokenKey = 'auth_token';
 const String fcmTokenKey = 'fcm_token';
 const String userKey = 'user_data';
-const String ip = '10.39.219.158';
 void printNetworkConfig() {
   print('🌐 Network config:');
   print('  baseUrl: $baseUrl');

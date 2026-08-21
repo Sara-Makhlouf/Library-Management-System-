@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:library_mobile_app/core/constant.dart';
+import 'package:library_mobile_app/core/constantPage.dart';
 import 'package:library_mobile_app/core/theme.dart';
+import 'package:library_mobile_app/feature/Bill/presentation/AllBillsScreen.dart';
+import 'package:library_mobile_app/feature/BookRequest/bloc/BookRequestBloc.dart';
+import 'package:library_mobile_app/feature/BookRequest/data/BookRequestRepository.dart';
+import 'package:library_mobile_app/feature/BookRequest/presentation/BookRequestsScreen.dart';
 import 'package:library_mobile_app/feature/cart/presentation/cart_screen.dart';
-import 'package:library_mobile_app/feature/favourite/bloc/favbloc.dart';
-import 'package:library_mobile_app/feature/favourite/bloc/favevent.dart';
-import 'package:library_mobile_app/feature/favourite/data/repository.dart';
 import 'package:library_mobile_app/feature/favourite/presentation/favourit_screen.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/BottomNav.dart';
@@ -13,46 +14,85 @@ import 'package:library_mobile_app/feature/homepage/presentation/widgets/PointsS
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/category_seation.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/popular_books.dart';
 import 'package:library_mobile_app/feature/homepage/presentation/widgets/search_barr.dart';
+import 'package:library_mobile_app/feature/profile/data/customer_repository.dart';
 import 'package:library_mobile_app/l10n/app_localizations.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final _customerRepository = CustomerRepository();
+
+  String _userName = '';
+  String _userEmail = '';
+  String? _avatarUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final result = await _customerRepository.getProfile();
+      final data = result['data'] as Map<String, dynamic>? ?? {};
+      if (!mounted) return;
+      setState(() {
+        _userName = data['name'] ?? '';
+        _userEmail = data['email'] ?? '';
+        _avatarUrl = data['avatar'];
+      });
+    } catch (e) {
+      debugPrint('🔴 فشل جلب بيانات المستخدم للدروار: $e');
+    }
+  }
+
+  String _getInitials(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return '?';
+    final parts = trimmed.split(RegExp(r'\s+'));
+    if (parts.length == 1) return parts.first.substring(0, 1);
+    return parts.first.substring(0, 1) + parts[1].substring(0, 1);
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final localizations = AppLocalizations.of(context)!;
+    final primaryText = isDark ? AppColors.textDark : AppColors.textLight;
+    final secondaryText = isDark ? Colors.white54 : AppColors.textGrey;
+    final bgColor = isDark
+        ? AppColors.backgroundDark
+        : AppColors.backgroundLight;
+    final accent = AppColors.primary;
 
     return BlocBuilder<HomeBloc, HomeState>(
       buildWhen: (previous, current) => previous.tabIndex != current.tabIndex,
       builder: (context, state) {
         return Scaffold(
           extendBody: true,
-          backgroundColor: isDark
-              ? AppColors.backgroundDark
-              : AppColors.backgroundLight,
-          // : const Color(0xFFEFE3D3),
+          backgroundColor: bgColor,
           appBar: state.tabIndex == 1
               ? AppBar(
-                  backgroundColor: isDark
-                      ? AppColors.backgroundDark
-                      : const Color(0xFFEFE3D3),
+                  backgroundColor: bgColor,
                   elevation: 0,
                   centerTitle: true,
                   title: Text(
                     localizations.home,
                     style: TextStyle(
-                      color: isDark ? AppColors.textDark : Colors.black,
+                      color: primaryText,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   leading: Builder(
                     builder: (context) => IconButton(
-                      icon: Icon(
-                        Icons.menu,
-                        color: isDark ? AppColors.textDark : Colors.black,
-                      ),
+                      icon: Icon(Icons.menu, color: primaryText),
                       onPressed: () {
                         Scaffold.of(context).openDrawer();
                       },
@@ -61,231 +101,16 @@ class HomeScreen extends StatelessWidget {
                   actions: [CustomNotificationButton()],
                 )
               : null,
-          drawer: Drawer(
-            backgroundColor: isDark
-                ? AppColors.backgroundDark
-                : const Color(0xFFEFE3D3),
-            surfaceTintColor: Colors.transparent,
-            child: Column(
-              children: [
-                UserAccountsDrawerHeader(
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColors.accentDark
-                        : const Color(0xFFD8C8A8),
-                  ),
-                  currentAccountPicture: CircleAvatar(
-                    radius: 35,
-                    backgroundColor: isDark
-                        ? AppColors.inputDark
-                        : const Color(0xFF605232),
-                    child: Icon(
-                      Icons.person,
-                      size: 40,
-                      color: isDark
-                          ? AppColors.primary
-                          : const Color(0xFFF5EFEB),
-                    ),
-                  ),
-                  accountName: Text(
-                    'غفران محمد ابراهيم',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      color: isDark
-                          ? AppColors.textDark
-                          : const Color(0xFF2C2518),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  accountEmail: Text(
-                    'ghufranmohamad234@gmail.com',
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      color: isDark
-                          ? AppColors.textGrey
-                          : const Color(0xFF605232),
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-
-                Expanded(
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    children: [
-                      ListTile(
-                        leading: Icon(
-                          Icons.history_edu,
-                          color: isDark
-                              ? AppColors.primary
-                              : const Color(0xFF605232),
-                        ),
-                        title: Text(
-                          localizations.orderHistory,
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            color: isDark
-                                ? AppColors.textDark
-                                : const Color(0xFF2C2518),
-                            fontSize: 16,
-                          ),
-                        ),
-                        trailing: Icon(
-                          Icons.arrow_forward_ios,
-                          size: 14,
-                          color: isDark
-                              ? AppColors.textGrey
-                              : const Color(0xFF605232),
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(
-                          Icons.local_shipping_outlined,
-                          color: isDark
-                              ? AppColors.primary
-                              : const Color(0xFF605232),
-                        ),
-                        title: Text(
-                          localizations.deliveryService,
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            color: isDark
-                                ? AppColors.textDark
-                                : const Color(0xFF2C2518),
-                            fontSize: 16,
-                          ),
-                        ),
-                        trailing: Icon(
-                          Icons.arrow_forward_ios,
-                          size: 14,
-                          color: isDark
-                              ? AppColors.textGrey
-                              : const Color(0xFF605232),
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(
-                          Icons.card_giftcard,
-                          color: isDark
-                              ? AppColors.primary
-                              : const Color(0xFF605232),
-                        ),
-                        title: Text(
-                          localizations.profile,
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            color: isDark
-                                ? AppColors.textDark
-                                : const Color(0xFF2C2518),
-                            fontSize: 16,
-                          ),
-                        ),
-                        trailing: Icon(
-                          Icons.arrow_forward_ios,
-                          size: 14,
-                          color: isDark
-                              ? AppColors.textGrey
-                              : const Color(0xFF605232),
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.of(context).pushNamed(Routes.profile);
-                        },
-                      ),
-
-                      Divider(
-                        color: isDark
-                            ? AppColors.accentDark
-                            : const Color(0xFFD8C8A8),
-                        thickness: 1,
-                        indent: 15,
-                        endIndent: 15,
-                      ),
-
-                      ListTile(
-                        leading: Icon(
-                          Icons.settings_outlined,
-                          color: isDark
-                              ? AppColors.primary
-                              : const Color(0xFF605232),
-                        ),
-                        title: Text(
-                          localizations.settings,
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            color: isDark
-                                ? AppColors.textDark
-                                : const Color(0xFF2C2518),
-                            fontSize: 16,
-                          ),
-                        ),
-                        onTap: () {
-                          Navigator.pushNamed(context, Routes.settings);
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(
-                          Icons.chat_bubble_outline,
-                          color: isDark
-                              ? AppColors.primary
-                              : const Color(0xFF605232),
-                        ),
-                        title: Text(
-                          localizations.contactUs,
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            color: isDark
-                                ? AppColors.textDark
-                                : const Color(0xFF2C2518),
-                            fontSize: 16,
-                          ),
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-
-                Divider(
-                  color: isDark
-                      ? AppColors.accentDark
-                      : const Color(0xFFD8C8A8),
-                  thickness: 1,
-                ),
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  leading: const Icon(Icons.logout, color: Color(0xFFB33A3A)),
-                  title: Text(
-                    localizations.logout,
-                    style: const TextStyle(
-                      fontFamily: 'Cairo',
-                      color: Color(0xFFB33A3A),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            ),
+          drawer: _buildDrawer(
+            context,
+            isDark,
+            localizations,
+            primaryText,
+            secondaryText,
+            accent,
+            bgColor,
           ),
-
           body: buildBody(state.tabIndex, isDark, localizations),
-
           bottomNavigationBar: SafeArea(
             child: BottomNav(
               currentIndex: state.tabIndex,
@@ -299,15 +124,221 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildDrawer(
+    BuildContext context,
+    bool isDark,
+    AppLocalizations localizations,
+    Color primaryText,
+    Color secondaryText,
+    Color accent,
+    Color bgColor,
+  ) {
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.06)
+        : Colors.black.withOpacity(0.05);
+    final headerBg = isDark ? AppColors.darkCard : const Color(0xFFD8C8A8);
+
+    return Drawer(
+      backgroundColor: bgColor,
+      surfaceTintColor: Colors.transparent,
+      child: Column(
+        children: [
+          UserAccountsDrawerHeader(
+            decoration: BoxDecoration(color: headerBg),
+            currentAccountPicture: _avatarUrl != null && _avatarUrl!.isNotEmpty
+                ? CircleAvatar(
+                    radius: 33,
+                    backgroundColor: Colors.transparent,
+                    backgroundImage: NetworkImage(_avatarUrl!),
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [accent, accent.withOpacity(0.7)],
+                      ),
+                    ),
+                    child: CircleAvatar(
+                      radius: 33,
+                      backgroundColor: Colors.transparent,
+                      child: Text(
+                        _getInitials(_userName),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: isDark
+                              ? AppColors.backgroundDark
+                              : Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+            accountName: Text(
+              _userName.isEmpty ? '...' : _userName,
+              style: TextStyle(
+                color: primaryText,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            accountEmail: Text(
+              _userEmail,
+              style: TextStyle(color: secondaryText, fontSize: 13),
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _drawerItem(
+                  icon: Icons.receipt_long,
+                  title: "My Bills",
+                  accent: accent,
+                  primaryText: primaryText,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AllBillsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _drawerItem(
+                  icon: Icons.library_add_check_outlined,
+                  title: "Book Requests",
+                  accent: accent,
+                  primaryText: primaryText,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => BlocProvider(
+                          create: (context) => BookRequestBloc(
+                            repository: BookRequestRepository(),
+                          ),
+                          child: const BookRequestsScreen(),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                _drawerItem(
+                  icon: Icons.history_edu,
+                  title: localizations.orderHistory,
+                  accent: accent,
+                  primaryText: primaryText,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, Routes.orderHistory);
+                  },
+                ),
+                _drawerItem(
+                  icon: Icons.hourglass_empty_rounded,
+                  title: 'Waiting List',
+                  accent: accent,
+                  primaryText: primaryText,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, Routes.myWaitingList);
+                  },
+                ),
+                /* _drawerItem(
+                  icon: Icons.local_shipping_outlined,
+                  title: localizations.deliveryService,
+                  accent: accent,
+                  primaryText: primaryText,
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                ),*/
+                _drawerItem(
+                  icon: Icons.person_outline,
+                  title: localizations.profile,
+                  accent: accent,
+                  primaryText: primaryText,
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await Navigator.of(context).pushNamed(Routes.profile);
+                    _loadUserData();
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  child: Divider(color: borderColor, thickness: 1),
+                ),
+                _drawerItem(
+                  icon: Icons.settings_outlined,
+                  title: localizations.settings,
+                  accent: accent,
+                  primaryText: primaryText,
+                  onTap: () {
+                    Navigator.pushNamed(context, Routes.settings);
+                  },
+                ),
+                _drawerItem(
+                  icon: Icons.chat_bubble_outline,
+                  title: localizations.contactUs,
+                  accent: accent,
+                  primaryText: primaryText,
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+          Divider(color: borderColor, thickness: 1),
+          _drawerItem(
+            icon: Icons.logout,
+            title: localizations.logout,
+            accent: const Color(0xFFB33A3A),
+            primaryText: const Color(0xFFB33A3A),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
+  Widget _drawerItem({
+    required IconData icon,
+    required String title,
+    required Color accent,
+    required Color primaryText,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: accent, size: 22),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: primaryText,
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      trailing: Icon(
+        Icons.arrow_forward_ios,
+        size: 14,
+        color: primaryText.withOpacity(0.4),
+      ),
+      onTap: onTap,
+    );
+  }
+
   Widget buildBody(int tabIndex, bool isDark, AppLocalizations localizations) {
     switch (tabIndex) {
       case 0:
-        return BlocProvider(
-          create: (context) =>
-              FavoriteBloc(FavoriteRepository())..add(GetFavoritesEvent()),
-          child: const FavoriteScreen(),
-        );
-
+        return const FavoriteScreen();
       case 1:
         return BlocBuilder<HomeBloc, HomeState>(
           buildWhen: (previous, current) =>
@@ -335,7 +366,6 @@ class HomeScreen extends StatelessWidget {
                       clipBehavior: Clip.none,
                       children: [
                         const Search(),
-
                         if (!hasSearchQuery)
                           Positioned(
                             right: 15,
@@ -345,7 +375,6 @@ class HomeScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-
                   SizedBox(height: hasSearchQuery ? 20 : 65),
                   if (state.searchStatus == HomeStatus.loading &&
                       hasSearchQuery)
@@ -396,7 +425,6 @@ class HomeScreen extends StatelessWidget {
                         const BookCategoriesSection(),
                       ],
                     ),
-
                   const SizedBox(height: 100),
                 ],
               ),

@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:library_mobile_app/core/booksearchcard.dart';
 import 'package:library_mobile_app/core/theme.dart';
+import 'package:library_mobile_app/feature/books/bloc/bloc.dart';
+import 'package:library_mobile_app/feature/books/data/repository.dart';
+import 'package:library_mobile_app/feature/books/presentation/book_details_screen.dart';
+import 'package:library_mobile_app/feature/books/waiting_list/Bloc/WaitingListBloc.dart';
+import 'package:library_mobile_app/feature/books/waiting_list/Repository/WaitingListRepository.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
 import 'package:library_mobile_app/l10n/app_localizations.dart';
 
@@ -171,7 +176,27 @@ class _SearchState extends State<Search> {
                     book: book,
                     isDark: isDark,
                     onTapDetails: () {
-                      print('تم الضغط على تفاصيل كتاب: ${book.title}');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MultiBlocProvider(
+                            providers: [
+                              BlocProvider(
+                                create: (context) => BookDetailsBloc(
+                                  repository: BookRepository(),
+                                ),
+                              ),
+                              BlocProvider(
+                                create: (context) =>
+                                    WaitingListBloc(WaitingListRepository()),
+                              ),
+                            ],
+                            child: BookDetailsScreen(
+                              bookId: book.id.toString(),
+                            ),
+                          ),
+                        ),
+                      );
                     },
                   );
                 },

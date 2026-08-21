@@ -1,3 +1,5 @@
+import 'package:library_mobile_app/feature/payment_page/data/payment_mode.dart';
+
 abstract class PaymentEvent {}
 
 class UpdatePaymentMethodEvent extends PaymentEvent {
@@ -11,13 +13,13 @@ class UpdateDeliveryEvent extends PaymentEvent {
 }
 
 class ConfirmPaymentEvent extends PaymentEvent {
-  final String name;
-  final String phone;
-  final String address;
+  final String phoneNumber;
+  final String deliveryAddress;
+  final List<CheckoutItemModel> items;
 
   ConfirmPaymentEvent({
-    required this.name,
-    required this.phone,
-    required this.address,
+    required this.phoneNumber,
+    required this.deliveryAddress,
+    required this.items,
   });
 }

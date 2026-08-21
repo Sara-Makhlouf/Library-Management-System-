@@ -1,35 +1,43 @@
+class CheckoutItemModel {
+  final int bookId;
+  final int quantity;
+
+  CheckoutItemModel({required this.bookId, required this.quantity});
+
+  Map<String, dynamic> toJson() {
+    return {'book_id': bookId, 'quantity': quantity};
+  }
+
+  factory CheckoutItemModel.fromJson(Map<String, dynamic> json) {
+    return CheckoutItemModel(
+      bookId: json['book_id'] ?? 0,
+      quantity: json['quantity'] ?? 1,
+    );
+  }
+}
+
 class PaymentModel {
-  final String name;
-  final String phone;
-  final String address;
+  final String phoneNumber;
+  final String deliveryAddress;
   final String paymentMethod;
   final bool wantsDelivery;
+  final List<CheckoutItemModel> items;
 
   PaymentModel({
-    required this.name,
-    required this.phone,
-    required this.address,
+    required this.phoneNumber,
+    required this.deliveryAddress,
     required this.paymentMethod,
     required this.wantsDelivery,
+    required this.items,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      'name': name,
-      'phone': phone,
-      'address': address,
-      'payment_method': paymentMethod, // 'cash' أو 'online'
-      'is_delivery': wantsDelivery, // true أو false
+      'payment_method': paymentMethod,
+      'is_delivery': wantsDelivery,
+      'delivery_address': deliveryAddress,
+      'phone_number': phoneNumber,
+      'items': items.map((item) => item.toJson()).toList(),
     };
-  }
-
-  factory PaymentModel.fromJson(Map<String, dynamic> json) {
-    return PaymentModel(
-      name: json['name'] ?? '',
-      phone: json['phone'] ?? '',
-      address: json['address'] ?? '',
-      paymentMethod: json['payment_method'] ?? 'cash',
-      wantsDelivery: json['is_delivery'] ?? true,
-    );
   }
 }

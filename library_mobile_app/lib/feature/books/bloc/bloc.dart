@@ -16,5 +16,31 @@ class BookDetailsBloc extends Bloc<BookDetailsEvent, BookDetailsState> {
         emit(BookDetailsError(message: e.toString()));
       }
     });
+
+    on<ToggleWaitlistEvent>(_onToggleWaitlist);
+  }
+
+  Future<void> _onToggleWaitlist(
+    ToggleWaitlistEvent event,
+    Emitter<BookDetailsState> emit,
+  ) async {
+    if (state is BookDetailsSuccess) {
+      final currentState = state as BookDetailsSuccess;
+
+      // 1. التعديل على الكتاب بداخل الموديل باستخدام copyWith
+      final updatedBook = currentState.book.copyWith(
+        isWaitingLocally: !currentState.book.isWaitingLocally,
+      );
+
+      // 2. إرسال الحالة الجديدة محلياً
+      emit(BookDetailsSuccess(book: updatedBook));
+
+      try {
+        // إذا أردت إرسال الطلب للباك إند مستقبلاً
+      } catch (e) {
+        // في حال الخطأ نعيد الكتاب لحالته الأصلية
+        emit(BookDetailsSuccess(book: currentState.book));
+      }
+    }
   }
 }

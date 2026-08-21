@@ -4,13 +4,12 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-
+import 'package:library_mobile_app/core/constants.dart';
 import 'package:library_mobile_app/core/locale_cubit.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/app_bloc_observer.dart';
 import 'package:library_mobile_app/l10n/app_localizations.dart';
 
-import '../../core/constant.dart';
-import '../../core/constants.dart';
+import 'core/constantPage.dart';
 import '../../core/theme.dart';
 import '../../core/theme_cubit.dart';
 import '../../core/app_router.dart';

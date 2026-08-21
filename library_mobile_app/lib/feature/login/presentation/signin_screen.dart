@@ -10,7 +10,7 @@ import 'package:library_mobile_app/core/components/decorCircle.dart';
 import 'package:library_mobile_app/core/components/shake_widget.dart';
 import 'package:library_mobile_app/core/components/social_button.dart';
 import 'package:library_mobile_app/core/components/theme_toggle.dart';
-import 'package:library_mobile_app/core/constant.dart';
+import 'package:library_mobile_app/core/constantPage.dart';
 import 'package:library_mobile_app/core/theme.dart';
 
 import 'package:library_mobile_app/feature/login/bloc/login_bloc.dart';

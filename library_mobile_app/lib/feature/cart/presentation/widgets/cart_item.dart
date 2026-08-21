@@ -8,8 +8,13 @@ import 'package:library_mobile_app/l10n/app_localizations.dart';
 
 class CartItemCard extends StatelessWidget {
   final CartItemModel item;
+  final List<CartItemModel> allCartItems;
 
-  const CartItemCard({super.key, required this.item});
+  const CartItemCard({
+    super.key,
+    required this.item,
+    required this.allCartItems,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,127 +22,169 @@ class CartItemCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final localizations = AppLocalizations.of(context)!;
 
+    final primaryText = isDark ? AppColors.textDark : AppColors.textLight;
+    final secondaryText = isDark ? Colors.white54 : AppColors.textGrey;
+    final cardColor = isDark ? AppColors.darkCard : Colors.white;
+    final accent = AppColors.primary;
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.06)
+        : Colors.black.withOpacity(0.05);
+
     final bookTitle = item.book?.title ?? '';
     final bookCover = item.book?.cover ?? '';
 
-    return Card(
-      color: isDark ? AppColors.darkCard : const Color(0xFFEFE3D3),
-      margin: const EdgeInsets.only(bottom: 15),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: isDark ? 1 : 2,
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Row(
-          children: [
-            // صورة الغلاف بنفس مقاسات شاشة المفضلة (عرض 60، ارتفاع 80)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: bookCover.isNotEmpty
-                  ? Image.network(
-                      bookCover,
-                      width: 60,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.book, size: 50),
-                    )
-                  : const Icon(Icons.book, size: 50),
-            ),
-            const SizedBox(width: 15),
+    final int currentQuantity = allCartItems
+        .where(
+          (element) =>
+              element.bookId == item.bookId && element.type == item.type,
+        )
+        .length;
 
-            // تفاصيل الكتاب
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // اسم الكتاب مع اختصار الزائد بـ ...
-                  Text(
-                    bookTitle,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: isDark ? AppColors.textDark : Colors.black87,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: borderColor),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: bookCover.isNotEmpty
+                ? Image.network(
+                    bookCover,
+                    width: 60,
+                    height: 80,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        _coverPlaceholder(accent),
+                  )
+                : _coverPlaceholder(accent),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  bookTitle,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: primaryText,
                   ),
-                  const SizedBox(height: 4),
-
-                  // السعر باللون الأخضر وتحت اسم الكتاب مباشرة
-                  Text(
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
                     isBorrowItem
                         ? localizations.borrowPrice(item.price.toString())
                         : localizations.purchasePrice(item.price.toString()),
                     style: const TextStyle(
                       color: Colors.green,
                       fontWeight: FontWeight.bold,
-                      fontSize: 13,
+                      fontSize: 12,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-
-                  // أزرار زيادة ونقصان الكمية بجانب بعضها (تظهر في حالة الشراء فقط)
-                  if (!isBorrowItem) ...[
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            // إيفنت النقصان
-                          },
-                          child: Icon(
-                            Icons.remove_circle_outline,
-                            size: 20,
-                            color: isDark
-                                ? AppColors.primary
-                                : const Color.fromARGB(255, 96, 82, 50),
+                ),
+                if (!isBorrowItem) ...[
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () {
+                          if (currentQuantity > 1) {
+                            context.read<CartBloc>().add(
+                              UpdateQuantityEvent(
+                                cartDetailId: item.id,
+                                quantity: currentQuantity - 1,
+                              ),
+                            );
+                          }
+                        },
+                        child: Icon(
+                          Icons.remove_circle_outline,
+                          size: 22,
+                          color: currentQuantity > 1 ? accent : secondaryText,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                        child: Text(
+                          "$currentQuantity",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: primaryText,
                           ),
                         ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Text(
-                            "1",
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                      ),
+                      InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () {
+                          context.read<CartBloc>().add(
+                            UpdateQuantityEvent(
+                              cartDetailId: item.id,
+                              quantity: currentQuantity + 1,
                             ),
-                          ),
+                          );
+                        },
+                        child: Icon(
+                          Icons.add_circle_outline,
+                          size: 22,
+                          color: accent,
                         ),
-                        InkWell(
-                          onTap: () {
-                            // إيفنت الزيادة
-                          },
-                          child: Icon(
-                            Icons.add_circle_outline,
-                            size: 20,
-                            color: isDark
-                                ? AppColors.primary
-                                : const Color.fromARGB(255, 96, 82, 50),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ],
-              ),
+              ],
             ),
-
-            // زر الحذف من السلة
-            IconButton(
-              icon: const Icon(
-                Icons.delete,
-                color: Color.fromARGB(255, 226, 105, 97),
-              ),
-              onPressed: () {
-                context.read<CartBloc>().add(
-                  RemoveBookFromCartEvent(item.bookId),
-                );
-              },
-            ),
-          ],
-        ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+            onPressed: () {
+              context.read<CartBloc>().add(RemoveBookFromCartEvent(item.id));
+            },
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _coverPlaceholder(Color accent) {
+    return Container(
+      width: 60,
+      height: 80,
+      decoration: BoxDecoration(
+        color: accent.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(Icons.book_outlined, color: accent, size: 26),
     );
   }
 }

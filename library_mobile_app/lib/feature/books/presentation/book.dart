@@ -3,23 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:library_mobile_app/core/constant.dart';
 import 'package:library_mobile_app/core/constants.dart';
 import 'package:library_mobile_app/core/theme.dart';
 import 'package:library_mobile_app/feature/books/bloc/bloc.dart';
 import 'package:library_mobile_app/feature/books/data/repository.dart';
 import 'package:library_mobile_app/feature/books/presentation/book_details_screen.dart';
-import 'package:library_mobile_app/feature/pdf_reader/bloc/read_book_cubit.dart';
-import 'package:library_mobile_app/feature/pdf_reader/data/repo/pdf_book_repo.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-// استيراد ملفات المفضلة
 import 'package:library_mobile_app/feature/favourite/bloc/favbloc.dart';
 import 'package:library_mobile_app/feature/favourite/bloc/favevent.dart';
 import 'package:library_mobile_app/feature/favourite/bloc/favstate.dart';
-import 'package:library_mobile_app/feature/favourite/data/repository.dart'
-    as fav_repo;
-
+import 'package:library_mobile_app/feature/pdf_reader/bloc/read_book_cubit.dart';
+import 'package:library_mobile_app/feature/pdf_reader/data/repo/pdf_book_repo.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:library_mobile_app/feature/books/waiting_list/Bloc/WaitingListBloc.dart';
+import 'package:library_mobile_app/feature/books/waiting_list/Repository/WaitingListRepository.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
 import 'package:library_mobile_app/feature/homepage/data/model.dart';
 import 'package:library_mobile_app/feature/homepage/data/repository.dart';
@@ -35,6 +31,7 @@ class Book extends StatefulWidget {
 
 class _BookState extends State<Book> {
   String _sort = 'Default';
+
   List<BookModel> _getSortedBooks(List<BookModel> originalBooks) {
     final list = List<BookModel>.from(originalBooks);
     if (_sort == 'Price') {
@@ -104,16 +101,11 @@ class _BookState extends State<Book> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => HomeBloc(repository: HomeRepository())
+    // فقط HomeBloc الخاص بهاي الشاشة — FavoriteBloc منستخدم النسخة العامة من main.dart
+    return BlocProvider(
+      create: (context) =>
+          HomeBloc(repository: HomeRepository())
             ..add(FetchBooksByCategoryEvent(categoryId: widget.category.id)),
-        ),
-        BlocProvider(
-          create: (context) => FavoriteBloc(fav_repo.FavoriteRepository()),
-        ),
-      ],
       child: Scaffold(
         backgroundColor: isDark
             ? AppColors.backgroundDark
@@ -134,7 +126,6 @@ class _BookState extends State<Book> {
           title: BlocBuilder<HomeBloc, HomeState>(
             builder: (context, state) {
               final booksCount = state.categoryBooks.length;
-
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -228,7 +219,6 @@ class _BookState extends State<Book> {
                 crossAxisSpacing: 10,
                 itemBuilder: (context, index) {
                   final book = sortedBooks[index];
-
                   final double calculatedHeight = (index % 3 == 0)
                       ? 190.0
                       : (index % 3 == 1 ? 165.0 : 175.0);
@@ -255,7 +245,7 @@ class _BookState extends State<Book> {
 }
 
 // ── Book card ─────────────────────────────────────────────────────────────
-class BookCard extends StatefulWidget {
+class BookCard extends StatelessWidget {
   final BookModel book;
   final bool isDark;
   final double cardHeight;
@@ -268,20 +258,13 @@ class BookCard extends StatefulWidget {
   });
 
   @override
-  State<BookCard> createState() => _BookCardState();
-}
-
-class _BookCardState extends State<BookCard> {
-  @override
   Widget build(BuildContext context) {
     final String displayPrice =
-        (widget.book.price == null ||
-            widget.book.price == '0' ||
-            widget.book.price!.isEmpty)
+        (book.price == null || book.price == '0' || book.price!.isEmpty)
         ? 'Free'
-        : '${widget.book.price} ل.س';
+        : '${book.price} ل.س';
 
-    final String? fullCoverUrl = widget.book.cover;
+    final String? fullCoverUrl = book.cover;
 
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -290,7 +273,8 @@ class _BookCardState extends State<BookCard> {
           builder: (context) => MultiBlocProvider(
             providers: [
               BlocProvider(
-                create: (context) => BookDetailsBloc(repository: BookRepository()),
+                create: (context) =>
+                    BookDetailsBloc(repository: BookRepository()),
               ),
               BlocProvider(
                 create: (context) => ReadBookCubit(
@@ -313,17 +297,29 @@ class _BookCardState extends State<BookCard> {
                   ),
                 ),
               ),
+              BlocProvider(
+                create: (context) => WaitingListBloc(WaitingListRepository()),
+              ),
             ],
-            child: BookDetailsScreen(bookId: widget.book.id.toString()),
+            child: BookDetailsScreen(bookId: book.id.toString()),
           ),
         ),
       ),
+      /* onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BlocProvider(
+            create: (context) => BookDetailsBloc(repository: BookRepository()),
+            child: BookDetailsScreen(bookId: book.id.toString()),
+          ),
+        ),
+      ),*/
       child: Container(
         decoration: BoxDecoration(
-          color: widget.isDark ? AppColors.darkCard : Colors.white,
+          color: isDark ? AppColors.darkCard : Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
-            if (!widget.isDark)
+            if (!isDark)
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
                 blurRadius: 8,
@@ -341,12 +337,10 @@ class _BookCardState extends State<BookCard> {
               child: fullCoverUrl != null && fullCoverUrl.isNotEmpty
                   ? Image.network(
                       fullCoverUrl,
-                      height: widget.cardHeight,
+                      height: cardHeight,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) {
-                        return _buildPlaceholderIcon();
-                      },
+                      errorBuilder: (_, __, ___) => _buildPlaceholderIcon(),
                     )
                   : _buildPlaceholderIcon(),
             ),
@@ -360,11 +354,11 @@ class _BookCardState extends State<BookCard> {
                     children: [
                       Expanded(
                         child: Text(
-                          widget.book.title,
+                          book.title,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: widget.isDark
+                            color: isDark
                                 ? AppColors.textDark
                                 : AppColors.textLight,
                           ),
@@ -373,18 +367,15 @@ class _BookCardState extends State<BookCard> {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      BlocConsumer<FavoriteBloc, FavoriteState>(
-                        listener: (context, state) {},
+
+                      BlocBuilder<FavoriteBloc, FavoriteState>(
                         builder: (context, favState) {
+                          final isFav = favState.isFavorite(book.id);
                           return GestureDetector(
                             onTap: () {
                               context.read<FavoriteBloc>().add(
-                                ToggleFavoriteEvent(widget.book.id),
+                                ToggleFavoriteEvent(book.id),
                               );
-                              setState(() {
-                                widget.book.isFavorite =
-                                    !widget.book.isFavorite;
-                              });
                             },
                             child: Container(
                               padding: const EdgeInsets.all(4),
@@ -393,12 +384,10 @@ class _BookCardState extends State<BookCard> {
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
-                                widget.book.isFavorite
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                color: widget.book.isFavorite
+                                isFav ? Icons.favorite : Icons.favorite_border,
+                                color: isFav
                                     ? Colors.red
-                                    : (widget.isDark
+                                    : (isDark
                                           ? Colors.white70
                                           : Colors.black54),
                                 size: 14,
@@ -407,16 +396,17 @@ class _BookCardState extends State<BookCard> {
                           );
                         },
                       ),
+                      // ============================================================
                     ],
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    widget.book.isbn != null
-                        ? 'ISBN: ${widget.book.isbn}'
+                    book.isbn != null
+                        ? 'ISBN: ${book.isbn}'
                         : 'مكتبة دمشق ذكية',
                     style: TextStyle(
                       fontSize: 9,
-                      color: widget.isDark
+                      color: isDark
                           ? AppColors.textDark.withOpacity(0.5)
                           : AppColors.textLight.withOpacity(0.5),
                     ),
@@ -457,8 +447,8 @@ class _BookCardState extends State<BookCard> {
 
   Widget _buildPlaceholderIcon() {
     return Container(
-      height: widget.cardHeight,
-      color: widget.isDark
+      height: cardHeight,
+      color: isDark
           ? AppColors.inputDark
           : AppColors.accentLight.withOpacity(0.4),
       child: Center(

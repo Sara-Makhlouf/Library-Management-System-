@@ -11,13 +11,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final HomeRepository repository;
 
   HomeBloc({required this.repository}) : super(HomeState()) {
-
-
     on<ChangeTabEvent>((event, emit) {
       emit(state.copyWith(tabIndex: event.index));
     });
-
- 
 
     on<GetPopularBooksEvent>((event, emit) async {
       developer.log('⚡ تم استقبال حدث جلب الكتب الشعبية');
@@ -46,15 +42,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
     });
 
-  
-
     on<FetchHomeBooksEvent>((event, emit) {
       developer.log('⚡ تم استقبال FetchHomeBooksEvent');
 
       add(GetPopularBooksEvent());
     });
-
-    
 
     on<SearchBooksEvent>((event, emit) async {
       developer.log('⚡ البحث عن: "${event.query}"');
@@ -96,8 +88,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
     });
 
- 
-
     on<FetchBooksByCategoryEvent>((event, emit) async {
       developer.log('⚡ جلب كتب الفئة ID: ${event.categoryId}');
 
@@ -124,8 +114,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         );
       }
     });
-
- 
 
     on<FetchCategoriesEvent>((event, emit) async {
       developer.log('⚡ تم استقبال حدث جلب الفئات');
@@ -155,8 +143,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         );
       }
     });
-
-
 
     add(GetPopularBooksEvent());
 

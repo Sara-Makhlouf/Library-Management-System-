@@ -6,15 +6,15 @@ class BookCartRepository {
   Future<void> addBookToCart(String bookId, String type) async {
     try {
       final dio = await NetworkService.getInstance();
-      await dio.post(
-        '/cart/add',
-        data: {
-          'book_id': bookId,
-          'type': type, // إرسال نوع الطلب (شراء أو استعارة)
-        },
-      );
+      await dio.post('/cart/add', data: {'book_id': bookId, 'type': type});
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      final message = (data is Map && data['message'] != null)
+          ? data['message'].toString()
+          : 'حدث خطأ أثناء الإضافة إلى السلة';
+      throw Exception(message);
     } catch (e) {
-      throw Exception('Failed to add book to cart: $e');
+      throw Exception('حدث خطأ غير متوقع');
     }
   }
 
@@ -22,7 +22,6 @@ class BookCartRepository {
     try {
       final dio = await NetworkService.getInstance();
 
-      // إضافة Cache-Control لمنع الـ Dio من قراءة البيانات من الذاكرة المؤقتة وإجباره على الاتصال بالسيرفر
       final response = await dio.get(
         '/cart',
         options: Options(
@@ -34,6 +33,18 @@ class BookCartRepository {
       return CartModel.fromJson(data);
     } catch (e) {
       throw Exception('Failed to fetch cart: $e');
+    }
+  }
+
+  Future<void> updateQuantity(int cartDetailId, int quantity) async {
+    try {
+      final dio = await NetworkService.getInstance();
+      await dio.post(
+        '/cart/update-quantity',
+        data: {'cart_detail_id': cartDetailId, 'quantity': quantity},
+      );
+    } catch (e) {
+      throw Exception('Failed to update quantity: $e');
     }
   }
 

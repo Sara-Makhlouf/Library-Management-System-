@@ -3,16 +3,23 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:library_mobile_app/core/constant.dart';
+import 'package:library_mobile_app/core/constantPage.dart';
 import 'package:library_mobile_app/core/constants.dart';
+import 'package:library_mobile_app/feature/Bill/presentation/AllBillsScreen.dart';
+import 'package:library_mobile_app/feature/Bill/presentation/BillDetailsScreen.dart';
+import 'package:library_mobile_app/feature/BookRequest/bloc/BookRequestBloc.dart';
+import 'package:library_mobile_app/feature/BookRequest/data/BookRequestRepository.dart';
+import 'package:library_mobile_app/feature/BookRequest/presentation/BookRequestsScreen.dart';
 import 'package:library_mobile_app/feature/books/bloc/bloc.dart';
 import 'package:library_mobile_app/feature/books/data/repository.dart';
 import 'package:library_mobile_app/feature/books/presentation/book.dart';
 import 'package:library_mobile_app/feature/books/presentation/book_details_screen.dart';
+import 'package:library_mobile_app/feature/books/waiting_list/Bloc/WaitingListBloc.dart';
+import 'package:library_mobile_app/feature/books/waiting_list/Repository/WaitingListRepository.dart';
+import 'package:library_mobile_app/feature/books/waiting_list/presentation/MyWaitingListScreen.dart';
 import 'package:library_mobile_app/feature/cart/bloc/cart_bloc.dart';
 import 'package:library_mobile_app/feature/favourite/bloc/favbloc.dart';
 import 'package:library_mobile_app/feature/favourite/bloc/favevent.dart';
-import 'package:library_mobile_app/feature/favourite/data/repository.dart';
 import 'package:library_mobile_app/feature/favourite/presentation/favourit_screen.dart';
 import 'package:library_mobile_app/feature/homepage/bloc/home_bloc.dart';
 import 'package:library_mobile_app/feature/homepage/data/model.dart';
@@ -35,17 +42,21 @@ class AppRouter {
 
       case Routes.homePage:
         return MaterialPageRoute(
-          builder: (_) => MultiBlocProvider(
-            providers: [
-              BlocProvider(
-                create: (context) => HomeBloc(repository: HomeRepository())
-                  ..add(GetPopularBooksEvent())
-                  ..add(FetchCategoriesEvent()),
-              ),
-              BlocProvider(create: (context) => CartBloc()),
-            ],
-            child: const HomeScreen(),
-          ),
+          builder: (context) {
+            context.read<FavoriteBloc>().add(GetFavoritesEvent());
+
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (context) => HomeBloc(repository: HomeRepository())
+                    ..add(GetPopularBooksEvent())
+                    ..add(FetchCategoriesEvent()),
+                ),
+                BlocProvider(create: (context) => CartBloc()),
+              ],
+              child: const HomeScreen(),
+            );
+          },
         );
 
       case Routes.profile:
@@ -59,9 +70,15 @@ class AppRouter {
 
       case Routes.book:
         final category = settings.arguments as CategoryModel;
-
         return MaterialPageRoute(builder: (_) => Book(category: category));
+      case Routes.myWaitingList:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => WaitingListBloc(WaitingListRepository()),
 
+            child: const MyWaitingListScreen(),
+          ),
+        );
       case Routes.bookDetails:
         final bookId = settings.arguments.toString();
         return MaterialPageRoute(
@@ -96,25 +113,25 @@ class AppRouter {
           ),
         );
 
-      case Routes.payment:
-        final existingCartBloc = settings.arguments as CartBloc;
+      case Routes.bookRequests:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider.value(
-            value: existingCartBloc,
-            child: const CheckoutScreen(),
+          builder: (_) => BlocProvider(
+            create: (context) =>
+                BookRequestBloc(repository: BookRequestRepository()),
+            child: const BookRequestsScreen(),
           ),
         );
       case Routes.favorites:
+        return MaterialPageRoute(builder: (_) => const FavoriteScreen());
+
+      case Routes.billDetails:
+        final billId = settings.arguments as int;
         return MaterialPageRoute(
-          builder: (_) => BlocProvider(
-            create: (context) => FavoriteBloc(FavoriteRepository())
-              ..add(
-                GetFavoritesEvent(),
-              ), // استبدل الحدث بالاسم الصحيح لديك لجلب المفضلة إن وجد
-            child: const FavoriteScreen(), // تأكد من اسم شاشة المفضلة لديك
-          ),
+          builder: (_) => BillDetailsScreen(billId: billId),
         );
 
+      case Routes.allBills:
+        return MaterialPageRoute(builder: (_) => const AllBillsScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
