@@ -493,6 +493,8 @@ class _RegisterState extends State<Register> {
                         curve: Curves.easeOutBack,
                       ),
 
+                  const SizedBox(height: 12),
+
                   Text(
                     'Hibr & Waraq',
                     style: TextStyle(
@@ -523,7 +525,7 @@ class _RegisterState extends State<Register> {
                         key: _shakeKey,
                         child: Container(
                           width: double.infinity,
-                          margin: const EdgeInsets.only(top: 100),
+                          height: size.height * 0.62,
                           decoration: BoxDecoration(
                             color: isDark ? AppColors.accentDark : Colors.white,
                             borderRadius: const BorderRadius.vertical(

@@ -1,4 +1,4 @@
-const String ip = '192.168.1.6';
+const String ip = '10.39.219.158';
 const String baseUrl = 'http://$ip:8000/api';
 const String imageBaseUrl = 'http://$ip:8000/';
 const String tokenKey = 'auth_token';
