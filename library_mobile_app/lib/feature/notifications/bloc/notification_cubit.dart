@@ -125,15 +125,16 @@ class NotificationCubit extends Cubit<NotificationState> {
         NotificationLoaded(notifications: updatedNotifications, unreadCount: 0),
       );
 
-      debugPrint('✅ ALL NOTIFICATIONS MARKED AS READ');
+      print('✅ ALL NOTIFICATIONS MARKED AS READ');
+      print('🔴 UNREAD COUNT: 0');
     } catch (e) {
-      debugPrint('❌ MARK ALL AS READ ERROR: $e');
+      print('❌ MARK ALL AS READ ERROR: $e');
     }
   }
 
-  // ============================================================
-  // REFRESH ALL
-  // ============================================================
+  // =========================================================
+  // REFRESH
+  // =========================================================
 
   Future<void> refreshNotifications() async {
     await getNotifications();

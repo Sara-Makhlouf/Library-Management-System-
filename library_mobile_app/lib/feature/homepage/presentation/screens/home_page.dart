@@ -463,24 +463,33 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-
             // =======================================================
-            // LOGOUT
+            // HELP & SUPPORT
             // =======================================================
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 14),
               child: Column(
                 children: [
-                  Divider(color: borderColor, thickness: 1),
+                  Divider(color: borderColor, thickness: 1, height: 1),
+
+                  const SizedBox(height: 10),
 
                   _drawerItem(
-                    icon: Icons.logout_rounded,
-                    title: localizations.logout,
-                    accent: const Color(0xFFB33A3A),
-                    primaryText: const Color(0xFFB33A3A),
-                    showArrow: false,
+                    icon: Icons.help_outline_rounded,
+                    title: 'Help & Support',
+                    accent: accent,
+                    primaryText: primaryText,
+                    showArrow: true,
                     onTap: () {
                       Navigator.pop(context);
+
+                      // افتحي صفحة المساعدة هون
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (_) => const HelpSupportScreen(),
+                      //   ),
+                      // );
                     },
                   ),
                 ],
