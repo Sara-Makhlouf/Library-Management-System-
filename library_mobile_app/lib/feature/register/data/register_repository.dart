@@ -5,7 +5,9 @@ import 'package:library_mobile_app/core/constants.dart';
 
 class RegisterRepository {
   Future<Map<String, dynamic>> sendOtp({required String email}) async {
-    final normalizedPhone = _normalizePhone(email);
+    print('================ OTP REQUEST ================');
+    print('EMAIL: $email');
+    print('URL: $baseUrl/send-otp');
 
     final response = await http.post(
       Uri.parse('$baseUrl/send-otp'),
@@ -15,6 +17,10 @@ class RegisterRepository {
       },
       body: jsonEncode({'email': email}),
     );
+
+    print('STATUS: ${response.statusCode}');
+    print('RESPONSE: ${response.body}');
+    print('============================================');
 
     final body = _decodeResponse(response);
 
