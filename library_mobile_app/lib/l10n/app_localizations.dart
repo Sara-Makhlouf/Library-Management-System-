@@ -559,6 +559,110 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Library Pickup'**
   String get storePickup;
+  // Settings
+  String get appl;
+  String get borrowguide;
+  String get sendfedback;
+  String get rate;
+  String get appv;
+  String get terms;
+  String get privacy;
+  String get delete;
+  String get push;
+
+  // Categories
+  String get borrow;
+  String get art;
+  String get Economics;
+  String get historyc;
+  String get Novels;
+  String get philosophyc;
+  String get sciencec;
+  String get tech;
+
+  // Bills / Requests / Waiting List
+  String get bills;
+  String get bookrequest;
+  String get waitinglist;
+  String get help;
+  String get total;
+  String get invoice;
+  String get myinvoice;
+  String get invhistory;
+  String get norequest;
+  String get newrequest;
+  String get newsinc;
+
+  // Action sheet / Dialogs
+  String get whatWouldYouLikeToDo;
+  String get chooseAnActionForThisBook;
+  String get buyThisBook;
+
+  // Shopping Cart & Empty states
+  String get reviewYourSelectedBooks;
+  String get addBooksToYourCart;
+
+  // Book Details & Overview
+  String get copies;
+  String get language;
+  String get pages;
+  String get overview;
+  String get bookInformation;
+  String get author;
+  String get availability;
+  String get available;
+  String get price;
+  String get writeReview;
+  String get reviews;
+  String get readersRating;
+  String get getBook;
+  String get readBook;
+
+  // Sorting
+  String get sortBooks;
+  String get chooseHowToViewBooks;
+  String get titleAZ;
+  String get priceLowHigh;
+  String get priceHighLow;
+
+  // Notifications
+  String get notifications;
+  String get readAll;
+  String get read;
+  String get unread;
+
+  // Waiting List
+  String get noWaitingListRequests;
+  String get waitingListSubtitle;
+
+  // Contact Us & Messages
+  String get feelFreeToReachOut;
+  String get getInTouch;
+  String get email;
+  String get phone;
+  String get libraryLocation;
+  String get sendUsAMessage;
+  String get yourName;
+  String get yourEmail;
+  String get writeYourMessage;
+  String get sendMessage;
+
+  // General Actions
+  String get view;
+
+  // Sorting & Header details
+  String booksCountHeader(int count);
+
+  // Card Badges
+  String get newBadge;
+
+  // Additional Contact Info
+  String get universityLibrary;
+
+  // Book Action Buttons
+  String get borrowAction;
+  String get fav;
+  String get favsave;
 }
 
 class _AppLocalizationsDelegate

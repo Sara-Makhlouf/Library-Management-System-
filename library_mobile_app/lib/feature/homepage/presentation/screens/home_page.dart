@@ -414,18 +414,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
 
                   _drawerItem(
-                    icon: Icons.history_edu_rounded,
-                    title: localizations.orderHistory,
-                    accent: accent,
-                    primaryText: primaryText,
-                    onTap: () {
-                      Navigator.pop(context);
-
-                      Navigator.pushNamed(context, Routes.orderHistory);
-                    },
-                  ),
-
-                  _drawerItem(
                     icon: Icons.hourglass_empty_rounded,
                     title: 'Waiting List',
                     accent: accent,

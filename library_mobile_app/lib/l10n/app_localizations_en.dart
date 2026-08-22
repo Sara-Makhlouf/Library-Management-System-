@@ -255,4 +255,216 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get storePickup => 'Library Pickup';
+  @override
+  String get appl => 'App Langyage';
+  @override
+  String get borrowguide => 'Borrowing Guide';
+  @override
+  String get sendfedback => 'Send Feedback';
+  @override
+  String get rate => 'Rate the App';
+  @override
+  String get appv => 'App Version';
+  @override
+  String get terms => 'Terms & Conditions';
+  @override
+  String get privacy => 'Privacy Police';
+
+  @override
+  String get delete => 'Delete Account';
+  @override
+  String get push => 'Push Notification';
+  @override
+  String get borrow => 'Brows by category';
+  @override
+  String get art => 'Art & Literature';
+  @override
+  String get Economics => 'Economics';
+  @override
+  String get historyc => 'History';
+  @override
+  String get Novels => 'Novels';
+  @override
+  String get philosophyc => 'Philosophy';
+  @override
+  String get sciencec => 'Science';
+  @override
+  String get tech => 'Technology';
+  @override
+  String get bills => 'My Bills';
+  @override
+  String get bookrequest => 'Book Request';
+  @override
+  String get waitinglist => 'Waiting List';
+  @override
+  String get help => 'Help & Support';
+  @override
+  String get total => 'Total amount';
+  @override
+  String get invoice => 'Incvoice';
+  @override
+  String get myinvoice => 'My Invoice';
+  @override
+  String get invhistory => 'Your invoice history';
+  @override
+  String get norequest => 'No Book Request yet';
+  @override
+  String get newrequest => 'Request a Book';
+  @override
+  String get newsinc =>
+      'Request a book that is not currently available in the libralry.';
+  // Action sheet / Dialogs
+  @override
+  String get whatWouldYouLikeToDo => 'What would you like to do?';
+
+  @override
+  String get chooseAnActionForThisBook => 'Choose an action for this book';
+
+  @override
+  String get buyThisBook => 'Buy this book';
+
+  // Shopping Cart & Empty states
+  @override
+  String get reviewYourSelectedBooks => 'Review your selected books';
+
+  @override
+  String get addBooksToYourCart =>
+      'Add books to your cart and they will appear here';
+
+  // Book Details & Overview
+  @override
+  String get copies => 'Copies';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get pages => 'Pages';
+
+  @override
+  String get overview => 'Overview';
+
+  @override
+  String get bookInformation => 'Book Information';
+
+  @override
+  String get author => 'Author';
+
+  @override
+  String get availability => 'Availability';
+
+  @override
+  String get available => 'Available';
+
+  @override
+  String get price => 'Price';
+
+  @override
+  String get writeReview => 'Write review';
+
+  @override
+  String get reviews => 'Reviews';
+
+  @override
+  String get readersRating => 'Readers rating';
+
+  @override
+  String get getBook => 'Get Book';
+
+  @override
+  String get readBook => 'Read Book';
+
+  // Sorting
+  @override
+  String get sortBooks => 'Sort books';
+
+  @override
+  String get chooseHowToViewBooks => 'Choose how you want to view the books';
+
+  @override
+  String get titleAZ => 'Title A-Z';
+
+  @override
+  String get priceLowHigh => 'Price Low-High';
+
+  @override
+  String get priceHighLow => 'Price High-Low';
+
+  // Notifications
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get readAll => 'Read all';
+
+  @override
+  String get read => 'Read';
+
+  @override
+  String get unread => 'Unread';
+
+  // Waiting List
+  @override
+  String get noWaitingListRequests => 'No waiting list requests';
+
+  @override
+  String get waitingListSubtitle =>
+      'Books you add to waiting list will appear here';
+
+  // Contact Us & Messages
+  @override
+  String get feelFreeToReachOut => 'Feel free to reach out to us';
+
+  @override
+  String get getInTouch => 'Get in touch';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get phone => 'Phone';
+
+  @override
+  String get libraryLocation => 'Library Location';
+
+  @override
+  String get sendUsAMessage => 'Send us a message';
+
+  @override
+  String get yourName => 'Your name';
+
+  @override
+  String get yourEmail => 'Your email';
+
+  @override
+  String get writeYourMessage => 'Write your message...';
+
+  @override
+  String get sendMessage => 'Send Message';
+
+  // General Actions
+  @override
+  String get view => 'View';
+  // Sorting & Header details (من صوري القائمة والأصناف)
+  @override
+  String booksCountHeader(int count) {
+    return 'books $count';
+  }
+
+  // Card Badges (من صور تفاصيل الكتاب وسلة المشتريات)
+  @override
+  String get newBadge => 'NEW';
+
+  // Additional Contact Info
+  @override
+  String get universityLibrary => 'University Library';
+
+  // Book Action Buttons
+  @override
+  String get borrowAction => 'Borrow';
+  @override
+  String get fav => 'Your favourite are empty ';
+  @override
+  String get favsave =>
+      'Save the books you love and find them here whenever you want ';
 }

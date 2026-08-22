@@ -57,6 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       backgroundColor: isDark
           ? AppColors.backgroundDark
           : AppColors.backgroundLight,
+
       appBar: AppBar(
         title: Text(
           localizations.settings,
@@ -67,19 +68,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
         elevation: 0,
         centerTitle: true,
       ),
+
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          // ============================================================
-          // ACCOUNT
-          // ============================================================
           _buildSectionLabel('Account', isDark),
+
           const SizedBox(height: 8),
 
           _buildCard(isDark, [
             _buildSettingsTile(
               icon: Icons.delete_outline_rounded,
-              label: 'Delete Account',
+              label: localizations.delete,
               isDark: isDark,
               labelColor: const Color(0xFFB33A3A),
               iconColor: const Color(0xFFB33A3A),
@@ -93,13 +93,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // ============================================================
           // NOTIFICATIONS
           // ============================================================
-          _buildSectionLabel('Notifications', isDark),
+          _buildSectionLabel(localizations.notifications, isDark),
+
           const SizedBox(height: 8),
 
           _buildCard(isDark, [
             _buildSettingsTile(
               icon: Icons.notifications_outlined,
-              label: 'Push Notifications',
+              label: localizations.push,
               isDark: isDark,
               trailing: Switch(
                 value: _pushNotifications,
@@ -115,10 +116,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 26),
 
-          // ============================================================
-          // GENERAL
-          // ============================================================
           _buildSectionLabel('General', isDark),
+
           const SizedBox(height: 8),
 
           _buildCard(isDark, [
@@ -141,26 +140,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             _buildSettingsTile(
               icon: Icons.language_outlined,
-              label: 'App Language',
+              label: localizations.appLanguage,
               isDark: isDark,
               trailing: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: currentLocale.languageCode,
+
                   icon: const Icon(
                     Icons.arrow_drop_down_rounded,
                     color: AppColors.primary,
                     size: 26,
                   ),
+
                   dropdownColor: isDark ? AppColors.darkCard : Colors.white,
+
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
                     color: isDark ? AppColors.textDark : AppColors.textLight,
                   ),
+
                   items: const [
                     DropdownMenuItem(value: 'ar', child: Text('العربية')),
                     DropdownMenuItem(value: 'en', child: Text('English')),
                   ],
+
                   onChanged: (String? value) {
                     if (value != null) {
                       context.read<LocaleCubit>().changeLanguage(value);
@@ -173,16 +177,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 26),
 
-          // ============================================================
-          // EXPERIENCE
-          // ============================================================
           _buildSectionLabel('Experience', isDark),
+
           const SizedBox(height: 8),
 
           _buildCard(isDark, [
             _buildSettingsTile(
               icon: Icons.menu_book_rounded,
-              label: 'Borrowing Guide',
+              label: localizations.borrowguide,
               isDark: isDark,
               trailing: _chevron(isDark),
               onTap: () => _showBorrowingGuide(isDark),
@@ -192,7 +194,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             _buildSettingsTile(
               icon: Icons.feedback_outlined,
-              label: 'Send Feedback',
+              label: localizations.sendfedback,
               isDark: isDark,
               trailing: _chevron(isDark),
               onTap: () => _showFeedbackDialog(isDark),
@@ -202,7 +204,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             _buildSettingsTile(
               icon: Icons.star_outline_rounded,
-              label: 'Rate the App',
+              label: localizations.rate,
               isDark: isDark,
               trailing: _chevron(isDark),
               onTap: () => _showRateAppDialog(isDark),
@@ -211,16 +213,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 26),
 
-          // ============================================================
-          // ABOUT
-          // ============================================================
           _buildSectionLabel('About', isDark),
+
           const SizedBox(height: 8),
 
           _buildCard(isDark, [
             _buildSettingsTile(
               icon: Icons.info_outline_rounded,
-              label: 'App Version',
+              label: localizations.appv,
               isDark: isDark,
               trailing: Text(
                 _appVersion,
@@ -238,16 +238,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             _buildSettingsTile(
               icon: Icons.description_outlined,
-              label: 'Terms & Conditions',
+              label: localizations.terms,
               isDark: isDark,
               trailing: _chevron(isDark),
               onTap: () => _showTextSheet(
                 isDark,
-                title: 'Terms & Conditions',
+                title: localizations.terms,
                 body:
-                    'By using this app you agree to borrow and purchase books responsibly, '
-                    'return borrowed items on time, and keep your account information accurate. '
-                    'Full terms will be published here once finalized.',
+                    'Please read and accept the terms and conditions of using the library application.',
               ),
             ),
 
@@ -255,29 +253,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             _buildSettingsTile(
               icon: Icons.policy_outlined,
-              label: 'Privacy Policy',
+              label: localizations.privacy,
               isDark: isDark,
               trailing: _chevron(isDark),
               onTap: () => _showTextSheet(
                 isDark,
-                title: 'Privacy Policy',
+                title: localizations.privacy,
                 body:
-                    'We only collect the information needed to manage your account, '
-                    'orders, and borrowed books. Your data is never sold to third parties. '
-                    'Full policy will be published here once finalized.',
+                    'Your privacy is important to us. We protect your personal information and use it only to provide our services.',
               ),
             ),
           ]),
 
           const SizedBox(height: 26),
 
-          // ============================================================
-          // LOGOUT
-          // ============================================================
           _buildCard(isDark, [
             _buildSettingsTile(
               icon: Icons.logout_rounded,
-              label: 'Log Out',
+              label: localizations.logout,
               isDark: isDark,
               labelColor: const Color(0xFFB33A3A),
               iconColor: const Color(0xFFB33A3A),
@@ -291,11 +284,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ============================================================
-  // DELETE ACCOUNT
-  // ============================================================
-
   void _showDeleteAccountDialog(bool isDark) {
+    final localizations = AppLocalizations.of(context)!;
+
     final phoneController = TextEditingController();
 
     showDialog(
@@ -309,7 +300,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               if (state is DeleteAccountSuccess) {
                 final prefs = await SharedPreferences.getInstance();
 
-                // Remove all authentication/user data.
                 await prefs.remove('auth_token');
                 await prefs.remove('token');
                 await prefs.remove('user');
@@ -320,10 +310,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 if (!mounted) return;
 
-                // Close dialog.
                 Navigator.of(dialogContext).pop();
 
-                // Go to login and remove all previous routes.
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const SigninScreen()),
                   (route) => false,
@@ -331,7 +319,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Your account has been permanently deleted.'),
+                    content: Text('Account deleted successfully'),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -378,7 +366,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                     Expanded(
                       child: Text(
-                        'Delete Account',
+                        localizations.delete,
                         style: TextStyle(
                           color: isDark
                               ? AppColors.textDark
@@ -393,13 +381,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
+
                   children: [
                     Text(
-                      'Are you sure you want to permanently '
-                      'delete your account?\n\n'
-                      'Your account and its associated data '
-                      'will be permanently deleted. '
-                      'This action cannot be undone.',
+                      'This action cannot be undone. Your account and related data will be permanently deleted.',
                       style: TextStyle(
                         height: 1.5,
                         color: isDark
@@ -427,21 +412,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       controller: phoneController,
                       keyboardType: TextInputType.phone,
                       enabled: !isLoading,
+
                       style: TextStyle(
                         color: isDark
                             ? AppColors.textDark
                             : AppColors.textLight,
                       ),
+
                       decoration: InputDecoration(
-                        hintText: 'Phone number',
+                        hintText: 'Phone Number',
+
                         prefixIcon: const Icon(
                           Icons.phone_outlined,
                           color: AppColors.primary,
                         ),
+
                         filled: true,
+
                         fillColor: isDark
                             ? Colors.white.withOpacity(0.05)
                             : AppColors.backgroundLight,
+
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
@@ -486,9 +477,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             if (phone.isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text(
-                                    'Please enter your phone number',
-                                  ),
+                                  content: Text('Phone number is required'),
                                   backgroundColor: Colors.red,
                                 ),
                               );
@@ -520,11 +509,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ============================================================
-  // LOGOUT
-  // ============================================================
-
   void _showLogoutDialog(bool isDark) {
+    final localizations = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
       builder: (dialogContext) {
@@ -564,7 +551,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
 
                 title: Text(
-                  'Log Out',
+                  localizations.logout,
                   style: TextStyle(
                     color: isDark ? AppColors.textDark : AppColors.textLight,
                     fontWeight: FontWeight.bold,
@@ -572,7 +559,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
 
                 content: Text(
-                  'Are you sure you want to log out of your account?',
+                  'Are you sure you want to logout?',
                   style: TextStyle(
                     color: isDark
                         ? AppColors.textDark.withOpacity(0.7)
@@ -623,7 +610,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text('Log Out'),
+                        : Text(localizations.logout),
                   ),
                 ],
               );
@@ -634,11 +621,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ============================================================
-  // RATE APP
-  // ============================================================
-
   void _showRateAppDialog(bool isDark) {
+    final localizations = AppLocalizations.of(context)!;
+
     int selectedStars = 0;
 
     showDialog(
@@ -654,7 +639,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
 
               title: Text(
-                'Rate the App',
+                localizations.rate,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: isDark ? AppColors.textDark : AppColors.textLight,
@@ -665,38 +650,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
+                  const Text(
                     'How was your experience with the app?',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark
-                          ? AppColors.textDark.withOpacity(0.6)
-                          : AppColors.textLight.withOpacity(0.6),
-                    ),
                   ),
 
                   const SizedBox(height: 16),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
+
                     children: List.generate(5, (index) {
                       final starIndex = index + 1;
+
                       final isFilled = starIndex <= selectedStars;
 
                       return IconButton(
                         onPressed: () {
                           setDialogState(() => selectedStars = starIndex);
                         },
+
                         icon: Icon(
                           isFilled
                               ? Icons.star_rounded
                               : Icons.star_outline_rounded,
-                          color: isFilled
-                              ? Colors.amber
-                              : (isDark
-                                    ? AppColors.textDark.withOpacity(0.3)
-                                    : AppColors.textLight.withOpacity(0.3)),
+
+                          color: isFilled ? Colors.amber : Colors.grey,
+
                           size: 34,
                         ),
                       );
@@ -712,23 +692,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onPressed: () {
                     Navigator.of(dialogContext).pop();
                   },
-                  child: Text(
-                    'Cancel',
-                    style: TextStyle(
-                      color: isDark
-                          ? AppColors.textDark.withOpacity(0.6)
-                          : AppColors.textLight.withOpacity(0.6),
-                    ),
-                  ),
+                  child: const Text('Cancel'),
                 ),
 
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
                   ),
 
                   onPressed: selectedStars == 0
@@ -739,7 +709,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                'Thanks for your $selectedStars-star rating!',
+                                'Thank you for rating the app $selectedStars stars!',
                               ),
                               backgroundColor: Colors.green,
                             ),
@@ -756,30 +726,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ============================================================
-  // BORROWING GUIDE
-  // ============================================================
-
   void _showBorrowingGuide(bool isDark) {
+    final localizations = AppLocalizations.of(context)!;
+
     _showTextSheet(
       isDark,
-      title: 'Borrowing Guide',
+      title: localizations.borrowguide,
       body:
-          'How to borrow a book:\n\n'
-          '1. Browse the available books in the library.\n\n'
-          '2. Open the book details page to view its information and availability.\n\n'
-          '3. Choose "Borrow" to request the book.\n\n'
-          '4. Confirm your request and complete the checkout process.\n\n'
-          '5. You can track your borrowing requests from Book Requests and your previous orders from Order History.\n\n'
-          'If the book is currently unavailable, you can join the Waiting List and receive an update when it becomes available.',
+          '1. Browse the available books.\n\n'
+          '2. Choose the book you want to borrow.\n\n'
+          '3. Select the Borrow option.\n\n'
+          '4. Confirm your borrowing request.\n\n'
+          '5. Return the book within the allowed period.\n\n'
+          'If the book is unavailable, you can add it to the waiting list.',
     );
   }
 
-  // ============================================================
-  // SEND FEEDBACK
-  // ============================================================
-
   void _showFeedbackDialog(bool isDark) {
+    final localizations = AppLocalizations.of(context)!;
+
     final controller = TextEditingController();
 
     showDialog(
@@ -793,7 +758,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
 
           title: Text(
-            'Send Feedback',
+            localizations.sendfedback,
             style: TextStyle(
               color: isDark ? AppColors.textDark : AppColors.textLight,
               fontWeight: FontWeight.bold,
@@ -803,20 +768,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
           content: TextField(
             controller: controller,
             maxLines: 4,
+
             style: TextStyle(
               color: isDark ? AppColors.textDark : AppColors.textLight,
             ),
+
             decoration: InputDecoration(
-              hintText: 'Tell us what you think about the app...',
-              hintStyle: TextStyle(
-                color: isDark
-                    ? AppColors.textDark.withOpacity(0.4)
-                    : AppColors.textLight.withOpacity(0.4),
-              ),
+              hintText: localizations.sendfedback,
+
               filled: true,
+
               fillColor: isDark
                   ? Colors.white.withOpacity(0.05)
                   : AppColors.backgroundLight,
+
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -830,21 +795,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 controller.dispose();
                 Navigator.of(dialogContext).pop();
               },
-              child: Text(
-                'Cancel',
-                style: TextStyle(
-                  color: isDark ? AppColors.textDark : AppColors.textLight,
-                ),
-              ),
+              child: const Text('Cancel'),
             ),
 
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
               ),
 
               onPressed: () {
@@ -860,9 +817,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text(
-                      'Thank you! Your feedback has been received.',
-                    ),
+                    content: Text('Feedback sent successfully'),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -878,10 +833,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ============================================================
-  // TEXT BOTTOM SHEET
-  // ============================================================
-
   void _showTextSheet(
     bool isDark, {
     required String title,
@@ -890,6 +841,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+
       backgroundColor: isDark ? AppColors.accentDark : Colors.white,
 
       shape: const RoundedRectangleBorder(
@@ -909,6 +861,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               child: ListView(
                 controller: scrollController,
+
                 children: [
                   const SizedBox(height: 12),
 
@@ -916,8 +869,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: Container(
                       width: 40,
                       height: 4,
+
                       decoration: BoxDecoration(
                         color: isDark ? Colors.white24 : Colors.black12,
+
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
@@ -957,10 +912,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ============================================================
-  // SECTION LABEL
-  // ============================================================
-
   Widget _buildSectionLabel(String text, bool isDark) {
     return Padding(
       padding: const EdgeInsets.only(left: 4),
@@ -978,10 +929,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ============================================================
-  // CARD
-  // ============================================================
-
   Widget _buildCard(bool isDark, List<Widget> children) {
     return Container(
       decoration: BoxDecoration(
@@ -998,36 +945,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ============================================================
-  // DIVIDER
-  // ============================================================
-
   Widget _divider(bool isDark) {
     return Divider(
       height: 1,
       indent: 16,
       endIndent: 16,
+
       color: isDark ? Colors.white10 : Colors.black.withOpacity(0.06),
     );
   }
-
-  // ============================================================
-  // CHEVRON
-  // ============================================================
 
   Widget _chevron(bool isDark) {
     return Icon(
       Icons.arrow_forward_ios_rounded,
       size: 14,
+
       color: isDark
           ? AppColors.textDark.withOpacity(0.35)
           : AppColors.textLight.withOpacity(0.35),
     );
   }
-
-  // ============================================================
-  // SETTINGS TILE
-  // ============================================================
 
   Widget _buildSettingsTile({
     required IconData icon,

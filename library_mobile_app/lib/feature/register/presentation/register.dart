@@ -16,7 +16,6 @@ import 'package:library_mobile_app/feature/login/presentation/signin_screen.dart
 import 'package:library_mobile_app/feature/profile/data/customer_repository.dart';
 import 'package:library_mobile_app/feature/register/bloc/register_bloc.dart';
 import 'package:library_mobile_app/feature/register/data/register_repository.dart';
-import 'package:library_mobile_app/feature/register/helper/dots.dart';
 import 'package:library_mobile_app/feature/register/helper/gender.dart';
 import 'package:library_mobile_app/feature/register/presentation/otp_page.dart';
 
@@ -76,10 +75,6 @@ class _RegisterState extends State<Register> {
     super.dispose();
   }
 
-  // ------------------------------------------------------------
-  // DATE OF BIRTH
-  // ------------------------------------------------------------
-
   Future<void> _pickDob() async {
     final now = DateTime.now();
 
@@ -123,10 +118,6 @@ class _RegisterState extends State<Register> {
     });
   }
 
-  // ------------------------------------------------------------
-  // PHONE
-  // ------------------------------------------------------------
-
   String _normalizePhone(String phone) {
     phone = phone
         .trim()
@@ -152,17 +143,9 @@ class _RegisterState extends State<Register> {
     return RegExp(r'^09[0-9]{8}$').hasMatch(normalized);
   }
 
-  // ------------------------------------------------------------
-  // EMAIL
-  // ------------------------------------------------------------
-
   bool _isValidEmail(String email) {
     return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email);
   }
-
-  // ------------------------------------------------------------
-  // STEP ONE
-  // ------------------------------------------------------------
 
   void _goNext() {
     final name = _fullNameController.text.trim();
@@ -209,10 +192,6 @@ class _RegisterState extends State<Register> {
       _currentStep = 1;
     });
   }
-
-  // ------------------------------------------------------------
-  // BACK
-  // ------------------------------------------------------------
 
   void _goBack() {
     if (_sendingOtp) return;
@@ -290,10 +269,6 @@ class _RegisterState extends State<Register> {
       );
   }
 
-  // ------------------------------------------------------------
-  // SUCCESS
-  // ------------------------------------------------------------
-
   void _showSuccess(String message) {
     if (!mounted) return;
 
@@ -329,10 +304,6 @@ class _RegisterState extends State<Register> {
         ),
       );
   }
-
-  // ------------------------------------------------------------
-  // CREATE ACCOUNT
-  // ------------------------------------------------------------
 
   Future<void> _onCreateAccount() async {
     if (_sendingOtp) return;
@@ -431,10 +402,6 @@ class _RegisterState extends State<Register> {
     }
   }
 
-  // ------------------------------------------------------------
-  // BUILD
-  // ------------------------------------------------------------
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -472,7 +439,6 @@ class _RegisterState extends State<Register> {
         ),
         body: Stack(
           children: [
-            // Background decoration
             Positioned(
               top: -80,
               left: -80,
@@ -503,7 +469,6 @@ class _RegisterState extends State<Register> {
               ),
             ),
 
-            // Header
             Positioned(
               top: 5,
               left: 0,
@@ -533,10 +498,6 @@ class _RegisterState extends State<Register> {
       ),
     );
   }
-
-  // ------------------------------------------------------------
-  // HEADER
-  // ------------------------------------------------------------
 
   Widget _buildHeader(Size size, bool isDark) {
     return Column(
@@ -578,10 +539,6 @@ class _RegisterState extends State<Register> {
     );
   }
 
-  // ------------------------------------------------------------
-  // FORM CARD
-  // ------------------------------------------------------------
-
   Widget _buildFormCard(Size size, bool isDark) {
     return Container(
       width: double.infinity,
@@ -608,7 +565,6 @@ class _RegisterState extends State<Register> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Handle
             Center(
               child: Container(
                 width: 38,
@@ -622,7 +578,6 @@ class _RegisterState extends State<Register> {
 
             const SizedBox(height: 20),
 
-            // Step indicator
             Row(
               children: [
                 Expanded(child: _buildStepProgress(isDark)),
@@ -684,10 +639,6 @@ class _RegisterState extends State<Register> {
     );
   }
 
-  // ------------------------------------------------------------
-  // PROGRESS
-  // ------------------------------------------------------------
-
   Widget _buildStepProgress(bool isDark) {
     return Row(
       children: [
@@ -717,10 +668,6 @@ class _RegisterState extends State<Register> {
       ],
     );
   }
-
-  // ------------------------------------------------------------
-  // STEP ONE
-  // ------------------------------------------------------------
 
   Widget _buildStepOne(bool isDark) {
     return Column(
@@ -797,10 +744,6 @@ class _RegisterState extends State<Register> {
       ],
     );
   }
-
-  // ------------------------------------------------------------
-  // STEP TWO
-  // ------------------------------------------------------------
 
   Widget _buildStepTwo(bool isDark) {
     return Column(
@@ -916,10 +859,6 @@ class _RegisterState extends State<Register> {
     );
   }
 
-  // ------------------------------------------------------------
-  // PASSWORD HINT
-  // ------------------------------------------------------------
-
   Widget _buildPasswordHint(bool isDark) {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -956,10 +895,6 @@ class _RegisterState extends State<Register> {
     );
   }
 
-  // ------------------------------------------------------------
-  // DIVIDER
-  // ------------------------------------------------------------
-
   Widget _buildDivider(bool isDark) {
     return Row(
       children: [
@@ -984,10 +919,6 @@ class _RegisterState extends State<Register> {
       ],
     );
   }
-
-  // ------------------------------------------------------------
-  // SOCIAL BUTTONS
-  // ------------------------------------------------------------
 
   Widget _buildSocialButtons(bool isDark) {
     return Row(
@@ -1021,10 +952,6 @@ class _RegisterState extends State<Register> {
       ],
     );
   }
-
-  // ------------------------------------------------------------
-  // LOGIN LINK
-  // ------------------------------------------------------------
 
   Widget _buildLoginLink(bool isDark) {
     return Center(

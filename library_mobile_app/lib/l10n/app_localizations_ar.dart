@@ -59,7 +59,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get myOrdersAndDelivery => 'طلباتي والتوصيل';
 
   @override
-  String get profile => 'البروفايل';
+  String get profile => 'الملف الشخصي';
 
   @override
   String get contactUs => 'تواصل معنا';
@@ -83,7 +83,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String buyPrice(Object price) {
-    return 'Buying price: $price SYP';
+    return 'سعر الشراء: $price ل.س';
   }
 
   @override
@@ -156,7 +156,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get confirmOrderNow => 'تأكيد الطلب الآن';
 
   @override
-  String get orderReceived => 'تم استلام طلبكِ بنجاح!';
+  String get orderReceived => 'تم استلام طلبك بنجاح!';
 
   @override
   String get orderId => 'رقم الطلب';
@@ -216,7 +216,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bookAncientLibrary => 'رواية:\nالمكتبة العتيقة';
 
   @override
-  String get authorGarmoush => 'غارمورش';
+  String get authorGarmoush => 'غارموش';
 
   @override
   String get bookTheSpider => 'العنكبوت';
@@ -255,4 +255,244 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get storePickup => 'استلام من المكتبة';
+
+  @override
+  String get appl => 'لغة التطبيق';
+
+  @override
+  String get borrowguide => 'دليل الاستعارة';
+
+  @override
+  String get sendfedback => 'إرسال ملاحظات';
+
+  @override
+  String get rate => 'تقييم التطبيق';
+
+  @override
+  String get appv => 'إصدار التطبيق';
+
+  @override
+  String get terms => 'الشروط والأحكام';
+
+  @override
+  String get privacy => 'سياسة الخصوصية';
+
+  @override
+  String get delete => 'حذف الحساب';
+
+  @override
+  String get push => 'الإشعارات المفعلة';
+
+  @override
+  String get borrow => 'التصفح حسب التصنيف';
+
+  @override
+  String get art => 'الفن والأدب';
+
+  @override
+  String get Economics => 'الاقتصاد';
+
+  @override
+  String get historyc => 'التاريخ';
+
+  @override
+  String get Novels => 'الروايات';
+
+  @override
+  String get philosophyc => 'الفلسفة';
+
+  @override
+  String get sciencec => 'العلوم';
+
+  @override
+  String get tech => 'التكنولوجيا';
+
+  @override
+  String get bills => 'فواتيري';
+
+  @override
+  String get bookrequest => 'طلب كتاب';
+
+  @override
+  String get waitinglist => 'قائمة الانتظار';
+
+  @override
+  String get help => 'المساعدة والدعم';
+
+  @override
+  String get total => 'المبلغ الإجمالي';
+
+  @override
+  String get invoice => 'الفاتورة';
+
+  @override
+  String get myinvoice => 'فاتورتي';
+
+  @override
+  String get invhistory => 'سجل فواتيرك';
+
+  @override
+  String get norequest => 'لا توجد طلبات كتب بعد';
+
+  @override
+  String get newrequest => 'طلب كتاب جديد';
+
+  @override
+  String get newsinc => 'اطلب كتاباً غير متوفر حالياً في المكتبة.';
+
+  // Action sheet / Dialogs
+  @override
+  String get whatWouldYouLikeToDo => 'ماذا تريد أن تفعل؟';
+
+  @override
+  String get chooseAnActionForThisBook => 'اختر إجراءً لهذا الكتاب';
+
+  @override
+  String get buyThisBook => 'شراء هذا الكتاب';
+
+  // Shopping Cart & Empty states
+  @override
+  String get reviewYourSelectedBooks => 'مراجعة الكتب المختارة';
+
+  @override
+  String get addBooksToYourCart => 'أضف كتباً إلى سلة التسوق وستظهر هنا';
+
+  // Book Details & Overview
+  @override
+  String get copies => 'النسخ';
+
+  @override
+  String get language => 'اللغة';
+
+  @override
+  String get pages => 'الصفحات';
+
+  @override
+  String get overview => 'نظرة عامة';
+
+  @override
+  String get bookInformation => 'معلومات الكتاب';
+
+  @override
+  String get author => 'المؤلف';
+
+  @override
+  String get availability => 'التوفر';
+
+  @override
+  String get available => 'متوفر';
+
+  @override
+  String get price => 'السعر';
+
+  @override
+  String get writeReview => 'كتابة مراجعة';
+
+  @override
+  String get reviews => 'المراجعات';
+
+  @override
+  String get readersRating => 'تقييم القراء';
+
+  @override
+  String get getBook => 'احصل على الكتاب';
+
+  @override
+  String get readBook => 'قراءة الكتاب';
+
+  // Sorting
+  @override
+  String get sortBooks => 'ترتيب الكتب';
+
+  @override
+  String get chooseHowToViewBooks => 'اختر طريقة عرض الكتب';
+
+  @override
+  String get titleAZ => 'العنوان أ-ي';
+
+  @override
+  String get priceLowHigh => 'السعر من الأقل للأعلى';
+
+  @override
+  String get priceHighLow => 'السعر من الأعلى للأقل';
+
+  // Notifications
+  @override
+  String get notifications => 'الإشعارات';
+
+  @override
+  String get readAll => 'تحديد الكل كمقروء';
+
+  @override
+  String get read => 'المقروءة';
+
+  @override
+  String get unread => 'غير المقروءة';
+
+  // Waiting List
+  @override
+  String get noWaitingListRequests => 'لا توجد طلبات في قائمة الانتظار';
+
+  @override
+  String get waitingListSubtitle =>
+      'الكتب التي تضيفها إلى قائمة الانتظار ستظهر هنا';
+
+  // Contact Us & Messages
+  @override
+  String get feelFreeToReachOut => 'لا تتردد في التواصل معنا';
+
+  @override
+  String get getInTouch => 'ابقَ على تواصل';
+
+  @override
+  String get email => 'البريد الإلكتروني';
+
+  @override
+  String get phone => 'رقم الهاتف';
+
+  @override
+  String get libraryLocation => 'موقع المكتبة';
+
+  @override
+  String get sendUsAMessage => 'أرسل لنا رسالة';
+
+  @override
+  String get yourName => 'اسمك';
+
+  @override
+  String get yourEmail => 'بريدك الإلكتروني';
+
+  @override
+  String get writeYourMessage => 'اكتب رسالتك...';
+
+  @override
+  String get sendMessage => 'إرسال الرسالة';
+
+  // General Actions
+  @override
+  String get view => 'عرض';
+
+  // Sorting & Header details
+  @override
+  String booksCountHeader(int count) {
+    return 'الكتب $count';
+  }
+
+  // Card Badges
+  @override
+  String get newBadge => 'جديد';
+
+  // Additional Contact Info
+  @override
+  String get universityLibrary => 'مكتبة الجامعة';
+
+  // Book Action Buttons
+  @override
+  String get borrowAction => 'استعارة';
+
+  @override
+  String get fav => 'قائمة المفضلة فارغة';
+
+  @override
+  String get favsave => 'احفظ الكتب التي تحبها لتجدها هنا وقتما تشاء';
 }

@@ -21,10 +21,6 @@ import 'firebase_options.dart';
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-/// =======================================================
-/// BACKGROUND FCM HANDLER
-/// =======================================================
-
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -36,17 +32,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   debugPrint('📝 BODY: ${message.notification?.body}');
   debugPrint('📦 DATA: ${message.data}');
   debugPrint('========================================');
-
-  // ⚠️ إذا الباك عم يرسل notification payload
-  // Firebase/Android بيعرض الإشعار تلقائياً بالخلفية.
-  //
-  // لذلك لا نعمل local notification هون
-  // حتى ما يطلع الإشعار مرتين.
 }
-
-/// =======================================================
-/// LOCAL NOTIFICATION INITIALIZATION
-/// =======================================================
 
 Future<void> initializeLocalNotifications() async {
   const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -58,7 +44,6 @@ Future<void> initializeLocalNotifications() async {
   await flutterLocalNotificationsPlugin.initialize(
     settings: initializationSettings,
 
-    // الضغط على Local Notification
     onDidReceiveNotificationResponse: (response) {
       debugPrint('👆 LOCAL NOTIFICATION CLICKED');
 
@@ -72,7 +57,6 @@ Future<void> initializeLocalNotifications() async {
     },
   );
 
-  // Android notification channel
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
     'library_notifications',
     'Library Notifications',
@@ -86,10 +70,6 @@ Future<void> initializeLocalNotifications() async {
       >()
       ?.createNotificationChannel(channel);
 }
-
-/// =======================================================
-/// FOREGROUND NOTIFICATION
-/// =======================================================
 
 void setupForegroundNotifications() {
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -132,10 +112,6 @@ void setupForegroundNotifications() {
     );
   });
 }
-
-/// =======================================================
-/// BACKGROUND CLICK
-/// =======================================================
 
 void setupNotificationClickHandling() {
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {

@@ -3,7 +3,7 @@ export const NAV_ITEMS = [
   { to: "/dashboard",  icon: "dashboard",      label: "Dashboard" },
   { to: "/inventory",  icon: "menu_book",       label: "Book Inventory" },
   { to: "/analytics",  icon: "analytics",       label: "Analytics" },
-  { to: "/order",      icon: "shopping_cart",   label: "Orders" },
+  //{ to: "/order",      icon: "shopping_cart",   label: "Orders" },
   //{ to: "/finance",    icon: "payments",        label: "Finances" },
   //{ to: "/archives",   icon: "archive",         label: "Archives" },
 {to:"/bookrequest", icon:"request_page", label:"BookRequest"},

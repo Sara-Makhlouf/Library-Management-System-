@@ -4,121 +4,79 @@
   "darkMode": "Dark Mode",
   "lightMode": "Light Mode",
   "appLanguage": "App Language",
-
   "home": "Home",
   "searchPlaceholder": "Search Your Book...",
   "points": "Points: {count}",
+  "@points": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
   "mostPopular": "Most popular",
   "bookCategories": "Book categories",
-
   "philosophy": "Philosophy",
   "literatureAndNovels": "Literature & Novels",
   "history": "History",
   "science": "Science",
   "selfDevelopment": "Self-development",
-
   "borrowingRecord": "Borrowing Record",
   "myOrdersAndDelivery": "My Orders & Delivery",
   "profile": "Profile",
   "contactUs": "Contact Us",
   "logout": "Log Out",
-
   "shoppingCart": "Shopping Cart",
   "buyingTab": "Buying",
   "borrowingTab": "Borrowing",
-  "borrowPrice": "Borrowing fee: {price} SYP",
+  "borrowPrice": "Borrow Fee: {price} SYP",
+  "@borrowPrice": {
+    "description": "The borrow fee of the book",
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
   "buyPrice": "Buying price: {price} SYP",
+  "@buyPrice": {
+    "placeholders": {
+      "price": {
+        "type": "Object"
+      }
+    }
+  },
+  "purchasePrice": "Purchase Price: {price} SYP",
+  "@purchasePrice": {
+    "description": "The purchase price of the book",
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
   "confirmOrderAndPay": "Confirm Order & Pay",
-  
   "checkoutAndPayment": "Checkout & Payment",
-  "invoiceSummary": "Invoice Summary",
-  "buyingBooks": "Buying Books:",
-  "borrowingBooks": "Borrowing Books:",
-  "itemsCount": "{count} Items",
-  "totalPrice": "Total Price:",
-  "currency": "SYP",
-  
-  "personalInformation": "Personal Information",
-  "fullName": "Full Name",
-  "phoneNumber": "Phone Number",
-  "detailedAddress": "Detailed Address",
-  
-  "deliveryService": "Delivery Service",
-  "yesDelivery": "Yes, I want delivery",
-  "noDelivery": "No, I will pick it up",
-  
-  "paymentMethod": "Payment Method",
-  "creditCard": "Credit Card",
-  "cashOnDelivery": "Cash on Delivery",
-  
-  "borrowingTerms": "Borrowing Terms",
-  "importantNoteBorrow": "Important Note for Borrowed Books",
-  "borrowPeriodNotice": "The maximum borrowing period is 7 days only from the date of receiving the order. Please ensure timely returns.",
-  "confirmOrderNow": "Confirm Order Now",
-  
-  "orderReceived": "Order Received!",
-  "orderId": "Order ID: {id}",
-  "orderDate": "Date: {date}",
-  "deliveryRequested": "Delivery: Requested",
-  "deliveryNotRequested": "Delivery: Self Pickup",
-  "backToHome": "Back to Home",
-  
-  "booksCount": "{count} books",
-  "sortBy": "Sort by",
-  "sortDefault": "Default",
-  "sortTitle": "Title",
-  "sortPrice": "Price",
-  "free": "Free",
-  "favouritePage": "Favourite Page",
-  "orderHistory" : "OrderHistory",
-  "myPoints": "My Points: {points}",
-"@myPoints": {
-  "placeholders": {
-    "points": {
-      "type": "int"
-    }
-  }
-},
-
-"bookGhadrAlSalafiya": "Ghadr Al-Salafiya",
-"authorEzzElDin": "Ezz El-Din",
-"bookAncientLibrary": "Novel:\nThe Ancient Library",
-"authorGarmoush": "Garmoush",
-"bookTheSpider": "The Spider",
-"authorDawnWizard": "Dawn Wizard",
-"searchYourBook": "Search your book",
-"noItemsInSection": "NoItemsInSection",
-
-
-"borrowPrice": "Borrow Fee: {price} SYP",
-"@borrowPrice": {
-  "description": "The borrow fee of the book",
-  "placeholders": {
-    "price": {
-      "type": "String"
-    }
-  }
-},
-"purchasePrice": "Purchase Price: {price} SYP",
-"@purchasePrice": {
-  "description": "The purchase price of the book",
-  "placeholders": {
-    "price": {
-      "type": "String"
-    }
-  }
-},
-
-"checkoutAndPayment": "Checkout & Payment",
   "invoiceSummary": "Invoice Summary",
   "buyingBooks": "Books for Purchase",
   "borrowingBooks": "Books for Borrowing",
+  "itemsCount": "{count} Items",
+  "@itemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
   "totalPrice": "Total Price",
+  "currency": "SYP",
   "personalInformation": "Personal Information",
   "fullName": "Full Name",
   "phoneNumber": "Phone Number",
   "detailedAddress": "Detailed Address",
   "deliveryService": "Delivery Service",
+  "yesDelivery": "Yes, I want delivery",
+  "noDelivery": "No, I will pick it up",
   "yesWantsDelivery": "Yes, I want home delivery",
   "noStorePickup": "No, I will pick it up from the library",
   "paymentMethod": "Payment Method",
@@ -127,14 +85,136 @@
   "borrowingTerms": "Borrowing Terms & Notes",
   "importantNoteBorrow": "Important Note for Borrowed Books",
   "borrowPeriodNotice": "The maximum borrowing period is 7 days. Please return the books on time to avoid fines.",
-  "confirmOrderAndPay": "Confirm Order & Pay",
+  "confirmOrderNow": "Confirm Order Now",
   "orderReceived": "Order Received Successfully!",
   "orderId": "Order ID",
+  "orderDate": "Date: {date}",
+  "@orderDate": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
   "date": "Date",
   "buyingItems": "Purchase Items",
   "borrowingItems": "Borrowing Items",
   "requested": "Requested",
   "storePickup": "Library Pickup",
-  "backToHome": "Back to Home"
-
+  "deliveryRequested": "Delivery: Requested",
+  "deliveryNotRequested": "Delivery: Self Pickup",
+  "backToHome": "Back to Home",
+  "booksCount": "{count} books",
+  "@booksCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "sortBy": "Sort by",
+  "sortDefault": "Default",
+  "sortTitle": "Title",
+  "sortPrice": "Price",
+  "free": "Free",
+  "favouritePage": "Favourite Page",
+  "orderHistory": "Order History",
+  "myPoints": "My Points: {points}",
+  "@myPoints": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "bookGhadrAlSalafiya": "Ghadr Al-Salafiya",
+  "authorEzzElDin": "Ezz El-Din",
+  "bookAncientLibrary": "Novel:\nThe Ancient Library",
+  "authorGarmoush": "Garmoush",
+  "bookTheSpider": "The Spider",
+  "authorDawnWizard": "Dawn Wizard",
+  "searchYourBook": "Search your book",
+  "noItemsInSection": "No Items In Section",
+  "appl": "App Language",
+  "borrowguide": "Borrowing Guide",
+  "sendfedback": "Send Feedback",
+  "rate": "Rate the App",
+  "appv": "App Version",
+  "terms": "Terms & Conditions",
+  "privacy": "Privacy Policy",
+  "delete": "Delete Account",
+  "push": "Push Notification",
+  "borrow": "Browse by category",
+  "art": "Art & Literature",
+  "Economics": "Economics",
+  "historyc": "History",
+  "Novels": "Novels",
+  "philosophyc": "Philosophy",
+  "sciencec": "Science",
+  "tech": "Technology",
+  "bills": "My Bills",
+  "bookrequest": "Book Request",
+  "waitinglist": "Waiting List",
+  "help": "Help & Support",
+  "total": "Total amount",
+  "invoice": "Invoice",
+  "myinvoice": "My Invoice",
+  "invhistory": "Your invoice history",
+  "norequest": "No Book Request yet",
+  "newrequest": "Request a Book",
+  "newsinc": "Request a book that is not currently available in the library.",
+  "whatWouldYouLikeToDo": "What would you like to do?",
+  "chooseAnActionForThisBook": "Choose an action for this book",
+  "buyThisBook": "Buy this book",
+  "reviewYourSelectedBooks": "Review your selected books",
+  "addBooksToYourCart": "Add books to your cart and they will appear here",
+  "copies": "Copies",
+  "language": "Language",
+  "pages": "Pages",
+  "overview": "Overview",
+  "bookInformation": "Book Information",
+  "author": "Author",
+  "availability": "Availability",
+  "available": "Available",
+  "price": "Price",
+  "writeReview": "Write review",
+  "reviews": "Reviews",
+  "readersRating": "Readers rating",
+  "getBook": "Get Book",
+  "readBook": "Read Book",
+  "sortBooks": "Sort books",
+  "chooseHowToViewBooks": "Choose how you want to view the books",
+  "titleAZ": "Title A-Z",
+  "priceLowHigh": "Price Low-High",
+  "priceHighLow": "Price High-Low",
+  "notifications": "Notifications",
+  "readAll": "Read all",
+  "read": "Read",
+  "unread": "Unread",
+  "noWaitingListRequests": "No waiting list requests",
+  "waitingListSubtitle": "Books you add to waiting list will appear here",
+  "feelFreeToReachOut": "Feel free to reach out to us",
+  "getInTouch": "Get in touch",
+  "email": "Email",
+  "phone": "Phone",
+  "libraryLocation": "Library Location",
+  "sendUsAMessage": "Send us a message",
+  "yourName": "Your name",
+  "yourEmail": "Your email",
+  "writeYourMessage": "Write your message...",
+  "sendMessage": "Send Message",
+  "view": "View",
+  "booksCountHeader": "books {count}",
+  "@booksCountHeader": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "newBadge": "NEW",
+  "universityLibrary": "University Library",
+  "borrowAction": "Borrow",
+  "fav": "Your favourites are empty",
+  "favsave": "Save the books you love and find them here whenever you want"
 }
